@@ -106,3 +106,147 @@
 .island {
   fill: var(--color-bg);
 }
+
+.glassWindow {
+  fill: var(--finish-shell-light);
+  fill-opacity: 0.16;
+}
+
+.magnet {
+  fill: var(--part-cell);
+  stroke: var(--color-line-strong);
+  stroke-width: 0.5;
+}
+
+.coil {
+  fill: none;
+  stroke: var(--part-copper);
+  stroke-width: 1.6;
+}
+
+.antennaBreak {
+  stroke: var(--color-bg);
+  stroke-width: 1.8;
+}
+
+.stub {
+  fill: var(--finish-shell-dark);
+}
+
+.vaporChamber {
+  fill: var(--part-copper);
+  fill-opacity: 0.22;
+  stroke: var(--part-copper);
+  stroke-width: 0.8;
+}
+
+.port {
+  fill: var(--color-bg);
+}
+
+.flex,
+.flexTail {
+  fill: none;
+  stroke: var(--part-copper);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-opacity: 0.85;
+}
+
+.flexTail {
+  stroke-width: 2.4;
+}
+
+.sensorHousing {
+  fill: var(--part-chip);
+  stroke: var(--color-line-strong);
+  stroke-width: 0.6;
+}
+
+.lensBarrel {
+  fill: var(--color-bg);
+}
+
+.flash {
+  fill: var(--color-text);
+  fill-opacity: 0.7;
+}
+
+.depthSensor {
+  fill: var(--color-bg);
+  stroke: var(--finish-shell-dark);
+  stroke-width: 1;
+}
+
+.pullTab {
+  fill: var(--color-text);
+  fill-opacity: 0.65;
+}
+
+.motor {
+  fill: var(--part-chip);
+  stroke: var(--color-line-strong);
+  stroke-width: 0.8;
+}
+
+.shield {
+  fill: var(--part-shield);
+  stroke: var(--part-shield-edge);
+  stroke-width: 0.6;
+}
+
+.connector {
+  fill: var(--part-chip);
+  stroke: var(--part-copper);
+  stroke-width: 0.5;
+}
+
+.sensor {
+  fill: var(--part-sensor);
+}
+
+.earpiece {
+  fill: var(--color-line-strong);
+}
+
+.sheenOn {
+  stop-color: var(--color-text);
+  stop-opacity: 0.22;
+}
+
+.sheenOff {
+  stop-color: var(--color-text);
+  stop-opacity: 0;
+}
+
+.part {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.screwHead {
+  fill: var(--part-steel);
+  stroke: var(--part-steel-edge);
+  stroke-width: 0.4;
+}
+
+.screwDrive {
+  fill: var(--part-steel-dark);
+}
+
+.screwSlot {
+  fill: none;
+  stroke: var(--part-steel-dark);
+  stroke-width: 0.6;
+  stroke-linecap: round;
+}
+
+.bracket {
+  fill: var(--part-steel);
+  stroke: var(--part-steel-edge);
+  stroke-width: 0.5;
+}
+
+.clip {
+  fill: var(--part-copper);
+}

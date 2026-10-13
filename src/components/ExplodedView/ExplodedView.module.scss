@@ -195,3 +195,30 @@ $compact-window: 0.32;
     }
   }
 }
+
+$parts-per-layer: 3;
+$part-window: 0.07;
+$part-travel: 110px;
+
+.layer [data-part-slot] {
+  --part-start: calc(var(--start) + var(--length) * 0.78 + var(--slot-delay));
+  --part-local: clamp(0, (var(--progress) - var(--part-start)) / #{$part-window}, 1);
+  --part-away: calc((1 - var(--part-local)) * (1 - var(--part-local)));
+
+  opacity: clamp(0, var(--part-local) * 5, 1);
+  transform: translate(
+      calc(cos(var(--part-angle)) * var(--part-away) * #{$part-travel}),
+      calc(sin(var(--part-angle)) * var(--part-away) * #{$part-travel})
+    )
+    rotate(calc(var(--part-away) * var(--part-spin))) scale(calc(1 + var(--part-away) * 1.6));
+}
+
+@for $order from 0 to $layer-count {
+  @for $slot from 0 to $parts-per-layer {
+    .layer[data-order='#{$order}'] [data-part-slot='#{$slot}'] {
+      --part-angle: #{($order * 67 + $slot * 137) % 360}deg;
+      --part-spin: #{if($slot % 2 == 0, 1, -1) * (200 + $slot * 90)}deg;
+      --slot-delay: #{$slot * 0.025};
+    }
+  }
+}

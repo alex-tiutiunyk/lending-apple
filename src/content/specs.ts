@@ -25,38 +25,38 @@ export const statFootnotes = [
 export const layers = [
   {
     id: 'back-glass',
-    name: 'Back glass',
-    detail: 'Matte glass, color-fused before tempering so it cannot wear off.',
+    name: 'Back glass and housing',
+    detail: 'Color-fused matte glass over a magnet ring and a charging coil.',
     inCompactView: true,
   },
   {
     id: 'frame',
     name: 'Titanium band',
-    detail: 'Grade 5 titanium around an aluminum core that spreads heat.',
-    inCompactView: false,
-  },
-  {
-    id: 'battery',
-    name: 'Battery',
-    detail: '4,685 mAh stacked cell, 12 % denser than a wound one.',
-    inCompactView: true,
-  },
-  {
-    id: 'logic-board',
-    name: 'Logic board',
-    detail: 'Two boards sandwiched around the N2 chip to free room for the cell.',
+    detail: 'Grade 5 titanium around a vapor chamber, with the USB-C port and speaker cut into it.',
     inCompactView: false,
   },
   {
     id: 'camera',
     name: 'Camera module',
-    detail: 'Three 48 MP sensors: 13 mm, 24 mm and a 120 mm folded periscope.',
+    detail: 'Three 48 MP sensors at 13, 24 and 120 mm, plus a depth sensor and flash.',
     inCompactView: true,
+  },
+  {
+    id: 'battery',
+    name: 'Battery',
+    detail: '4,685 mAh stacked cell, with the haptic motor and loudspeaker beside it.',
+    inCompactView: true,
+  },
+  {
+    id: 'logic-board',
+    name: 'Logic board',
+    detail: 'An L-shaped board that wraps the camera and carries the N2 chip, memory and modem.',
+    inCompactView: false,
   },
   {
     id: 'display',
     name: 'Display',
-    detail: '6.3-inch LTPO OLED that idles at 1 Hz and peaks at 120 Hz.',
+    detail: '6.3-inch LTPO OLED that idles at 1 Hz, with the face sensors under the cutout.',
     inCompactView: true,
   },
   {

@@ -41,6 +41,12 @@ $z-layers: (
   --part-chip: hsl(var(--ink-h) 10% 14%);
   --part-cell: hsl(var(--ink-h) 8% 30%);
   --part-glass: hsl(var(--ink-h) 40% 90% / 16%);
+  --part-steel: hsl(var(--ink-h) 6% 70%);
+  --part-steel-edge: hsl(var(--ink-h) 10% 40%);
+  --part-steel-dark: hsl(var(--ink-h) 10% 30%);
+  --part-shield: hsl(var(--ink-h) 10% 70% / 18%);
+  --part-shield-edge: hsl(var(--ink-h) 10% 80% / 50%);
+  --part-sensor: hsl(var(--ink-h) 30% 30%);
 
   --font-sans: 'Bricolage', 'Bricolage Fallback', system-ui, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', monospace;

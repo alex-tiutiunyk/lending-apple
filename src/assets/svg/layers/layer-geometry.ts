@@ -3,15 +3,26 @@ import { inset, layerBody } from '../phone-geometry'
 export const layerShapes = {
   body: layerBody,
   band: inset(layerBody, 4),
-  screen: inset(layerBody, 9, 8),
-  plateau: { x: 84, y: 27, width: 72, height: 76, radius: 19 },
+  screen: inset(layerBody, 7, 6),
+  plateau: { x: 15, y: 20, width: 150, height: 84, radius: 23 },
+  plateauBottomRadius: 10,
+  glassWindow: { x: 19, y: 112, width: 142, height: 224, radius: 20 },
   lenses: [
-    { name: 'ultra-wide', cx: 136, cy: 47 },
-    { name: 'main', cx: 136, cy: 83 },
-    { name: 'periscope', cx: 104, cy: 65 },
+    { name: 'ultra-wide', cx: 141, cy: 43 },
+    { name: 'main', cx: 141, cy: 81 },
+    { name: 'periscope', cx: 108, cy: 62 },
   ],
-  island: { x: 68, y: 31, width: 44, height: 13, radius: 6.5 },
-  battery: { x: 34, y: 132, width: 112, height: 186, radius: 12 },
-  board: { x: 24, y: 30, width: 56, height: 96, radius: 9 },
-  chip: { x: 34, y: 56, width: 36, height: 36, radius: 4 },
+  flash: { cx: 38, cy: 40, r: 4.2 },
+  depthSensor: { cx: 38, cy: 82, r: 5 },
+  island: { x: 69, y: 28, width: 42, height: 12, radius: 6 },
+  earpiece: { x: 78, y: 19.6, width: 24, height: 1.6, radius: 0.8 },
+  magnetCenter: { cx: 90, cy: 222 },
+  vaporChamber: { x: 40, y: 118, width: 100, height: 132, radius: 10 },
+  battery: { x: 26, y: 120, width: 104, height: 186, radius: 12 },
+  hapticMotor: { x: 136, y: 150, width: 24, height: 60, radius: 4 },
+  speaker: { x: 26, y: 314, width: 60, height: 20, radius: 5 },
+  chip: { x: 26, y: 38, width: 32, height: 32, radius: 4 },
 } as const
+
+export const boardOutline =
+  'M24 26 H96 Q100 26 100 30 V108 Q100 112 96 112 H62 V236 Q62 240 58 240 H24 Q20 240 20 236 V30 Q20 26 24 26 Z'

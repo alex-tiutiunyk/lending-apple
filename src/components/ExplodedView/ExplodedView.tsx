@@ -14,9 +14,9 @@ import styles from './ExplodedView.module.scss'
 const layerArt: Record<LayerId, ComponentType> = {
   'back-glass': BackGlassLayer,
   frame: FrameLayer,
+  camera: CameraLayer,
   battery: BatteryLayer,
   'logic-board': LogicBoardLayer,
-  camera: CameraLayer,
   display: DisplayLayer,
   'front-glass': FrontGlassLayer,
 }
