@@ -17,8 +17,6 @@ export const stats = [
   { id: 'weight', value: 187, unit: 'g', label: 'with the titanium band', footnote: 1 },
 ] as const
 
-export type Stat = (typeof stats)[number]
-
 export const statFootnotes = [
   'Concept targets for this design study. Nothing here was manufactured or measured.',
   'Estimated for local video at 50 % brightness with wireless radios off.',
