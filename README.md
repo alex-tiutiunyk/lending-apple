@@ -14,7 +14,8 @@ npm run dev          # http://localhost:5173
 npm run build        # type-check, client build, prerender into dist/index.html
 npm run preview      # serve dist/ on http://localhost:4173
 npm test             # Vitest: hooks and pure animation math
-npm run test:e2e     # Playwright on desktop and Pixel 7 viewports, with axe
+npm run test:e2e     # Playwright: Chrome, Pixel 7, Firefox, iPad and iPhone (WebKit), with axe
+npm run test:perf    # one Chromium run that fails on any long task while scrolling
 npm run lint         # ESLint, Stylelint, Prettier
 ```
 
@@ -30,9 +31,11 @@ Simple reveals use `animation-timeline: view()` where the browser has it and an 
 
 - Getting the exploded view to read as depth with nothing but `translateZ` on flat SVGs. The layers share one viewBox, so the trick was tuning the rotation and spread so the gaps stay legible on a 390 px screen.
 - `stroke-linecap: round` paints a dot for a zero-length dash, so undrawn paths showed a scatter of specks. Paths now fade in during the first few percent of their window.
+- WebKit stops fractional scrolling a hair before the end of a pinned section, which left the exploded view at 0.999 instead of fully assembled. Progress now snaps to 1 within the last pixel.
 - The page is prerendered at build time so the headline paints before any JavaScript runs. The countdown and the save-data check use `useSyncExternalStore` server snapshots so hydration never disagrees with the build-time HTML.
 
 ## Known gaps
 
 - JavaScript is about 83 KB gzipped against a 60 KB budget. React 19 alone accounts for roughly 60 KB of that; the page's own code is around 20 KB.
-- Tested in Chromium (desktop and mobile emulation) only. Safari, Firefox and real devices are still to check.
+- Checked in Chromium, Firefox and WebKit through Playwright emulation, not on real phones or tablets yet. iOS address-bar behavior and VoiceOver/NVDA passes still need a person with the devices.
+- Lighthouse mobile (simulated Slow 4G): 96 performance, 100 accessibility, 100 best practices, 100 SEO. LCP is 1.9 s against a 1.5 s target.
