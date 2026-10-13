@@ -88,7 +88,8 @@ test('reserve form validates, blocks double submit and confirms', async ({ page 
   await expect(status).toBeFocused()
 })
 
-test('keyboard reaches the form from the skip link', async ({ page }) => {
+test('keyboard reaches the form from the skip link', async ({ page, browserName }) => {
+  test.skip(browserName === 'webkit', 'WebKit skips links on Tab unless the user turns it on')
   await page.keyboard.press('Tab')
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused()
   await page.keyboard.press('Enter')
