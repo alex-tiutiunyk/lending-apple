@@ -1,5 +1,6 @@
 import { BrandMark } from '@/assets/svg/brand-mark'
 import { footerCopy, product } from '@/content/copy'
+import { MotionToggle } from '@/components/MotionToggle/MotionToggle'
 import styles from './Footer.module.scss'
 
 export function Footer() {
@@ -21,6 +22,7 @@ export function Footer() {
             ))}
           </ul>
         </nav>
+        <MotionToggle className={styles.motion} />
         <p className={styles.legal}>{footerCopy.legal}</p>
         <p className={styles.credit}>{footerCopy.fontCredit}</p>
       </div>

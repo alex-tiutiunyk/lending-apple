@@ -16,6 +16,10 @@ export const headerCopy = {
   skipLink: 'Skip to content',
 } as const
 
+export const motionCopy = {
+  pause: 'Pause motion',
+} as const
+
 export const heroCopy = {
   eyebrow: 'Unofficial design study',
   title: 'The phone, drawn again from a single line.',

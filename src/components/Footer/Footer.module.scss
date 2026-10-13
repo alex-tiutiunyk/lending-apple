@@ -56,6 +56,10 @@
   border-radius: var(--radius-s);
 }
 
+.motion {
+  justify-self: start;
+}
+
 .legal,
 .credit {
   max-width: 62rem;

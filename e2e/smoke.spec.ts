@@ -96,6 +96,20 @@ test('keyboard reaches the form from the skip link', async ({ page, browserName 
   await expect(page.locator('main')).toBeFocused()
 })
 
+test('pause motion toggle is pressed state and survives a reload', async ({ page }) => {
+  const toggle = page.locator('footer').getByRole('button', { name: 'Pause motion' })
+  await toggle.click()
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.locator('html')).toHaveAttribute('data-motion-paused', '')
+  await page.reload()
+  await expect(
+    page.locator('footer').getByRole('button', { name: 'Pause motion' }),
+  ).toHaveAttribute('aria-pressed', 'true')
+  await expect(
+    page.locator('header').getByRole('button', { name: 'Pause motion' }),
+  ).toHaveAttribute('aria-pressed', 'true')
+})
+
 test.describe('reduced motion', () => {
   test.use({ reducedMotion: 'reduce' })
 

@@ -44,6 +44,15 @@
   }
 }
 
+@mixin when-awake {
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion-paused]) [data-awake] &,
+    :root:not([data-motion-paused]) &[data-awake] {
+      @content;
+    }
+  }
+}
+
 @mixin pressable {
   transition: transform var(--dur-press) var(--ease-press);
 
