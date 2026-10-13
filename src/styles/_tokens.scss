@@ -4,6 +4,7 @@ $z-layers: (
   backdrop: -1,
   raised: 1,
   header: 30,
+  mascot: 35,
   sticky-cta: 40,
   skip-link: 50,
 );
@@ -73,6 +74,8 @@ $z-layers: (
   --content-max: 76rem;
   --header-height: 3.75rem;
   --tap-min: 2.75rem;
+  --pip-width: 3rem;
+  --sticky-cta-clearance: 5rem;
 
   --radius-s: 5px;
   --radius-m: 14px;
@@ -97,6 +100,7 @@ $z-layers: (
   --dur-float: 6.5s;
   --dur-draw-total: 1.8s;
   --dur-tilt: 700ms;
+  --dur-step: 260ms;
   --wave-tile-width: 15rem;
   --wave-tile-height: 7.5rem;
   --lens-size: 10rem;

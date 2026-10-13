@@ -8,6 +8,7 @@ import { Header } from '@/components/Header/Header'
 import { Hero } from '@/components/Hero/Hero'
 import { SurfaceRipple } from '@/components/LivingSurface/SurfaceRipple'
 import { LineDraw } from '@/components/LineDraw/LineDraw'
+import { MascotSlot } from '@/components/Mascot/MascotSlot'
 import { Numbers } from '@/components/Numbers/Numbers'
 import { Reserve } from '@/components/Reserve/Reserve'
 import { StickyCta } from '@/components/StickyCta/StickyCta'
@@ -45,6 +46,7 @@ export function App() {
       <Footer />
       <StickyCta />
       <SurfaceRipple />
+      <MascotSlot />
     </>
   )
 }

@@ -5,7 +5,7 @@ import styles from './Footer.module.scss'
 
 export function Footer() {
   return (
-    <footer className={styles.footer}>
+    <footer className={styles.footer} data-pip-avoid>
       <div className={styles.inner}>
         <p className={styles.brand}>
           <BrandMark className={styles.mark} />

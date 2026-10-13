@@ -130,9 +130,47 @@ test.describe('reduced motion', () => {
       .evaluate((stage) => getComputedStyle(stage).position)
     expect(stagePosition).toBe('static')
     await expect(page.locator('canvas')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Poke Pip' })).toHaveCount(0)
     const progress = await page
       .locator('#design')
       .evaluate((section) => section.style.getPropertyValue('--p'))
     expect(progress).toBe('1')
+  })
+})
+
+test.describe('mascot', () => {
+  test('answers a poke once through the live region', async ({ page }) => {
+    const pip = page.getByRole('complementary', { name: 'Pip, the page mascot' })
+    const poke = pip.getByRole('button', { name: 'Poke Pip' })
+    await poke.focus()
+    await expect(pip).toHaveAttribute('data-held', '')
+    await poke.press('Enter')
+    await expect(pip.locator('[aria-live="polite"]')).not.toHaveText('')
+    await expect(pip).toHaveAttribute('data-act', 'poked')
+  })
+
+  test('leaves when motion is paused', async ({ page }) => {
+    await expect(page.getByRole('button', { name: 'Poke Pip' })).toHaveCount(1)
+    await page.locator('header').getByRole('button', { name: 'Pause motion' }).click()
+    await expect(page.getByRole('button', { name: 'Poke Pip' })).toHaveCount(0)
+  })
+
+  test('never covers the focused email field', async ({ page }) => {
+    await page.getByLabel('Email address').focus()
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const pip = document.querySelector('[data-act]')
+          const field = document.activeElement
+          if (!pip || !field) return 'missing'
+          if (pip.hasAttribute('data-hiding')) return 'clear'
+          const a = pip.getBoundingClientRect()
+          const b = field.getBoundingClientRect()
+          const overlaps =
+            a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+          return overlaps ? 'covered' : 'clear'
+        }),
+      )
+      .toBe('clear')
   })
 })

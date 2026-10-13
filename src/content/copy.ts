@@ -109,6 +109,29 @@ export const stickyCtaCopy = {
   cta: 'Reserve',
 } as const
 
+export const mascotCopy = {
+  label: 'Pip, the page mascot',
+  poke: 'Poke Pip',
+  quips: [
+    'I have three cameras and zero good angles.',
+    'They drew me from one line. It shows.',
+    'Yes, the cutout is my face. No, you cannot tap it.',
+    'Thirty-one hours of video and not one of them about me.',
+    'Grade 5 titanium. Grade 2 sense of direction.',
+  ],
+  complaints: [
+    'Hey. Fingerprints.',
+    'That was my camera.',
+    'Rude. I just got polished.',
+    'Poke me again and I go to airplane mode.',
+  ],
+  selfie: 'Hold still.',
+  nap: 'Low battery. Back in five.',
+  mirror: 'Looking sharp.',
+  trip: 'I meant to do that.',
+  blown: 'Whoa.',
+} as const
+
 export const footerCopy = {
   legal:
     'Concept 18 Pro is an unofficial design study made for a portfolio. It is not affiliated with, endorsed by or connected to Apple Inc. iPhone is a trademark of Apple Inc., registered in the U.S. and other countries. Every specification on this page is invented.',

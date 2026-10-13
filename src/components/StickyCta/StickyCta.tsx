@@ -44,6 +44,8 @@ export function StickyCta() {
     <aside
       className={styles.bar}
       aria-label={stickyCtaCopy.label}
+      data-sticky-cta
+      data-pip-avoid
       data-visible={isVisible ? '' : undefined}
       inert={!isVisible}
     >

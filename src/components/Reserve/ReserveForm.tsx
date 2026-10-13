@@ -64,7 +64,13 @@ export function ReserveForm({ onReserved }: ReserveFormProps) {
   const isSubmitting = status === 'submitting'
 
   return (
-    <form className={styles.form} noValidate onSubmit={submit} aria-busy={isSubmitting}>
+    <form
+      className={styles.form}
+      data-pip-avoid
+      noValidate
+      onSubmit={submit}
+      aria-busy={isSubmitting}
+    >
       <label className={styles.fieldLabel} htmlFor={emailId}>
         {reserveCopy.emailLabel}
       </label>

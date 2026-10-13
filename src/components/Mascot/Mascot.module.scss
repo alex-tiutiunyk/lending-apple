@@ -1,0 +1,434 @@
+@use 'tokens';
+@use 'mixins';
+
+.pip {
+  position: fixed;
+  bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
+  left: 0;
+  z-index: tokens.z(mascot);
+  width: var(--pip-width);
+  pointer-events: none;
+  translate: var(--pip-x, var(--space-4)) 0;
+  transition:
+    transform var(--dur-hover) var(--ease-out),
+    opacity var(--dur-hover) var(--ease-out);
+
+  &[data-hiding] {
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  :global(body:has([data-sticky-cta][data-visible])) & {
+    transform: translateY(calc(var(--sticky-cta-clearance) * -1));
+  }
+
+  @media (width < 360px) {
+    :global(body:has([data-sticky-cta][data-visible])) & {
+      display: none;
+    }
+  }
+}
+
+.poke {
+  display: block;
+  width: 100%;
+  padding: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-m);
+
+  @include mixins.focus-ring;
+
+  .pip[data-hiding] & {
+    pointer-events: none;
+  }
+}
+
+.art {
+  overflow: visible;
+
+  .pip[data-facing='left'] & {
+    scale: -1 1;
+  }
+}
+
+.body,
+.leg {
+  transform-box: fill-box;
+}
+
+.body {
+  transform-origin: 50% 100%;
+}
+
+.leg {
+  transform-origin: 50% 0;
+}
+
+.shell {
+  fill: var(--finish-shell);
+  stroke: var(--finish-shell-light);
+  stroke-width: 0.8;
+}
+
+.screen {
+  fill: var(--finish-screen-b);
+}
+
+.cutout {
+  fill: var(--color-bg);
+}
+
+.eye {
+  fill: var(--color-text);
+}
+
+.eyeOnScreen {
+  fill: var(--color-bg);
+}
+
+.eyeLine {
+  fill: none;
+  stroke: var(--color-text);
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.mouth {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: pip-talk 260ms var(--ease-in-out) infinite alternate;
+}
+
+.limb {
+  fill: none;
+  stroke: var(--finish-shell-light);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.foot {
+  fill: var(--finish-shell-light);
+}
+
+.back,
+.battery {
+  opacity: 0;
+}
+
+.plateau {
+  fill: var(--finish-shell-light);
+  fill-opacity: 0.5;
+}
+
+.lens {
+  fill: var(--color-bg);
+  stroke: var(--finish-shell-light);
+  stroke-width: 0.8;
+}
+
+.flash {
+  fill: var(--color-text);
+}
+
+.batteryCase {
+  fill: none;
+  stroke: var(--color-text);
+  stroke-width: 0.9;
+}
+
+.batteryLevel {
+  fill: var(--color-danger);
+}
+
+.bubble {
+  position: absolute;
+  bottom: calc(100% + var(--space-2));
+  left: 0;
+  width: max-content;
+  max-width: min(16rem, 70vw);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--step-down-1);
+  line-height: 1.35;
+  color: var(--color-bg);
+  background: var(--color-text);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-lift);
+  animation: pip-bubble 260ms var(--ease-out) both;
+
+  &[data-side='left'] {
+    right: 0;
+    left: auto;
+  }
+}
+
+.sleep {
+  position: absolute;
+  bottom: 100%;
+  left: 70%;
+  display: flex;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.sleepLetter {
+  animation: pip-snore 1.8s var(--ease-out) infinite;
+
+  &:nth-child(2) {
+    animation-delay: 300ms;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 600ms;
+  }
+}
+
+.announcer {
+  @include mixins.visually-hidden;
+}
+
+.pip[data-act='selfie'] {
+  .art {
+    animation: pip-turn 2.6s var(--ease-in-out) both;
+  }
+
+  .front {
+    animation: pip-hide-front 2.6s steps(1) both;
+  }
+
+  .back {
+    animation: pip-show-back 2.6s steps(1) both;
+  }
+
+  .flash {
+    animation: pip-flash 2.6s linear both;
+  }
+}
+
+.pip[data-act='nap'] {
+  .body {
+    rotate: 8deg;
+  }
+
+  .battery {
+    opacity: 1;
+  }
+}
+
+.pip[data-act='dance'] .body {
+  animation: pip-dance 400ms var(--ease-in-out) infinite alternate;
+}
+
+.pip[data-act='trip'] .body {
+  animation: pip-trip 2.2s var(--ease-out) both;
+}
+
+.pip[data-act='mirror'] .art {
+  animation: pip-mirror 3s var(--ease-in-out) both;
+}
+
+.pip[data-act='blown'] .body {
+  animation: pip-blown 1.4s var(--ease-out) both;
+}
+
+.pip[data-act='poked'] .art {
+  animation: pip-jump 700ms var(--ease-out) both;
+}
+
+.pip[data-act='walk']:not([data-held]) {
+  .legLeft {
+    animation: pip-step var(--dur-step) var(--ease-in-out) infinite alternate;
+  }
+
+  .legRight {
+    animation: pip-step var(--dur-step) var(--ease-in-out) infinite alternate-reverse;
+  }
+
+  .body {
+    animation: pip-bob var(--dur-step) var(--ease-in-out) infinite alternate;
+  }
+}
+
+@keyframes pip-step {
+  from {
+    rotate: -18deg;
+  }
+
+  to {
+    rotate: 18deg;
+  }
+}
+
+@keyframes pip-bob {
+  to {
+    translate: 0 -1px;
+  }
+}
+
+@keyframes pip-talk {
+  to {
+    scale: 1 0.45;
+  }
+}
+
+@keyframes pip-turn {
+  0%,
+  100% {
+    scale: 1 1;
+  }
+
+  12%,
+  88% {
+    scale: 0.1 1;
+  }
+
+  20%,
+  80% {
+    scale: 1 1;
+  }
+}
+
+@keyframes pip-hide-front {
+  0%,
+  88% {
+    opacity: 1;
+  }
+
+  12% {
+    opacity: 0;
+  }
+}
+
+@keyframes pip-show-back {
+  0%,
+  88% {
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+}
+
+@keyframes pip-flash {
+  0%,
+  44%,
+  58%,
+  100% {
+    opacity: 0.4;
+  }
+
+  48% {
+    opacity: 1;
+    scale: 2.6;
+  }
+}
+
+@keyframes pip-dance {
+  from {
+    rotate: -9deg;
+    translate: 0 0;
+  }
+
+  to {
+    rotate: 9deg;
+    translate: 0 -3px;
+  }
+}
+
+@keyframes pip-trip {
+  0% {
+    rotate: 0deg;
+  }
+
+  18% {
+    rotate: 78deg;
+  }
+
+  60% {
+    rotate: 78deg;
+  }
+
+  80% {
+    rotate: -6deg;
+  }
+
+  100% {
+    rotate: 0deg;
+  }
+}
+
+@keyframes pip-mirror {
+  0%,
+  100% {
+    scale: 1 1;
+  }
+
+  25%,
+  65% {
+    scale: -1 1;
+  }
+
+  45% {
+    scale: 1 1;
+  }
+}
+
+@keyframes pip-blown {
+  0% {
+    rotate: 0deg;
+  }
+
+  20%,
+  70% {
+    rotate: -16deg;
+    translate: 3px 0;
+  }
+
+  100% {
+    rotate: 0deg;
+  }
+}
+
+@keyframes pip-jump {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  35% {
+    translate: 0 -1.4rem;
+  }
+
+  60% {
+    translate: 0 0;
+    scale: 1.08 0.9;
+  }
+}
+
+@keyframes pip-bubble {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem) scale(0.9);
+  }
+}
+
+@keyframes pip-snore {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0.4rem);
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(0.4rem, -0.8rem);
+  }
+}
