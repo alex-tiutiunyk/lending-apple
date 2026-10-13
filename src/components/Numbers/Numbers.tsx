@@ -1,6 +1,7 @@
 import { useId, useRef } from 'react'
 import { numbersCopy } from '@/content/copy'
 import { statFootnotes, stats } from '@/content/specs'
+import { PressableLink } from '@/components/PressableLink/PressableLink'
 import { useInView } from '@/hooks/useInView'
 import { SlotNumber } from './SlotNumber'
 import styles from './Numbers.module.scss'
@@ -52,9 +53,7 @@ export function Numbers() {
       </ol>
       <p className={styles.cta}>
         <span>{numbersCopy.ctaText}</span>
-        <a className={styles.ctaLink} href="#reserve">
-          {numbersCopy.cta}
-        </a>
+        <PressableLink href="#reserve" label={numbersCopy.cta} />
       </p>
     </section>
   )

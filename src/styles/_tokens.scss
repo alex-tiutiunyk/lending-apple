@@ -27,6 +27,7 @@ $z-layers: (
   --color-danger: hsl(4deg 88% 72%);
   --color-accent: hsl(var(--accent-h) var(--accent-s) var(--accent-l));
   --color-accent-glow: hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 35%);
+  --color-accent-bright: hsl(var(--accent-h) var(--accent-s) calc(var(--accent-l) + 14%));
   --color-accent-wash: hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 14%);
   --color-on-accent: hsl(var(--accent-h) 40% 7%);
   --color-stroke: hsl(var(--ink-h) 30% 92%);
@@ -87,6 +88,10 @@ $z-layers: (
   --dur-reveal: 640ms;
   --dur-sheen: 900ms;
   --dur-glow: 1100ms;
+  --dur-fill: 420ms;
+  --dur-roll: 360ms;
+  --dur-pulse: 2.6s;
+  --dur-pulse-hover: 1.1s;
 
   --shadow-lift: 0 1px 0 hsl(0deg 0% 100% / 8%) inset, 0 18px 40px -24px hsl(0deg 0% 0% / 80%);
   --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);

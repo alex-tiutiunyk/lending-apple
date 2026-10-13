@@ -4,16 +4,26 @@ export type ScrollFrame = {
   documentHeight: number
 }
 
+export type PointerFrame = {
+  x: number
+  y: number
+  target: Element | null
+}
+
 type ScrollListener = (frame: ScrollFrame) => void
+type PointerListener = (pointer: PointerFrame) => void
 type LayoutListener = () => void
 type TickListener = (time: number) => void
 
 const scrollListeners = new Set<ScrollListener>()
 const layoutListeners = new Set<LayoutListener>()
 const tickListeners = new Set<TickListener>()
+const pointerListeners = new Set<PointerListener>()
 const frame: ScrollFrame = { scrollY: 0, viewportHeight: 0, documentHeight: 0 }
+const pointer: PointerFrame = { x: 0, y: 0, target: null }
 let pendingFrame = 0
 let isScrollDirty = false
+let isPointerDirty = false
 let bodyObserver: ResizeObserver | null = null
 
 function runFrame(time: number) {
@@ -22,6 +32,10 @@ function runFrame(time: number) {
     isScrollDirty = false
     frame.scrollY = window.scrollY
     scrollListeners.forEach((listener) => listener(frame))
+  }
+  if (isPointerDirty) {
+    isPointerDirty = false
+    pointerListeners.forEach((listener) => listener(pointer))
   }
   tickListeners.forEach((listener) => listener(time))
   if (tickListeners.size > 0) scheduleFrame()
@@ -59,8 +73,24 @@ function stopScrollTracking() {
   bodyObserver = null
 }
 
+function markPointerMoved(event: PointerEvent) {
+  if (event.pointerType === 'touch') return
+  pointer.x = event.clientX
+  pointer.y = event.clientY
+  pointer.target = event.target instanceof Element ? event.target : null
+  isPointerDirty = true
+  scheduleFrame()
+}
+
+function markPointerLeft(event: PointerEvent) {
+  if (event.relatedTarget) return
+  pointer.target = null
+  isPointerDirty = true
+  scheduleFrame()
+}
+
 function cancelIdleFrame() {
-  if (scrollListeners.size === 0 && tickListeners.size === 0) {
+  if (scrollListeners.size === 0 && tickListeners.size === 0 && pointerListeners.size === 0) {
     cancelAnimationFrame(pendingFrame)
     pendingFrame = 0
   }
@@ -89,6 +119,23 @@ export function subscribeTick(onTick: TickListener) {
   scheduleFrame()
   return () => {
     tickListeners.delete(onTick)
+    cancelIdleFrame()
+  }
+}
+
+export function subscribePointerFrame(onPointer: PointerListener) {
+  if (pointerListeners.size === 0) {
+    document.addEventListener('pointermove', markPointerMoved, { passive: true })
+    document.addEventListener('pointerout', markPointerLeft, { passive: true })
+  }
+  pointerListeners.add(onPointer)
+
+  return () => {
+    pointerListeners.delete(onPointer)
+    if (pointerListeners.size === 0) {
+      document.removeEventListener('pointermove', markPointerMoved)
+      document.removeEventListener('pointerout', markPointerLeft)
+    }
     cancelIdleFrame()
   }
 }

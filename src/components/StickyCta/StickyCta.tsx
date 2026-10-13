@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { PressableLink } from '@/components/PressableLink/PressableLink'
 import { stickyCtaCopy } from '@/content/copy'
 import { documentTop, subscribeScrollFrame, type ScrollFrame } from '@/hooks/frameLoop'
 import styles from './StickyCta.module.scss'
@@ -47,9 +48,7 @@ export function StickyCta() {
       inert={!isVisible}
     >
       <p className={styles.text}>{stickyCtaCopy.text}</p>
-      <a className={styles.cta} href="#reserve">
-        {stickyCtaCopy.cta}
-      </a>
+      <PressableLink href="#reserve" label={stickyCtaCopy.cta} />
     </aside>
   )
 }

@@ -1,0 +1,170 @@
+@use 'mixins';
+
+$max-letters: 24;
+
+.button {
+  position: relative;
+  display: inline-flex;
+  min-height: var(--tap-min);
+  font-size: var(--step-0);
+  font-weight: 620;
+  line-height: 1.2;
+  color: var(--color-on-accent);
+  text-decoration: none;
+  border-radius: var(--radius-pill);
+  isolation: isolate;
+
+  @include mixins.focus-ring;
+}
+
+.body {
+  position: relative;
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--button-inline, var(--space-5));
+  border-radius: inherit;
+  translate: var(--pull-x, 0) var(--pull-y, 0);
+  transition:
+    transform var(--dur-press) var(--ease-press),
+    translate var(--dur-hover) var(--ease-out);
+
+  .button:active & {
+    transform: translateY(2px) scale(0.98);
+  }
+}
+
+.compact {
+  min-height: 2.5rem;
+  font-size: var(--step-down-1);
+
+  --button-inline: var(--space-4);
+}
+
+.surface {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--color-accent);
+  border-radius: inherit;
+  box-shadow: 0 10px 30px -12px var(--color-accent-glow);
+}
+
+.fill {
+  position: absolute;
+  top: var(--fill-y, 50%);
+  left: var(--fill-x, 50%);
+  width: 260%;
+  aspect-ratio: 1;
+  background: var(--color-accent-bright);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform var(--dur-fill) var(--ease-out);
+
+  .button:focus-visible & {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  @media (hover: hover) {
+    .button:hover & {
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+}
+
+.sheen {
+  position: absolute;
+  inset: -20% auto -20% 0;
+  width: 45%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    hsl(0deg 0% 100% / 0%) 20%,
+    hsl(0deg 0% 100% / 42%) 50%,
+    hsl(0deg 0% 100% / 0%) 80%,
+    transparent 100%
+  );
+  transform: translateX(-120%) skewX(-12deg);
+
+  @include mixins.motion-safe {
+    .button[data-sheen='run'] & {
+      animation: sheen-sweep var(--dur-sheen) var(--ease-in-out) 1 both;
+    }
+  }
+}
+
+.ring,
+.hoverRing {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 2px solid var(--color-accent);
+  border-radius: inherit;
+  opacity: 0;
+}
+
+.ring {
+  @include mixins.when-awake {
+    animation: ring-pulse var(--dur-pulse) var(--ease-out) 3;
+  }
+}
+
+.hoverRing {
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .button:hover & {
+      animation: ring-pulse var(--dur-pulse-hover) var(--ease-out) 1;
+    }
+  }
+}
+
+.name {
+  @include mixins.visually-hidden;
+}
+
+.letters {
+  display: inline-flex;
+}
+
+.letter {
+  display: inline-block;
+  height: 1.2em;
+  overflow: hidden;
+}
+
+.strip {
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--dur-roll) var(--ease-out);
+
+  @media (hover: hover) {
+    .button:hover & {
+      transform: translateY(-50%);
+    }
+  }
+}
+
+@for $i from 1 through $max-letters {
+  .letter:nth-child(#{$i}) .strip {
+    transition-delay: #{($i - 1) * 22}ms;
+  }
+}
+
+@include mixins.motion-reduce {
+  .body,
+  .button:active .body {
+    translate: none;
+    transform: none;
+  }
+
+  .fill {
+    transition: none;
+  }
+
+  .strip,
+  .button:hover .strip {
+    transform: none;
+    transition: none;
+  }
+}

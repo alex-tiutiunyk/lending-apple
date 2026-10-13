@@ -72,14 +72,6 @@
   }
 }
 
-.reserve {
-  @include mixins.button-primary;
-
-  min-height: 2.5rem;
-  padding-inline: var(--space-4);
-  font-size: var(--step-down-1);
-}
-
 .motion {
   margin-left: auto;
 

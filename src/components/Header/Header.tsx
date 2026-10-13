@@ -1,6 +1,7 @@
 import { BrandMark } from '@/assets/svg/brand-mark'
 import { headerCopy, navigation, product } from '@/content/copy'
 import { MotionToggle } from '@/components/MotionToggle/MotionToggle'
+import { PressableLink } from '@/components/PressableLink/PressableLink'
 import styles from './Header.module.scss'
 
 export function Header() {
@@ -23,9 +24,7 @@ export function Header() {
           </ul>
         </nav>
         <MotionToggle isCompact className={styles.motion} />
-        <a className={styles.reserve} href="#reserve">
-          {headerCopy.reserve}
-        </a>
+        <PressableLink href="#reserve" label={headerCopy.reserve} size="compact" />
       </div>
     </header>
   )

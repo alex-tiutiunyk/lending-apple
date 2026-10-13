@@ -96,6 +96,14 @@ test('keyboard reaches the form from the skip link', async ({ page, browserName 
   await expect(page.locator('main')).toBeFocused()
 })
 
+test('pressable links keep their plain label as the accessible name', async ({ page }) => {
+  const hero = page.locator('#hero')
+  await expect(hero.getByRole('link', { name: 'Reserve yours', exact: true })).toHaveCount(1)
+  await expect(
+    page.locator('header').getByRole('link', { name: 'Reserve', exact: true }),
+  ).toHaveCount(1)
+})
+
 test('pause motion toggle is pressed state and survives a reload', async ({ page }) => {
   const toggle = page.locator('footer').getByRole('button', { name: 'Pause motion' })
   await toggle.click()

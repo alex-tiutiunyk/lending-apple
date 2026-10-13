@@ -48,11 +48,6 @@
   margin-top: var(--space-2);
 }
 
-.primary {
-  @include mixins.button-primary;
-  @include mixins.sheen-host;
-}
-
 .secondary {
   @include mixins.button-quiet;
 }

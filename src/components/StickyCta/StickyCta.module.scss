@@ -52,10 +52,3 @@
   font-size: var(--step-down-1);
   font-weight: 560;
 }
-
-.cta {
-  @include mixins.button-primary;
-
-  min-height: var(--tap-min);
-  padding-inline: var(--space-5);
-}

@@ -1,13 +1,11 @@
-import { useId, useRef } from 'react'
+import { useId } from 'react'
 import { PhoneOutline } from '@/assets/svg/phone-outline'
+import { PressableLink } from '@/components/PressableLink/PressableLink'
 import { heroCopy } from '@/content/copy'
-import { useInView } from '@/hooks/useInView'
 import styles from './Hero.module.scss'
 
 export function Hero() {
   const titleId = useId()
-  const primaryCtaRef = useRef<HTMLAnchorElement>(null)
-  const isCtaSeen = useInView(primaryCtaRef, { once: true, threshold: 1 })
 
   return (
     <section id="hero" className={styles.hero} aria-labelledby={titleId}>
@@ -18,14 +16,7 @@ export function Hero() {
         </h1>
         <p className={styles.lede}>{heroCopy.lede}</p>
         <div className={styles.actions}>
-          <a
-            ref={primaryCtaRef}
-            className={styles.primary}
-            href="#reserve"
-            data-sheen={isCtaSeen ? 'run' : undefined}
-          >
-            {heroCopy.primaryCta}
-          </a>
+          <PressableLink href="#reserve" label={heroCopy.primaryCta} hasSheen />
           <a className={styles.secondary} href="#design">
             {heroCopy.secondaryCta}
           </a>

@@ -10,9 +10,12 @@ import { Numbers } from '@/components/Numbers/Numbers'
 import { Reserve } from '@/components/Reserve/Reserve'
 import { StickyCta } from '@/components/StickyCta/StickyCta'
 import { headerCopy } from '@/content/copy'
+import { usePointerHover } from '@/hooks/usePointerHover'
 import styles from './App.module.scss'
 
 export function App() {
+  usePointerHover()
+
   return (
     <>
       <a className={styles.skipLink} href="#main">
