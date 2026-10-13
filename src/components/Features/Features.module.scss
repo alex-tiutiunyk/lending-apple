@@ -32,6 +32,7 @@
 
 .card {
   @include mixins.reveal(1.25rem);
+  @include mixins.living-surface;
 
   display: grid;
   gap: var(--space-4);

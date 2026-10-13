@@ -2,6 +2,8 @@ import { useId, useRef } from 'react'
 import { numbersCopy } from '@/content/copy'
 import { statFootnotes, stats } from '@/content/specs'
 import { PressableLink } from '@/components/PressableLink/PressableLink'
+import { SurfaceLens } from '@/components/LivingSurface/SurfaceRipple'
+import { useAwakeWhileInView } from '@/hooks/useAmbientMotion'
 import { useInView } from '@/hooks/useInView'
 import { SlotNumber } from './SlotNumber'
 import styles from './Numbers.module.scss'
@@ -14,6 +16,8 @@ export function Numbers() {
   const footnoteId = (footnote: number) => `${footnotePrefix}-note-${footnote}`
   const listRef = useRef<HTMLDListElement>(null)
   const isListInView = useInView(listRef, { once: true, rootMargin: '0px 0px -20% 0px' })
+  const ctaRef = useRef<HTMLParagraphElement>(null)
+  useAwakeWhileInView(ctaRef)
 
   return (
     <section id="numbers" className={styles.section} aria-labelledby={titleId}>
@@ -51,7 +55,8 @@ export function Numbers() {
           </li>
         ))}
       </ol>
-      <p className={styles.cta}>
+      <p ref={ctaRef} className={styles.cta} data-surface>
+        <SurfaceLens />
         <span>{numbersCopy.ctaText}</span>
         <PressableLink href="#reserve" label={numbersCopy.cta} />
       </p>

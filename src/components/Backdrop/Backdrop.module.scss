@@ -94,6 +94,21 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
   opacity: var(--doc-p);
 }
 
+.waves {
+  position: absolute;
+  inset: 0 calc(var(--wave-tile-width) * -1) 0 0;
+  background: var(--color-accent);
+  opacity: 0.05;
+
+  @include mixins.wave-mask;
+
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-motion-paused]) .backdrop[data-awake] & {
+      animation: wave-drift calc(var(--dur-wave) * 1.6) linear infinite;
+    }
+  }
+}
+
 .grain {
   position: absolute;
   inset: 0;

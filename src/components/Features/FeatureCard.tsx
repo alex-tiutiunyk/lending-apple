@@ -1,6 +1,8 @@
 import { useId, useRef, type ReactNode } from 'react'
 import type { ParticleShape } from '@/components/Backdrop/particleShapes'
+import { SurfaceLens } from '@/components/LivingSurface/SurfaceRipple'
 import type { featuresCopy } from '@/content/copy'
+import { useAwakeWhileInView } from '@/hooks/useAmbientMotion'
 import { useReveal } from '@/hooks/useReveal'
 import styles from './Features.module.scss'
 
@@ -17,6 +19,7 @@ export function FeatureCard({ area, title, particles, children }: FeatureCardPro
   const cardRef = useRef<HTMLElement>(null)
   const titleId = useId()
   useReveal(cardRef)
+  useAwakeWhileInView(cardRef)
 
   return (
     <article
@@ -24,7 +27,9 @@ export function FeatureCard({ area, title, particles, children }: FeatureCardPro
       className={`${styles.card} ${styles[area]}`}
       aria-labelledby={titleId}
       data-particles={particles}
+      data-surface
     >
+      <SurfaceLens />
       <h3 id={titleId} className={styles.cardTitle}>
         {title}
       </h3>

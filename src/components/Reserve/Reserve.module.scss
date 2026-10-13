@@ -8,6 +8,8 @@
 }
 
 .panel {
+  @include mixins.living-surface;
+
   display: grid;
   gap: var(--space-6);
   align-items: center;

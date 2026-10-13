@@ -5,6 +5,7 @@ import { Finishes } from '@/components/Finishes/Finishes'
 import { Footer } from '@/components/Footer/Footer'
 import { Header } from '@/components/Header/Header'
 import { Hero } from '@/components/Hero/Hero'
+import { SurfaceRipple } from '@/components/LivingSurface/SurfaceRipple'
 import { LineDraw } from '@/components/LineDraw/LineDraw'
 import { Numbers } from '@/components/Numbers/Numbers'
 import { Reserve } from '@/components/Reserve/Reserve'
@@ -34,6 +35,7 @@ export function App() {
       </main>
       <Footer />
       <StickyCta />
+      <SurfaceRipple />
     </>
   )
 }

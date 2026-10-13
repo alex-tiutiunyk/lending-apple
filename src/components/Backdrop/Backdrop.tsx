@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useSyncExternalStore } from 'react'
 import { subscribeScrollFrame, type ScrollFrame } from '@/hooks/frameLoop'
 import { prefersSavedData } from '@/hooks/saveData'
+import { useAwakeWhileInView } from '@/hooks/useAmbientMotion'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import styles from './Backdrop.module.scss'
 
@@ -13,6 +14,7 @@ function subscribeToNothing() {
 export function Backdrop() {
   const backdropRef = useRef<HTMLDivElement>(null)
   const isReducedMotion = useReducedMotion()
+  useAwakeWhileInView(backdropRef)
   const isSavingData = useSyncExternalStore(subscribeToNothing, prefersSavedData, () => true)
 
   useEffect(() => {
@@ -36,6 +38,7 @@ export function Backdrop() {
       <div className={`${styles.blob} ${styles.blobLow}`} />
       <div className={`${styles.tint} ${styles.tintCool}`} />
       <div className={`${styles.tint} ${styles.tintWarm}`} />
+      <div className={styles.waves} />
       <div className={styles.grain} />
       {!isReducedMotion && !isSavingData && (
         <Suspense fallback={null}>

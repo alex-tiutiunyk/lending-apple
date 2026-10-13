@@ -72,6 +72,8 @@
 }
 
 .cta {
+  @include mixins.living-surface;
+
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3) var(--space-5);

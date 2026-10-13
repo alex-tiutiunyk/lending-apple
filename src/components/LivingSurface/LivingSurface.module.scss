@@ -1,0 +1,44 @@
+@use 'mixins';
+
+.defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.lens {
+  position: absolute;
+  top: calc(var(--lens-size) / -2);
+  left: calc(var(--lens-size) / -2);
+  z-index: -1;
+  display: none;
+  width: var(--lens-size);
+  height: var(--lens-size);
+  pointer-events: none;
+  background: radial-gradient(closest-side, var(--color-accent-glow), transparent 75%);
+  opacity: 0;
+  filter: url('#surface-ripple');
+  mask-image: radial-gradient(closest-side, black 55%, transparent);
+  translate: var(--mx, 0) var(--my, 0);
+  transition: opacity var(--dur-hover) var(--ease-out);
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    display: block;
+
+    [data-surface]:hover > & {
+      opacity: 1;
+    }
+  }
+}
+
+.lensWaves {
+  position: absolute;
+  inset: 0;
+  background: var(--color-accent);
+  opacity: 0.55;
+  mask-position: calc(var(--lens-size) / 2 - var(--mx, var(--lens-size) / 2))
+    calc(var(--lens-size) / 2 - var(--my, var(--lens-size) / 2));
+
+  @include mixins.wave-mask;
+}

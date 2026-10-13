@@ -22,6 +22,12 @@ function pullMagnetic(element: HTMLElement, { x, y }: PointerFrame) {
   element.style.setProperty('--pull-y', `${pullY.toFixed(2)}px`)
 }
 
+function trackSurface(element: HTMLElement, { x, y }: PointerFrame) {
+  const rect = element.getBoundingClientRect()
+  element.style.setProperty('--mx', `${(x - rect.left).toFixed(1)}px`)
+  element.style.setProperty('--my', `${(y - rect.top).toFixed(1)}px`)
+}
+
 function releaseMagnetic(element: HTMLElement) {
   element.style.removeProperty('--pull-x')
   element.style.removeProperty('--pull-y')
@@ -41,6 +47,9 @@ export function usePointerHover() {
         if (magnetic) enterMagnetic(magnetic, pointer)
       }
       if (magnetic) pullMagnetic(magnetic, pointer)
+
+      const surface = pointer.target?.closest<HTMLElement>('[data-surface]')
+      if (surface) trackSurface(surface, pointer)
     }
 
     const unsubscribe = subscribePointerFrame(onPointer)

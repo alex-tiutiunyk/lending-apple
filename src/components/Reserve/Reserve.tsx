@@ -1,7 +1,9 @@
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { PhoneRender } from '@/assets/svg/phone-render'
+import { SurfaceLens } from '@/components/LivingSurface/SurfaceRipple'
 import { reserveCopy } from '@/content/copy'
 import { launch } from '@/content/specs'
+import { useAwakeWhileInView } from '@/hooks/useAmbientMotion'
 import { Countdown } from './Countdown'
 import { ReserveForm } from './ReserveForm'
 import styles from './Reserve.module.scss'
@@ -9,10 +11,13 @@ import styles from './Reserve.module.scss'
 export function Reserve() {
   const titleId = useId()
   const [isReserved, setIsReserved] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
+  useAwakeWhileInView(panelRef)
 
   return (
     <section id="reserve" className={styles.section} aria-labelledby={titleId}>
-      <div className={styles.panel}>
+      <div ref={panelRef} className={styles.panel} data-surface>
+        <SurfaceLens />
         <div className={styles.copy}>
           <h2 id={titleId} className={styles.title}>
             {reserveCopy.title}
