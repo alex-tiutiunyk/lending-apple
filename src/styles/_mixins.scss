@@ -188,6 +188,7 @@ $wave-tile: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width=
 
   @media (prefers-reduced-motion: no-preference) {
     :root:not([data-motion-paused]) &[data-awake]::before {
+      will-change: transform;
       animation: wave-drift var(--dur-wave) linear infinite;
     }
   }

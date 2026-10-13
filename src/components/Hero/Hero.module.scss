@@ -75,14 +75,15 @@
   @include bp.up(md) {
     height: min(70svh, 36rem);
   }
+
+  @include mixins.when-awake {
+    will-change: transform;
+    animation: phone-float var(--dur-float) var(--ease-in-out) var(--dur-draw-total) infinite;
+  }
 }
 
 .outline {
   height: 100%;
-
-  @include mixins.when-awake {
-    animation: phone-float var(--dur-float) var(--ease-in-out) var(--dur-draw-total) infinite;
-  }
 
   @include mixins.motion-safe {
     path {

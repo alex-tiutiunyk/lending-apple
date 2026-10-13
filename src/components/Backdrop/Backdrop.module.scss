@@ -104,6 +104,7 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
 
   @media (prefers-reduced-motion: no-preference) {
     :root:not([data-motion-paused]) .backdrop[data-awake] & {
+      will-change: transform;
       animation: wave-drift calc(var(--dur-wave) * 1.6) linear infinite;
     }
   }
