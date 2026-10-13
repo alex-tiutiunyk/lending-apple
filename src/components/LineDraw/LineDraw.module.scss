@@ -1,0 +1,97 @@
+@use 'mixins';
+@use 'breakpoints' as bp;
+
+.section {
+  position: relative;
+  height: 180svh;
+
+  @include bp.up(md) {
+    height: 250svh;
+  }
+
+  @include mixins.motion-reduce {
+    height: auto;
+  }
+}
+
+.stage {
+  @include mixins.container;
+
+  --progress: var(--p, 0);
+  --draw-body: clamp(0, var(--progress) / 0.4, 1);
+  --draw-screen: clamp(0, (var(--progress) - 0.3) / 0.3, 1);
+  --draw-island: clamp(0, (var(--progress) - 0.5) / 0.2, 1);
+  --draw-camera: clamp(0, (var(--progress) - 0.6) / 0.25, 1);
+  --draw-buttons: clamp(0, (var(--progress) - 0.8) / 0.2, 1);
+  --reveal: clamp(0, (var(--progress) - 0.9) / 0.1, 1);
+
+  position: sticky;
+  top: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--space-5);
+  height: 100svh;
+  padding-top: calc(var(--header-height) + var(--space-6));
+  padding-bottom: var(--space-6);
+
+  @include bp.up(md) {
+    grid-template-rows: none;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: var(--space-7);
+    align-items: center;
+  }
+
+  @include mixins.motion-reduce {
+    --progress: 1;
+
+    position: static;
+    height: auto;
+    min-height: 0;
+    padding-block: var(--space-8);
+  }
+}
+
+.copy {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 28rem;
+}
+
+.title {
+  font-size: var(--step-4);
+}
+
+.body {
+  color: var(--color-text-muted);
+}
+
+.visual {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+
+  @include mixins.motion-reduce {
+    height: min(60svh, 30rem);
+  }
+}
+
+.outline,
+.render {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+}
+
+.outline {
+  opacity: calc(1 - var(--reveal) * 0.9);
+}
+
+.render {
+  clip-path: circle(calc(var(--reveal) * 72%) at 50% 55%);
+
+  .section[data-near] & {
+    will-change: clip-path;
+  }
+}
