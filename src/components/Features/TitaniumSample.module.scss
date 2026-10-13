@@ -1,0 +1,27 @@
+.sample {
+  width: 100%;
+  height: auto;
+}
+
+.metalLight {
+  stop-color: var(--finish-shell-light);
+}
+
+.metalMid {
+  stop-color: var(--finish-shell);
+}
+
+.metalDark {
+  stop-color: var(--finish-shell-dark);
+}
+
+.brush {
+  stroke: var(--color-text);
+  stroke-width: 0.6;
+}
+
+.edge {
+  fill: none;
+  stroke: var(--color-line-strong);
+  stroke-width: 1;
+}
