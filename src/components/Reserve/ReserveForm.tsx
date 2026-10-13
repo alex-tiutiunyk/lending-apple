@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { reserveCopy } from '@/content/copy'
 import styles from './Reserve.module.scss'
 
@@ -25,6 +25,10 @@ export function ReserveForm({ onReserved }: ReserveFormProps) {
   const [error, setError] = useState<string | null>(null)
   const emailRef = useRef<HTMLInputElement>(null)
   const successRef = useRef<HTMLDivElement>(null)
+  const fieldId = useId()
+  const emailId = `${fieldId}-email`
+  const errorId = `${fieldId}-error`
+  const noteId = `${fieldId}-note`
 
   useEffect(() => {
     if (status === 'reserved') successRef.current?.focus()
@@ -61,13 +65,13 @@ export function ReserveForm({ onReserved }: ReserveFormProps) {
 
   return (
     <form className={styles.form} noValidate onSubmit={submit} aria-busy={isSubmitting}>
-      <label className={styles.fieldLabel} htmlFor="reserve-email">
+      <label className={styles.fieldLabel} htmlFor={emailId}>
         {reserveCopy.emailLabel}
       </label>
       <div className={styles.fieldRow}>
         <input
           ref={emailRef}
-          id="reserve-email"
+          id={emailId}
           className={styles.input}
           type="email"
           name="email"
@@ -76,7 +80,7 @@ export function ReserveForm({ onReserved }: ReserveFormProps) {
           required
           readOnly={isSubmitting}
           aria-invalid={error ? true : undefined}
-          aria-describedby={error ? 'reserve-error reserve-note' : 'reserve-note'}
+          aria-describedby={error ? `${errorId} ${noteId}` : noteId}
           onInput={() => setError(null)}
         />
         <button className={styles.submit} type="submit" disabled={isSubmitting}>
@@ -84,11 +88,11 @@ export function ReserveForm({ onReserved }: ReserveFormProps) {
         </button>
       </div>
       {error && (
-        <p id="reserve-error" className={styles.error}>
+        <p id={errorId} className={styles.error}>
           {error}
         </p>
       )}
-      <p id="reserve-note" className={styles.note}>
+      <p id={noteId} className={styles.note}>
         {reserveCopy.privacyNote}
       </p>
     </form>

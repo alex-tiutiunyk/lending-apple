@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { PhoneRender } from '@/assets/svg/phone-render'
 import { reserveCopy } from '@/content/copy'
 import { launch } from '@/content/specs'
@@ -7,13 +7,14 @@ import { ReserveForm } from './ReserveForm'
 import styles from './Reserve.module.scss'
 
 export function Reserve() {
+  const titleId = useId()
   const [isReserved, setIsReserved] = useState(false)
 
   return (
-    <section id="reserve" className={styles.section} aria-labelledby="reserve-title">
+    <section id="reserve" className={styles.section} aria-labelledby={titleId}>
       <div className={styles.panel}>
         <div className={styles.copy}>
-          <h2 id="reserve-title" className={styles.title}>
+          <h2 id={titleId} className={styles.title}>
             {reserveCopy.title}
           </h2>
           <p className={styles.body}>

@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { reserveCopy } from '@/content/copy'
 import { launch } from '@/content/specs'
 import { useMinuteClock } from '@/hooks/useMinuteClock'
@@ -9,6 +10,7 @@ const unitOrder = ['days', 'hours', 'minutes'] as const
 
 export function Countdown() {
   const now = useMinuteClock()
+  const labelId = useId()
   const remaining = now === null ? null : timeUntil(opensAtMs, now)
 
   if (remaining?.hasArrived) {
@@ -16,8 +18,8 @@ export function Countdown() {
   }
 
   return (
-    <div className={styles.countdown} role="group" aria-labelledby="countdown-label">
-      <p id="countdown-label" className={styles.countdownLabel}>
+    <div className={styles.countdown} role="group" aria-labelledby={labelId}>
+      <p id={labelId} className={styles.countdownLabel}>
         {reserveCopy.countdownLabel}
       </p>
       <dl className={styles.countdownUnits} aria-live="off">

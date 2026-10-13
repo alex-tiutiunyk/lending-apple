@@ -1,4 +1,4 @@
-import { useRef, type ComponentType } from 'react'
+import { useId, useRef, type ComponentType } from 'react'
 import { BackGlassLayer } from '@/assets/svg/layers/back-glass-layer'
 import { BatteryLayer } from '@/assets/svg/layers/battery-layer'
 import { CameraLayer } from '@/assets/svg/layers/camera-layer'
@@ -34,6 +34,7 @@ const choreography = layers.map((layer, order) => {
 })
 
 export function ExplodedView() {
+  const titleId = useId()
   const sectionRef = useRef<HTMLElement>(null)
   useScrollProgress(sectionRef)
 
@@ -42,12 +43,12 @@ export function ExplodedView() {
       ref={sectionRef}
       id="inside"
       className={styles.section}
-      aria-labelledby="inside-title"
+      aria-labelledby={titleId}
       data-pinned
     >
       <div className={styles.stage} data-stage>
         <div className={styles.copy}>
-          <h2 id="inside-title" className={styles.title}>
+          <h2 id={titleId} className={styles.title}>
             {explodedCopy.title}
           </h2>
           <p className={styles.intro}>{explodedCopy.intro}</p>

@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useId, useRef } from 'react'
 import { numbersCopy } from '@/content/copy'
 import { statFootnotes, stats } from '@/content/specs'
 import { useInView } from '@/hooks/useInView'
@@ -7,17 +7,16 @@ import styles from './Numbers.module.scss'
 
 const reelDelaysMs = [0, 80, 140, 220, 360] as const
 
-function footnoteId(footnote: number) {
-  return `numbers-footnote-${footnote}`
-}
-
 export function Numbers() {
+  const titleId = useId()
+  const footnotePrefix = useId()
+  const footnoteId = (footnote: number) => `${footnotePrefix}-note-${footnote}`
   const listRef = useRef<HTMLDListElement>(null)
   const isListInView = useInView(listRef, { once: true, rootMargin: '0px 0px -20% 0px' })
 
   return (
-    <section id="numbers" className={styles.section} aria-labelledby="numbers-title">
-      <h2 id="numbers-title" className={styles.title}>
+    <section id="numbers" className={styles.section} aria-labelledby={titleId}>
+      <h2 id={titleId} className={styles.title}>
         {numbersCopy.title}
       </h2>
       <dl ref={listRef} className={styles.stats}>

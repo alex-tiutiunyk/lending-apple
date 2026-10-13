@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useId, useRef } from 'react'
 import { featuresCopy } from '@/content/copy'
 import { chipCores, lenses } from '@/content/specs'
 import { useInView } from '@/hooks/useInView'
@@ -7,17 +7,18 @@ import { TitaniumSample } from './TitaniumSample'
 import styles from './Features.module.scss'
 
 export function Features() {
+  const titleId = useId()
   const sampleRef = useRef<HTMLDivElement>(null)
   const isSampleSeen = useInView(sampleRef, { once: true, threshold: 0.6 })
   const { camera, display, chip, titanium } = featuresCopy
 
   return (
-    <section className={styles.section} aria-labelledby="features-title">
-      <h2 id="features-title" className={styles.title}>
+    <section className={styles.section} aria-labelledby={titleId}>
+      <h2 id={titleId} className={styles.title}>
         {featuresCopy.title}
       </h2>
       <div className={styles.grid}>
-        <FeatureCard area="camera" titleId="feature-camera" title={camera.title}>
+        <FeatureCard area="camera" title={camera.title}>
           <p className={styles.body}>{camera.body}</p>
           <ul className={styles.lenses} aria-label={camera.lensesLabel}>
             {lenses.map((lens) => (
@@ -29,7 +30,7 @@ export function Features() {
           </ul>
         </FeatureCard>
 
-        <FeatureCard area="display" titleId="feature-display" title={display.title}>
+        <FeatureCard area="display" title={display.title}>
           <p className={styles.body}>{display.body}</p>
           <div className={styles.brightness} aria-hidden="true">
             <span>1 nit</span>
@@ -37,7 +38,7 @@ export function Features() {
           </div>
         </FeatureCard>
 
-        <FeatureCard area="chip" titleId="feature-chip" title={chip.title}>
+        <FeatureCard area="chip" title={chip.title}>
           <p className={styles.body}>{chip.body}</p>
           <table className={styles.cores}>
             <caption>{chip.tableCaption}</caption>
@@ -58,7 +59,7 @@ export function Features() {
           </table>
         </FeatureCard>
 
-        <FeatureCard area="titanium" titleId="feature-titanium" title={titanium.title}>
+        <FeatureCard area="titanium" title={titanium.title}>
           <p className={styles.body}>{titanium.body}</p>
           <div
             ref={sampleRef}

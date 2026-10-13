@@ -74,7 +74,7 @@ test('reserve form validates, blocks double submit and confirms', async ({ page 
   await submit.click()
   await expect(page.getByText('Enter your email address to reserve.')).toBeVisible()
   await expect(email).toBeFocused()
-  await expect(email).toHaveAttribute('aria-describedby', /reserve-error/)
+  await expect(email).toHaveAccessibleDescription(/Enter your email address to reserve\./)
 
   await email.fill('not-an-address')
   await submit.click()

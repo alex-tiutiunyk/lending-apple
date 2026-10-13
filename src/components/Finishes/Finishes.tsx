@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { PhoneRender } from '@/assets/svg/phone-render'
 import { finishesCopy } from '@/content/copy'
 import { finishes, type Finish, type FinishId } from '@/content/specs'
@@ -16,6 +16,7 @@ function swatchColor({ hue, saturation, lightness }: Finish) {
 }
 
 export function Finishes() {
+  const titleId = useId()
   const [selectedId, setSelectedId] = useState<FinishId>(finishes[0].id)
   const selected = finishes.find(({ id }) => id === selectedId) ?? finishes[0]
 
@@ -25,9 +26,9 @@ export function Finishes() {
   }
 
   return (
-    <section id="finishes" className={styles.section} aria-labelledby="finishes-title">
+    <section id="finishes" className={styles.section} aria-labelledby={titleId}>
       <div className={styles.copy}>
-        <h2 id="finishes-title" className={styles.title}>
+        <h2 id={titleId} className={styles.title}>
           {finishesCopy.title}
         </h2>
         <p className={styles.body}>{finishesCopy.body}</p>
