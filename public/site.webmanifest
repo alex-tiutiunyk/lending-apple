@@ -1,0 +1,8 @@
+{
+  "name": "Concept 18 Pro",
+  "short_name": "Concept 18",
+  "icons": [{ "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }],
+  "theme_color": "#07090d",
+  "background_color": "#07090d",
+  "display": "standalone"
+}
