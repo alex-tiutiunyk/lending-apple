@@ -22,7 +22,7 @@ npm run lint         # ESLint, Stylelint, Prettier
 
 ## How the motion works
 
-There is no animation library. One module, `src/hooks/frameLoop.ts`, owns the only `requestAnimationFrame` loop and the only scroll listener. Pinned sections measure themselves on layout changes, turn scroll position into a 0..1 progress and write it once per frame as `--p` on the section. Everything visual is then plain CSS: stroke offsets, `clip-path`, 3D transforms and label colours are `calc()` and `clamp()` expressions of `--p`, so React never re-renders while you scroll.
+There is no animation library. One module, `src/hooks/frameLoop.ts`, owns the only `requestAnimationFrame` loop and the only scroll listener. Pinned sections measure themselves on layout changes, turn scroll position into a 0..1 progress and write it once per frame as `--p` on the section. Everything visual is then plain CSS: stroke offsets, `clip-path`, 3D transforms and label colors are `calc()` and `clamp()` expressions of `--p`, so React never re-renders while you scroll.
 
 Simple reveals use `animation-timeline: view()` where the browser has it and an IntersectionObserver fallback where it does not. With `prefers-reduced-motion: reduce` every pinned section drops into normal flow at its final frame, the counters show their values and the particle canvas is never loaded.
 

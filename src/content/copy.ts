@@ -47,7 +47,7 @@ export const featuresCopy = {
   title: 'Four decisions behind it',
   camera: {
     title: 'A periscope that fits the band',
-    body: 'The 5× telephoto folds light twice, so a 120 mm equivalent lens lives inside an 8.2 mm body. All three sensors share one 48 MP class, which keeps colour steady while you zoom.',
+    body: 'The 5× telephoto folds light twice, so a 120 mm equivalent lens lives inside an 8.2 mm body. All three sensors share one 48 MP class, which keeps color steady while you zoom.',
     lensesLabel: 'Rear lenses, as 35 mm equivalents',
   },
   display: {
@@ -70,7 +70,7 @@ export const featuresCopy = {
 
 export const finishesCopy = {
   title: 'Pick a finish',
-  body: 'The colour runs through the glass rather than sitting on top of it. Choose one and the whole page follows.',
+  body: 'The color runs through the glass rather than sitting on top of it. Choose one and the whole page follows.',
   legend: 'Finish',
   renderLabel: 'Back of the phone in',
 } as const

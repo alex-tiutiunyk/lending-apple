@@ -26,13 +26,13 @@ export const layers = [
   {
     id: 'back-glass',
     name: 'Back glass',
-    detail: 'Matte glass, colour-fused before tempering so it cannot wear off.',
+    detail: 'Matte glass, color-fused before tempering so it cannot wear off.',
     inCompactView: true,
   },
   {
     id: 'frame',
     name: 'Titanium band',
-    detail: 'Grade 5 titanium around an aluminium core that spreads heat.',
+    detail: 'Grade 5 titanium around an aluminum core that spreads heat.',
     inCompactView: false,
   },
   {
@@ -73,7 +73,7 @@ export const finishes = [
   {
     id: 'tidewater',
     name: 'Tidewater',
-    note: 'Cold blue-green, like a harbour at 7 am.',
+    note: 'Cold blue-green, like a harbor at 7 am.',
     hue: 192,
     saturation: 62,
     lightness: 58,
@@ -89,7 +89,7 @@ export const finishes = [
   {
     id: 'moss',
     name: 'Moss',
-    note: 'A dry, grey-leaning green.',
+    note: 'A dry, gray-leaning green.',
     hue: 96,
     saturation: 30,
     lightness: 62,
