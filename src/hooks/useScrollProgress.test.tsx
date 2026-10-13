@@ -17,6 +17,10 @@ describe('pinnedProgress', () => {
     expect(pinnedProgress(2000, geometry)).toBe(0.5)
   })
 
+  it('snaps to 1 when fractional scrolling stops a pixel short of the end', () => {
+    expect(pinnedProgress(2999.4, geometry)).toBe(1)
+  })
+
   it('does not divide by zero for a section no taller than the viewport', () => {
     expect(pinnedProgress(999, { top: 1000, scrollLength: 0 })).toBe(0)
     expect(pinnedProgress(1000, { top: 1000, scrollLength: 0 })).toBe(1)

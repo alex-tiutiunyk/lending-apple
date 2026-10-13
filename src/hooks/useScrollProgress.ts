@@ -7,9 +7,13 @@ type PinnedGeometry = {
   scrollLength: number
 }
 
+const subpixelSlack = 1
+
 export function pinnedProgress(scrollY: number, { top, scrollLength }: PinnedGeometry) {
-  if (scrollLength <= 0) return scrollY >= top ? 1 : 0
-  return Math.min(1, Math.max(0, (scrollY - top) / scrollLength))
+  const travelled = scrollY - top
+  if (travelled < 0) return 0
+  if (travelled >= scrollLength - subpixelSlack) return 1
+  return travelled / scrollLength
 }
 
 const progressPrecision = 1000
