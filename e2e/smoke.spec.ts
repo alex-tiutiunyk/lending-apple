@@ -40,7 +40,10 @@ test('pinned sections expose scroll progress', async ({ page }) => {
   const design = page.locator('#design')
   await design.evaluate((section) => {
     const top = section.getBoundingClientRect().top + window.scrollY
-    window.scrollTo(0, top + (section.getBoundingClientRect().height - window.innerHeight) / 2)
+    window.scrollTo({
+      top: top + (section.getBoundingClientRect().height - window.innerHeight) / 2,
+      behavior: 'instant',
+    })
   })
   const readProgress = () =>
     design.evaluate((section) => Number(section.style.getPropertyValue('--p')))

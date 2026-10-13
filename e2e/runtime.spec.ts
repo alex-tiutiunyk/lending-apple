@@ -10,7 +10,10 @@ async function scrollToShare(page: Page, id: string, share: number) {
       const section = document.getElementById(String(sectionId))
       if (!section) return
       const top = section.getBoundingClientRect().top + window.scrollY
-      window.scrollTo(0, top + (section.offsetHeight - window.innerHeight) * Number(fraction))
+      window.scrollTo({
+        top: top + (section.offsetHeight - window.innerHeight) * Number(fraction),
+        behavior: 'instant',
+      })
     },
     [id, share],
   )
@@ -126,15 +129,16 @@ test('keyboard focus moves through the page without getting trapped', async ({
   const seen = new Set<string>()
   for (let step = 0; step < 30; step += 1) {
     await page.keyboard.press('Tab')
-    const label = await page.evaluate(() => {
-      const active = document.activeElement
-      if (!active || active === document.body) return 'body'
-      const rect = active.getBoundingClientRect()
-      const isOnScreen = rect.bottom > 0 && rect.top < window.innerHeight
-      return `${active.tagName}:${active.textContent?.trim().slice(0, 24)}:${isOnScreen}`
-    })
-    expect(label.endsWith(':false')).toBe(false)
-    seen.add(label)
+    const readFocus = () =>
+      page.evaluate(() => {
+        const active = document.activeElement
+        if (!active || active === document.body) return 'body'
+        const rect = active.getBoundingClientRect()
+        const isOnScreen = rect.bottom > 0 && rect.top < window.innerHeight
+        return `${active.tagName}:${active.textContent?.trim().slice(0, 24)}:${isOnScreen}`
+      })
+    await expect.poll(readFocus, { timeout: 2000 }).not.toMatch(/:false$/)
+    seen.add(await readFocus())
   }
   expect([...seen].some((label) => label.startsWith('INPUT'))).toBe(true)
 })
@@ -154,7 +158,7 @@ test('a full scroll has no long tasks over 50 ms after load @perf', async ({
     observer.observe({ type: 'longtask' })
     const end = document.documentElement.scrollHeight - window.innerHeight
     for (let y = 0; y <= end; y += 120) {
-      window.scrollTo(0, y)
+      window.scrollTo({ top: y, behavior: 'instant' })
       await new Promise((resolve) => requestAnimationFrame(resolve))
     }
     observer.disconnect()

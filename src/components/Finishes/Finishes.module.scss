@@ -117,6 +117,43 @@
   color: var(--color-text-muted);
 }
 
+.tiltOdd,
+.tiltEven {
+  transform-origin: 50% 90%;
+
+  @include mixins.motion-safe {
+    animation: var(--tilt-name) var(--dur-tilt) var(--ease-out);
+  }
+}
+
+.tiltOdd {
+  --tilt-name: tilt-settle-odd;
+}
+
+.tiltEven {
+  --tilt-name: tilt-settle-even;
+}
+
+@keyframes tilt-settle-odd {
+  30% {
+    transform: rotate(-5deg) translateY(-0.4rem);
+  }
+
+  65% {
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes tilt-settle-even {
+  30% {
+    transform: rotate(-5deg) translateY(-0.4rem);
+  }
+
+  65% {
+    transform: rotate(2deg);
+  }
+}
+
 .render {
   justify-self: center;
   width: min(100%, 13rem);

@@ -6,6 +6,7 @@ import { DisplayLayer } from '@/assets/svg/layers/display-layer'
 import { FrameLayer } from '@/assets/svg/layers/frame-layer'
 import { FrontGlassLayer } from '@/assets/svg/layers/front-glass-layer'
 import { LogicBoardLayer } from '@/assets/svg/layers/logic-board-layer'
+import { RevealTitle } from '@/components/RevealTitle/RevealTitle'
 import { explodedCopy } from '@/content/copy'
 import { layers, type LayerId } from '@/content/specs'
 import { useScrollProgress } from '@/hooks/useScrollProgress'
@@ -48,9 +49,7 @@ export function ExplodedView() {
     >
       <div className={styles.stage} data-stage>
         <div className={styles.copy}>
-          <h2 id={titleId} className={styles.title}>
-            {explodedCopy.title}
-          </h2>
+          <RevealTitle id={titleId} className={styles.title} text={explodedCopy.title} />
           <p className={styles.intro}>{explodedCopy.intro}</p>
           <ol className={styles.labels} aria-label={explodedCopy.listLabel}>
             {choreography.map(({ id, name, detail, order, compactOrder }) => (

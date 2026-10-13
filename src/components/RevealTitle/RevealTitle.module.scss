@@ -1,0 +1,38 @@
+$max-words: 8;
+$word-step: 7%;
+$word-delay-step: 70ms;
+
+.word {
+  display: inline-block;
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry var(--word-from) entry calc(var(--word-from) + 45%);
+      --reveal-distance: 0.45em;
+    }
+  }
+}
+
+.title {
+  @supports not (animation-timeline: view()) {
+    &[data-reveal='hidden'] .word {
+      opacity: 0;
+      transform: translateY(0.45em);
+    }
+
+    &[data-reveal='shown'] .word {
+      transition:
+        opacity var(--dur-reveal) var(--ease-out) var(--word-delay),
+        transform var(--dur-reveal) var(--ease-out) var(--word-delay);
+    }
+  }
+}
+
+@for $i from 1 through $max-words {
+  .word:nth-of-type(#{$i}) {
+    --word-from: #{($i - 1) * $word-step};
+    --word-delay: #{($i - 1) * $word-delay-step};
+  }
+}

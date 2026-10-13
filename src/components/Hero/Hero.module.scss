@@ -34,6 +34,20 @@
   letter-spacing: -0.035em;
 }
 
+.word {
+  display: inline-block;
+
+  @include mixins.motion-safe {
+    animation: word-rise var(--dur-word-rise) var(--ease-out) both;
+  }
+}
+
+@for $i from 1 through 8 {
+  .word:nth-of-type(#{$i}) {
+    animation-delay: #{($i - 1) * 70}ms;
+  }
+}
+
 .lede {
   max-width: 34rem;
   font-size: var(--step-1);
@@ -66,6 +80,10 @@
 .outline {
   height: 100%;
 
+  @include mixins.when-awake {
+    animation: phone-float var(--dur-float) var(--ease-in-out) var(--dur-draw-total) infinite;
+  }
+
   @include mixins.motion-safe {
     path {
       animation: draw-once 1.6s var(--ease-out) both;
@@ -90,6 +108,27 @@
       animation-duration: 0.45s;
       animation-delay: 1.3s;
     }
+  }
+}
+
+@keyframes word-rise {
+  from {
+    transform: translateY(0.35em);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+@keyframes phone-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-0.6rem) rotate(-0.6deg);
   }
 }
 

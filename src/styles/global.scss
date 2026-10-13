@@ -64,6 +64,10 @@ html {
   text-size-adjust: 100%;
   background: var(--color-bg);
   scroll-padding-top: calc(var(--header-height) + var(--space-4));
+
+  @include mixins.motion-safe {
+    scroll-behavior: smooth;
+  }
 }
 
 body {

@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { PhoneRender } from '@/assets/svg/phone-render'
+import { RevealTitle } from '@/components/RevealTitle/RevealTitle'
 import { finishesCopy } from '@/content/copy'
 import { finishes, type Finish, type FinishId } from '@/content/specs'
 import styles from './Finishes.module.scss'
@@ -18,19 +19,20 @@ function swatchColor({ hue, saturation, lightness }: Finish) {
 export function Finishes() {
   const titleId = useId()
   const [selectedId, setSelectedId] = useState<FinishId>(finishes[0].id)
+  const [changeCount, setChangeCount] = useState(0)
   const selected = finishes.find(({ id }) => id === selectedId) ?? finishes[0]
+  const tiltClassName = changeCount % 2 === 1 ? styles.tiltOdd : styles.tiltEven
 
   const selectFinish = (finish: Finish) => {
     setSelectedId(finish.id)
+    setChangeCount((count) => count + 1)
     applyFinishToPage(finish)
   }
 
   return (
     <section id="finishes" className={styles.section} aria-labelledby={titleId}>
       <div className={styles.copy}>
-        <h2 id={titleId} className={styles.title}>
-          {finishesCopy.title}
-        </h2>
+        <RevealTitle id={titleId} className={styles.title} text={finishesCopy.title} />
         <p className={styles.body}>{finishesCopy.body}</p>
         <fieldset className={styles.picker}>
           <legend className={styles.legend}>{finishesCopy.legend}</legend>
@@ -61,7 +63,7 @@ export function Finishes() {
       <PhoneRender
         view="back"
         particles="apple"
-        className={styles.render}
+        className={changeCount === 0 ? styles.render : `${styles.render} ${tiltClassName}`}
         label={`${finishesCopy.renderLabel} ${selected.name}`}
       />
     </section>

@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react'
 import { Backdrop } from '@/components/Backdrop/Backdrop'
 import { ExplodedView } from '@/components/ExplodedView/ExplodedView'
 import { Features } from '@/components/Features/Features'
@@ -14,12 +15,20 @@ import { headerCopy } from '@/content/copy'
 import { usePointerHover } from '@/hooks/usePointerHover'
 import styles from './App.module.scss'
 
+function skipToMain(event: MouseEvent<HTMLAnchorElement>) {
+  const main = document.getElementById('main')
+  if (!main) return
+  event.preventDefault()
+  main.scrollIntoView({ behavior: 'instant' })
+  main.focus({ preventScroll: true })
+}
+
 export function App() {
   usePointerHover()
 
   return (
     <>
-      <a className={styles.skipLink} href="#main">
+      <a className={styles.skipLink} href="#main" onClick={skipToMain}>
         {headerCopy.skipLink}
       </a>
       <Backdrop />

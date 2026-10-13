@@ -1,4 +1,5 @@
 import { useId, useRef } from 'react'
+import { RevealTitle } from '@/components/RevealTitle/RevealTitle'
 import { featuresCopy } from '@/content/copy'
 import { chipCores, lenses } from '@/content/specs'
 import { useInView } from '@/hooks/useInView'
@@ -14,9 +15,7 @@ export function Features() {
 
   return (
     <section className={styles.section} aria-labelledby={titleId}>
-      <h2 id={titleId} className={styles.title}>
-        {featuresCopy.title}
-      </h2>
+      <RevealTitle id={titleId} className={styles.title} text={featuresCopy.title} />
       <div className={styles.grid}>
         <FeatureCard area="camera" title={camera.title} particles="lens">
           <p className={styles.body}>{camera.body}</p>

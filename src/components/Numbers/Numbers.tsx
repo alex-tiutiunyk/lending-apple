@@ -1,4 +1,5 @@
 import { useId, useRef } from 'react'
+import { RevealTitle } from '@/components/RevealTitle/RevealTitle'
 import { numbersCopy } from '@/content/copy'
 import { statFootnotes, stats } from '@/content/specs'
 import { PressableLink } from '@/components/PressableLink/PressableLink'
@@ -21,9 +22,7 @@ export function Numbers() {
 
   return (
     <section id="numbers" className={styles.section} aria-labelledby={titleId}>
-      <h2 id={titleId} className={styles.title}>
-        {numbersCopy.title}
-      </h2>
+      <RevealTitle id={titleId} className={styles.title} text={numbersCopy.title} />
       <dl ref={listRef} className={styles.stats}>
         {stats.map((stat, order) => (
           <div key={stat.id} className={styles.stat}>

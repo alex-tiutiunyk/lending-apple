@@ -1,6 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import { PhoneRender } from '@/assets/svg/phone-render'
 import { SurfaceLens } from '@/components/LivingSurface/SurfaceRipple'
+import { RevealTitle } from '@/components/RevealTitle/RevealTitle'
 import { reserveCopy } from '@/content/copy'
 import { launch } from '@/content/specs'
 import { useAwakeWhileInView } from '@/hooks/useAmbientMotion'
@@ -19,9 +20,7 @@ export function Reserve() {
       <div ref={panelRef} className={styles.panel} data-surface>
         <SurfaceLens />
         <div className={styles.copy}>
-          <h2 id={titleId} className={styles.title}>
-            {reserveCopy.title}
-          </h2>
+          <RevealTitle id={titleId} className={styles.title} text={reserveCopy.title} />
           <p className={styles.body}>
             {reserveCopy.bodyBefore} <strong>{launch.opensAtLabel}</strong>. {reserveCopy.bodyAfter}
           </p>
