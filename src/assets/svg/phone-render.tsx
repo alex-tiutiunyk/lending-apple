@@ -1,5 +1,14 @@
 import { useId } from 'react'
-import { back, front, phoneViewBoxes, roundedRectPath, type PhoneView } from './phone-geometry'
+import { appleBodyPath, appleLeafPath, appleMarkViewBox } from './apple-mark-path'
+import { PhoneLockScreen } from './phone-lock-screen'
+import {
+  back,
+  front,
+  phoneViewBoxes,
+  plateauPath,
+  roundedRectPath,
+  type PhoneView,
+} from './phone-geometry'
 import styles from './phone-render.module.scss'
 
 type PhoneRenderProps = {
@@ -52,7 +61,9 @@ export function PhoneRender({ view = 'both', label, className }: PhoneRenderProp
           ))}
           <path d={roundedRectPath(front.band)} className={styles.bezel} />
           <path d={roundedRectPath(front.screen)} fill={`url(#${screenId})`} />
+          <PhoneLockScreen />
           <path d={roundedRectPath(front.island)} className={styles.island} />
+          <path d={roundedRectPath(front.earpiece)} className={styles.island} />
           <path d={roundedRectPath(front.screen)} fill={`url(#${glareId})`} />
         </g>
       )}
@@ -64,7 +75,22 @@ export function PhoneRender({ view = 'both', label, className }: PhoneRenderProp
           ))}
           <path d={roundedRectPath(back.body)} fill={`url(#${shellId})`} />
           <path d={roundedRectPath(back.band)} className={styles.backGlass} />
-          <path d={roundedRectPath(back.plateau)} className={styles.plateau} />
+          <path d={roundedRectPath(back.glassWindow)} className={styles.glassWindow} />
+          <svg
+            x={back.mark.x - back.mark.size / 2}
+            y={back.mark.y - back.mark.size / 2}
+            width={back.mark.size}
+            height={back.mark.size}
+            viewBox={appleMarkViewBox}
+            className={styles.mark}
+          >
+            <path d={appleBodyPath} />
+            <path d={appleLeafPath} />
+          </svg>
+          <path
+            d={plateauPath(back.plateau, back.plateau.radius, back.plateauBottomRadius)}
+            className={styles.plateau}
+          />
           {back.lenses.map(({ name, cx, cy }) => (
             <g key={name}>
               <circle cx={cx} cy={cy} r={back.lensRadius} className={styles.lensRing} />
@@ -77,6 +103,12 @@ export function PhoneRender({ view = 'both', label, className }: PhoneRenderProp
             cy={back.microphone.cy}
             r={back.microphone.r}
             className={styles.island}
+          />
+          <circle
+            cx={back.depthSensor.cx}
+            cy={back.depthSensor.cy}
+            r={back.depthSensor.r}
+            className={styles.depthSensor}
           />
         </g>
       )}

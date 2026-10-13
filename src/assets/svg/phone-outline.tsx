@@ -3,6 +3,7 @@ import {
   circlePath,
   front,
   phoneViewBoxes,
+  plateauPath,
   roundedRectPath,
   type PhoneView,
 } from './phone-geometry'
@@ -13,18 +14,21 @@ const frontParts = {
   screen: [roundedRectPath(front.screen)],
   island: [roundedRectPath(front.island)],
   buttons: front.buttons.map(roundedRectPath),
+  details: [roundedRectPath(front.earpiece), ...front.antennaBreaks.map(roundedRectPath)],
 }
 
 const backParts = {
   body: [roundedRectPath(back.body), roundedRectPath(back.band)],
   camera: [
-    roundedRectPath(back.plateau),
+    plateauPath(back.plateau, back.plateau.radius, back.plateauBottomRadius),
     ...back.lenses.map(({ cx, cy }) => circlePath(cx, cy, back.lensRadius)),
     ...back.lenses.map(({ cx, cy }) => circlePath(cx, cy, back.lensGlassRadius)),
     circlePath(back.flash.cx, back.flash.cy, back.flash.r),
     circlePath(back.microphone.cx, back.microphone.cy, back.microphone.r),
+    circlePath(back.depthSensor.cx, back.depthSensor.cy, back.depthSensor.r),
   ],
   buttons: back.buttons.map(roundedRectPath),
+  details: [roundedRectPath(back.glassWindow), ...back.antennaBreaks.map(roundedRectPath)],
 }
 
 type PartPaths = Record<string, string[]>

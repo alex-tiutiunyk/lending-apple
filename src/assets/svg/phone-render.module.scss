@@ -70,6 +70,73 @@
   stroke-width: 1;
 }
 
+.glassWindow {
+  fill: var(--finish-shell-light);
+  fill-opacity: 0.18;
+  stroke: var(--finish-shell-light);
+  stroke-opacity: 0.35;
+  stroke-width: 0.6;
+}
+
+.mark {
+  fill: var(--finish-shell-light);
+  fill-opacity: 0.7;
+}
+
+.depthSensor {
+  fill: var(--color-bg);
+  stroke: var(--finish-shell-dark);
+  stroke-width: 1;
+}
+
+.statusIcon {
+  fill: var(--color-text);
+}
+
+.statusOutline {
+  fill: none;
+  stroke: var(--color-text);
+  stroke-opacity: 0.7;
+  stroke-width: 0.6;
+}
+
+.lockDate {
+  font-family: var(--font-mono);
+  font-size: 6.4px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: var(--color-text);
+  fill-opacity: 0.82;
+}
+
+.lockTime {
+  font-family: var(--font-sans);
+  font-size: 40px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  fill: var(--color-text);
+}
+
+.quickAction {
+  fill: var(--color-bg);
+  fill-opacity: 0.45;
+}
+
+.quickGlyph {
+  fill: var(--color-text);
+}
+
+.quickGlyphStroke {
+  fill: none;
+  stroke: var(--color-text);
+  stroke-width: 1.4;
+}
+
+.homeIndicator {
+  fill: var(--color-text);
+  fill-opacity: 0.85;
+}
+
 .flash {
   fill: var(--color-text);
   fill-opacity: 0.7;

@@ -31,4 +31,8 @@
   [data-part='buttons'] {
     --draw: var(--draw-buttons, 1);
   }
+
+  [data-part='details'] {
+    --draw: var(--draw-details, 1);
+  }
 }

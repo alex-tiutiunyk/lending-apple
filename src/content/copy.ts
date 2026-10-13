@@ -20,6 +20,11 @@ export const motionCopy = {
   pause: 'Pause motion',
 } as const
 
+export const lockScreenCopy = {
+  date: 'Fri, Nov 20',
+  time: '7:24',
+} as const
+
 export const heroCopy = {
   eyebrow: 'Unofficial design study',
   title: 'The phone, drawn again from a single line.',
