@@ -37,7 +37,7 @@
 
   @include bp.up(md) {
     grid-template-rows: none;
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
     gap: var(--space-7);
     align-items: center;
   }
@@ -72,6 +72,10 @@
   grid-template-rows: minmax(0, 1fr);
   height: 100%;
   min-height: 0;
+
+  @include bp.up(md) {
+    order: -1;
+  }
 
   @include mixins.motion-reduce {
     height: min(60svh, 30rem);
