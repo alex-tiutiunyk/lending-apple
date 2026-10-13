@@ -1,9 +1,12 @@
 import { useRef, type ReactNode } from 'react'
+import type { featuresCopy } from '@/content/copy'
 import { useReveal } from '@/hooks/useReveal'
 import styles from './Features.module.scss'
 
+type FeatureArea = Exclude<keyof typeof featuresCopy, 'title'>
+
 type FeatureCardProps = {
-  area: 'camera' | 'display' | 'chip' | 'titanium'
+  area: FeatureArea
   titleId: string
   title: string
   children: ReactNode
