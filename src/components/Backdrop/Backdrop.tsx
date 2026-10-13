@@ -34,7 +34,8 @@ export function Backdrop() {
     <div ref={backdropRef} className={styles.backdrop} aria-hidden="true">
       <div className={`${styles.blob} ${styles.blobHigh}`} />
       <div className={`${styles.blob} ${styles.blobLow}`} />
-      <div className={`${styles.blob} ${styles.blobSide}`} />
+      <div className={`${styles.tint} ${styles.tintCool}`} />
+      <div className={`${styles.tint} ${styles.tintWarm}`} />
       <div className={styles.grain} />
       {!isReducedMotion && !isSavingData && (
         <Suspense fallback={null}>

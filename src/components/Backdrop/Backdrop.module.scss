@@ -6,8 +6,6 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
 
 .backdrop {
   --doc-p: 0;
-  --hue-shift: 0;
-  --tone-h: calc(var(--accent-h) + var(--hue-shift));
 
   position: fixed;
   inset: 0;
@@ -17,20 +15,20 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
   background: conic-gradient(
     from 210deg at 72% 18%,
     hsl(var(--ink-h) 30% 5%),
-    hsl(var(--tone-h) 45% 13%) 18%,
+    hsl(var(--accent-h) 45% 13%) 18%,
     hsl(var(--ink-h) 30% 4%) 42%,
-    hsl(calc(var(--tone-h) - 40) 40% 9%) 70%,
+    hsl(calc(var(--accent-h) - 40) 40% 9%) 70%,
     hsl(var(--ink-h) 30% 5%)
   );
+}
 
-  @include bp.up(md) {
-    --hue-shift: calc((var(--doc-p) - 0.5) * 36);
-  }
+.blob,
+.tint {
+  position: absolute;
+  border-radius: 50%;
 }
 
 .blob {
-  position: absolute;
-  border-radius: 50%;
   transform: translate3d(var(--shift-x, 0), var(--shift-y, 0), 0);
 }
 
@@ -44,8 +42,8 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
   height: 80vmax;
   background: radial-gradient(
     closest-side,
-    hsl(var(--tone-h) var(--accent-s) 42% / 42%),
-    hsl(var(--tone-h) var(--accent-s) 30% / 0%)
+    hsl(var(--accent-h) var(--accent-s) 42% / 42%),
+    hsl(var(--accent-h) var(--accent-s) 30% / 0%)
   );
 }
 
@@ -59,28 +57,41 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
   height: 90vmax;
   background: radial-gradient(
     closest-side,
-    hsl(calc(var(--tone-h) + 28) 55% 34% / 34%),
-    hsl(calc(var(--tone-h) + 28) 55% 20% / 0%)
+    hsl(calc(var(--accent-h) + 28) 55% 34% / 34%),
+    hsl(calc(var(--accent-h) + 28) 55% 20% / 0%)
   );
 }
 
-.blobSide {
-  --shift-y: calc(var(--doc-p) * -50vh);
-
-  top: 60vh;
-  right: -25vmax;
+.tint {
   display: none;
-  width: 55vmax;
-  height: 55vmax;
-  background: radial-gradient(
-    closest-side,
-    hsl(calc(var(--tone-h) - 36) 50% 40% / 26%),
-    hsl(calc(var(--tone-h) - 36) 50% 20% / 0%)
-  );
+  width: 110vmax;
+  height: 110vmax;
 
   @include bp.up(md) {
     display: block;
   }
+}
+
+.tintCool {
+  top: -20vmax;
+  left: -30vmax;
+  background: radial-gradient(
+    closest-side,
+    hsl(calc(var(--accent-h) - 18) 60% 40% / 30%),
+    hsl(calc(var(--accent-h) - 18) 60% 20% / 0%)
+  );
+  opacity: calc(1 - var(--doc-p));
+}
+
+.tintWarm {
+  right: -40vmax;
+  bottom: -30vmax;
+  background: radial-gradient(
+    closest-side,
+    hsl(calc(var(--accent-h) + 18) 60% 40% / 30%),
+    hsl(calc(var(--accent-h) + 18) 60% 20% / 0%)
+  );
+  opacity: var(--doc-p);
 }
 
 .grain {
