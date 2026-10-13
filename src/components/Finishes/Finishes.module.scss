@@ -1,0 +1,119 @@
+@use 'mixins';
+@use 'breakpoints' as bp;
+
+.section {
+  @include mixins.container;
+
+  display: grid;
+  gap: var(--space-7);
+  align-items: center;
+  min-height: 100svh;
+  padding-block: var(--space-8);
+
+  @include bp.up(md) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  }
+}
+
+.copy {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.title {
+  font-size: var(--step-4);
+}
+
+.body {
+  max-width: 32rem;
+  color: var(--color-text-muted);
+}
+
+.picker {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  border: 0;
+
+  @include bp.up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--step-down-1);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.option {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-1) var(--space-3);
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-m);
+  transition:
+    border-color var(--dur-hover) var(--ease-out),
+    background-color var(--dur-hover) var(--ease-out);
+
+  &:has(:checked) {
+    background: var(--color-accent-wash);
+    border-color: var(--color-accent);
+  }
+
+  &:has(:focus-visible) {
+    box-shadow: var(--focus-ring);
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: var(--color-line-strong);
+    }
+  }
+}
+
+.radio {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.swatch {
+  grid-row: span 2;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--color-line-strong);
+}
+
+.optionName {
+  font-weight: 620;
+}
+
+.optionNote {
+  font-size: var(--step-down-1);
+  color: var(--color-text-muted);
+}
+
+.render {
+  justify-self: center;
+  width: min(100%, 13rem);
+  height: auto;
+  filter: drop-shadow(0 30px 60px var(--color-accent-glow));
+
+  @include bp.up(md) {
+    width: min(100%, 20rem);
+  }
+}
