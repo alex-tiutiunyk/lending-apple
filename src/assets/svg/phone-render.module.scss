@@ -1,0 +1,76 @@
+.render {
+  overflow: visible;
+}
+
+.shellLight {
+  stop-color: var(--finish-shell-light);
+}
+
+.shellMid {
+  stop-color: var(--finish-shell);
+}
+
+.shellDark {
+  stop-color: var(--finish-shell-dark);
+}
+
+.screenA {
+  stop-color: var(--finish-screen-a);
+}
+
+.screenB {
+  stop-color: var(--finish-screen-b);
+}
+
+.glareOn {
+  stop-color: var(--color-text);
+  stop-opacity: 0.16;
+}
+
+.glareOff {
+  stop-color: var(--color-text);
+  stop-opacity: 0;
+}
+
+.lensHighlight {
+  stop-color: var(--finish-screen-a);
+}
+
+.lensDeep {
+  stop-color: var(--color-bg);
+}
+
+.bezel {
+  fill: var(--color-bg);
+}
+
+.island {
+  fill: var(--color-bg);
+}
+
+.button {
+  fill: var(--finish-shell-dark);
+}
+
+.backGlass {
+  fill: var(--finish-shell);
+  fill-opacity: 0.55;
+}
+
+.plateau {
+  fill: var(--finish-shell-light);
+  fill-opacity: 0.35;
+  stroke: var(--finish-shell-light);
+  stroke-width: 0.8;
+}
+
+.lensRing {
+  fill: var(--finish-shell-dark);
+  stroke: var(--finish-shell-light);
+  stroke-width: 1;
+}
+
+.flash {
+  fill: var(--color-text);
+  fill-opacity: 0.7;
+}

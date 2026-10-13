@@ -1,0 +1,108 @@
+.layer {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.shellLight {
+  stop-color: var(--finish-shell-light);
+}
+
+.shellMid {
+  stop-color: var(--finish-shell);
+}
+
+.shellDark {
+  stop-color: var(--finish-shell-dark);
+}
+
+.screenA {
+  stop-color: var(--finish-screen-a);
+}
+
+.screenB {
+  stop-color: var(--finish-screen-b);
+}
+
+.lensHighlight {
+  stop-color: var(--finish-screen-a);
+}
+
+.lensDeep {
+  stop-color: var(--color-bg);
+}
+
+.plateauCutout {
+  fill: var(--finish-shell-dark);
+  fill-opacity: 0.6;
+}
+
+.plateau {
+  fill: var(--finish-shell);
+  stroke: var(--finish-shell-light);
+  stroke-width: 1;
+}
+
+.lensRing {
+  fill: var(--finish-shell-dark);
+  stroke: var(--finish-shell-light);
+  stroke-width: 1;
+}
+
+.band {
+  fill: none;
+  stroke: var(--finish-shell-light);
+  stroke-width: 7;
+}
+
+.bandEdge {
+  fill: none;
+  stroke: var(--finish-shell-dark);
+  stroke-width: 1;
+}
+
+.cell {
+  fill: var(--part-cell);
+  stroke: var(--color-line-strong);
+  stroke-width: 1;
+}
+
+.seam {
+  stroke: var(--color-line-strong);
+  stroke-width: 0.8;
+}
+
+.copper {
+  fill: var(--part-copper);
+}
+
+.board {
+  fill: var(--part-board);
+  stroke: var(--part-copper);
+  stroke-width: 0.8;
+}
+
+.chip {
+  fill: var(--part-chip);
+}
+
+.chipDie {
+  fill: none;
+  stroke: var(--color-line-strong);
+  stroke-width: 0.8;
+}
+
+.panelEdge {
+  fill: var(--color-bg);
+}
+
+.glass {
+  fill: var(--part-glass);
+  stroke: var(--color-stroke);
+  stroke-opacity: 0.55;
+  stroke-width: 1;
+}
+
+.island {
+  fill: var(--color-bg);
+}
