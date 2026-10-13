@@ -1,0 +1,106 @@
+@use 'mixins';
+@use 'breakpoints' as bp;
+
+.hero {
+  @include mixins.container;
+
+  display: grid;
+  gap: var(--space-6);
+  align-content: center;
+  min-height: calc(100svh - var(--header-height));
+  padding-block: var(--space-7) var(--space-6);
+
+  @include bp.up(md) {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+    gap: var(--space-7);
+    align-items: center;
+  }
+}
+
+.copy {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 40rem;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--step-down-1);
+  color: var(--color-accent);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: var(--step-5);
+  letter-spacing: -0.035em;
+}
+
+.lede {
+  max-width: 34rem;
+  font-size: var(--step-1);
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.primary {
+  @include mixins.button-primary;
+  @include mixins.sheen-host;
+}
+
+.secondary {
+  @include mixins.button-quiet;
+}
+
+.visual {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  place-items: center;
+  height: clamp(16rem, 42svh, 34rem);
+
+  @include bp.up(md) {
+    height: min(70svh, 36rem);
+  }
+}
+
+.outline {
+  height: 100%;
+
+  @include mixins.motion-safe {
+    path {
+      animation: draw-once 1.6s var(--ease-out) both;
+    }
+
+    [data-part='screen'] path {
+      animation-duration: 1.1s;
+      animation-delay: 0.42s;
+    }
+
+    [data-part='island'] path {
+      animation-duration: 0.7s;
+      animation-delay: 0.95s;
+    }
+
+    [data-part='buttons'] path {
+      animation-duration: 0.5s;
+      animation-delay: 1.18s;
+    }
+  }
+}
+
+@keyframes draw-once {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}

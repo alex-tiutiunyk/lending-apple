@@ -1,0 +1,68 @@
+@use 'tokens';
+@use 'mixins';
+@use 'breakpoints' as bp;
+
+.footer {
+  position: relative;
+  z-index: tokens.z(raised);
+  padding-block: var(--space-7) calc(var(--space-9) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--color-line);
+
+  @include bp.up(md) {
+    padding-bottom: var(--space-7);
+  }
+}
+
+.inner {
+  @include mixins.container;
+
+  display: grid;
+  gap: var(--space-4);
+
+  @include bp.up(md) {
+    grid-template-columns: auto 1fr;
+    gap: var(--space-4) var(--space-7);
+  }
+}
+
+.brand {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  font-weight: 640;
+}
+
+.mark {
+  width: 1.2rem;
+  height: 1.2rem;
+  color: var(--color-accent);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+
+  @include bp.up(md) {
+    justify-content: flex-end;
+  }
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-s);
+}
+
+.legal,
+.credit {
+  max-width: 62rem;
+  font-size: var(--step-down-1);
+  color: var(--color-text-muted);
+
+  @include bp.up(md) {
+    grid-column: 1 / -1;
+  }
+}

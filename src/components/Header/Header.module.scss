@@ -1,0 +1,87 @@
+@use 'tokens';
+@use 'mixins';
+@use 'breakpoints' as bp;
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: tokens.z(header);
+  background: hsl(var(--ink-h) 26% 4% / 86%);
+  border-bottom: 1px solid var(--color-line);
+
+  @include bp.up(lg) {
+    background: hsl(var(--ink-h) 26% 4% / 55%);
+    backdrop-filter: blur(14px) saturate(140%);
+  }
+}
+
+.bar {
+  @include mixins.container;
+
+  display: flex;
+  gap: var(--space-5);
+  align-items: center;
+  height: var(--header-height);
+}
+
+.home {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-height: var(--tap-min);
+  font-weight: 660;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  border-radius: var(--radius-s);
+}
+
+.mark {
+  width: 1.4rem;
+  height: 1.4rem;
+  color: var(--color-accent);
+}
+
+.nav {
+  display: none;
+  margin-left: auto;
+
+  @include bp.up(md) {
+    display: block;
+  }
+}
+
+.links {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding-inline: var(--space-3);
+  font-size: var(--step-down-1);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  border-radius: var(--radius-pill);
+  transition: color var(--dur-hover) var(--ease-out);
+
+  @media (hover: hover) {
+    &:hover {
+      color: var(--color-text);
+    }
+  }
+}
+
+.reserve {
+  @include mixins.button-primary;
+
+  min-height: 2.5rem;
+  padding-inline: var(--space-4);
+  margin-left: auto;
+  font-size: var(--step-down-1);
+
+  @include bp.up(md) {
+    margin-left: 0;
+  }
+}
