@@ -13,7 +13,7 @@ function footnoteId(footnote: number) {
 
 export function Numbers() {
   const listRef = useRef<HTMLDListElement>(null)
-  const isListInView = useInView(listRef, { once: true, threshold: 0.35 })
+  const isListInView = useInView(listRef, { once: true, rootMargin: '0px 0px -20% 0px' })
 
   return (
     <section id="numbers" className={styles.section} aria-labelledby="numbers-title">
