@@ -10,6 +10,14 @@
   border: 0;
 }
 
+@mixin mono-label {
+  font-family: var(--font-mono);
+  font-size: var(--step-down-1);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 @mixin container {
   width: 100%;
   max-width: var(--content-max);
