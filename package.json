@@ -13,7 +13,9 @@
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "points": "node scripts/generate-apple-points.mjs"
+    "points": "node scripts/generate-apple-points.mjs",
+    "check:cycles": "madge --circular --extensions ts,tsx --ts-config tsconfig.app.json src",
+    "check:unused": "knip"
   },
   "dependencies": {
     "react": "^19.3.0",
