@@ -1,0 +1,27 @@
+@use 'tokens';
+
+.skipLink {
+  position: fixed;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: tokens.z(skip-link);
+  padding: var(--space-2) var(--space-4);
+  font-weight: 620;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-radius: var(--radius-s);
+  transform: translateY(-200%);
+
+  &:focus-visible {
+    transform: none;
+  }
+}
+
+.main {
+  position: relative;
+  z-index: tokens.z(raised);
+
+  &:focus {
+    outline: none;
+  }
+}

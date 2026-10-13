@@ -1,0 +1,99 @@
+@use 'tokens';
+@use 'mixins';
+@use 'breakpoints' as bp;
+
+$grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E";
+
+.backdrop {
+  --doc-p: 0;
+  --hue-shift: 0;
+  --tone-h: calc(var(--accent-h) + var(--hue-shift));
+
+  position: fixed;
+  inset: 0;
+  z-index: tokens.z(backdrop);
+  overflow: hidden;
+  pointer-events: none;
+  background: conic-gradient(
+    from 210deg at 72% 18%,
+    hsl(var(--ink-h) 30% 5%),
+    hsl(var(--tone-h) 45% 13%) 18%,
+    hsl(var(--ink-h) 30% 4%) 42%,
+    hsl(calc(var(--tone-h) - 40) 40% 9%) 70%,
+    hsl(var(--ink-h) 30% 5%)
+  );
+
+  @include bp.up(md) {
+    --hue-shift: calc((var(--doc-p) - 0.5) * 36);
+  }
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate3d(var(--shift-x, 0), var(--shift-y, 0), 0);
+}
+
+.blobHigh {
+  --shift-x: calc(var(--doc-p) * -18vw);
+  --shift-y: calc(var(--doc-p) * 22vh);
+
+  top: -30vmax;
+  right: -20vmax;
+  width: 80vmax;
+  height: 80vmax;
+  background: radial-gradient(
+    closest-side,
+    hsl(var(--tone-h) var(--accent-s) 42% / 42%),
+    hsl(var(--tone-h) var(--accent-s) 30% / 0%)
+  );
+}
+
+.blobLow {
+  --shift-x: calc(var(--doc-p) * 26vw);
+  --shift-y: calc(var(--doc-p) * -30vh);
+
+  bottom: -45vmax;
+  left: -30vmax;
+  width: 90vmax;
+  height: 90vmax;
+  background: radial-gradient(
+    closest-side,
+    hsl(calc(var(--tone-h) + 28) 55% 34% / 34%),
+    hsl(calc(var(--tone-h) + 28) 55% 20% / 0%)
+  );
+}
+
+.blobSide {
+  --shift-y: calc(var(--doc-p) * -50vh);
+
+  top: 60vh;
+  right: -25vmax;
+  display: none;
+  width: 55vmax;
+  height: 55vmax;
+  background: radial-gradient(
+    closest-side,
+    hsl(calc(var(--tone-h) - 36) 50% 40% / 26%),
+    hsl(calc(var(--tone-h) - 36) 50% 20% / 0%)
+  );
+
+  @include bp.up(md) {
+    display: block;
+  }
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  background-image: url($grain);
+  background-size: 180px 180px;
+  opacity: 0.05;
+}
+
+.particles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
