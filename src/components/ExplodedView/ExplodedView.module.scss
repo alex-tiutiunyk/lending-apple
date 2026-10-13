@@ -1,0 +1,197 @@
+@use 'sass:math';
+@use 'mixins';
+@use 'breakpoints' as bp;
+
+$layer-count: 7;
+$compact-count: 5;
+$window: 0.3;
+$compact-window: 0.32;
+
+.section {
+  position: relative;
+  height: 220svh;
+
+  @include bp.up(md) {
+    height: 350svh;
+  }
+
+  @include mixins.motion-reduce {
+    height: auto;
+  }
+}
+
+.stage {
+  @include mixins.container;
+
+  --progress: var(--p, 0);
+
+  position: sticky;
+  top: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--space-4);
+  height: 100svh;
+  padding-top: calc(var(--header-height) + var(--space-5));
+  padding-bottom: var(--space-5);
+
+  @include bp.up(md) {
+    grid-template-rows: none;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--space-7);
+    align-items: center;
+  }
+
+  @include mixins.motion-reduce {
+    --progress: 1;
+
+    position: static;
+    height: auto;
+    padding-block: var(--space-8);
+  }
+}
+
+.copy {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+
+  @include bp.up(md) {
+    gap: var(--space-4);
+  }
+}
+
+.title {
+  font-size: var(--step-3);
+}
+
+.intro {
+  max-width: 30rem;
+  color: var(--color-text-muted);
+}
+
+.labels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1) var(--space-4);
+  margin-top: var(--space-2);
+
+  @include bp.up(md) {
+    grid-template-columns: none;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+  }
+}
+
+.label {
+  --landed: clamp(0, (var(--progress) - var(--start) - var(--length) * 0.85) * 30, 1);
+
+  position: relative;
+  display: grid;
+  padding-left: var(--space-4);
+  color: hsl(var(--ink-h) 16% calc(70% + 26% * var(--landed)));
+  transform: translateX(calc((1 - var(--landed)) * 0.4rem));
+
+  &::before {
+    position: absolute;
+    top: 0.55em;
+    left: 0;
+    width: 0.45rem;
+    height: 0.45rem;
+    content: '';
+    background: var(--color-accent);
+    border-radius: 50%;
+    transform: scale(var(--landed));
+  }
+}
+
+.layerName {
+  font-size: var(--step-down-1);
+  font-weight: 620;
+
+  @include bp.up(md) {
+    font-size: var(--step-0);
+  }
+}
+
+.layerDetail {
+  @include mixins.visually-hidden;
+
+  @include bp.up(md) {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip-path: none;
+    font-size: var(--step-down-1);
+    color: var(--color-text-muted);
+    white-space: normal;
+  }
+}
+
+.scene {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  overflow-x: clip;
+  perspective: 1800px;
+
+  @include mixins.motion-reduce {
+    height: min(70svh, 34rem);
+  }
+}
+
+.stack {
+  position: relative;
+  height: min(46svh, 28rem);
+  aspect-ratio: 180 / 360;
+  transform: rotateX(56deg) rotateZ(-34deg);
+  transform-style: preserve-3d;
+}
+
+.layer {
+  --local: clamp(0, (var(--progress) - var(--start)) / var(--length), 1);
+  --eased: calc(var(--local) * (2 - var(--local)));
+
+  position: absolute;
+  inset: 0;
+  opacity: calc(0.55 + 0.45 * var(--eased));
+  transform: translateZ(calc(var(--rest-z) + (1 - var(--eased)) * var(--spread)))
+    scale(calc(0.94 + 0.06 * var(--eased)));
+
+  .section[data-near] & {
+    will-change: transform;
+  }
+}
+
+@for $i from 0 to $layer-count {
+  .layer[data-order='#{$i}'],
+  .label[data-order='#{$i}'] {
+    --start: #{0.04 + $i * 0.1};
+    --length: #{$window};
+  }
+
+  .layer[data-order='#{$i}'] {
+    --spread: #{($i - math.div($layer-count - 1, 2)) * 4.4}rem;
+    --rest-z: #{$i * 0.2}rem;
+  }
+}
+
+@include bp.down(md) {
+  .layer:not([data-compact-order]),
+  .label:not([data-compact-order]) {
+    display: none;
+  }
+
+  @for $i from 0 to $compact-count {
+    .layer[data-compact-order='#{$i}'],
+    .label[data-compact-order='#{$i}'] {
+      --start: #{0.04 + $i * 0.15};
+      --length: #{$compact-window};
+    }
+
+    .layer[data-compact-order='#{$i}'] {
+      --spread: #{($i - math.div($compact-count - 1, 2)) * 3.2}rem;
+    }
+  }
+}
