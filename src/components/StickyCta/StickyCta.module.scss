@@ -1,0 +1,61 @@
+@use 'tokens';
+@use 'mixins';
+@use 'breakpoints' as bp;
+
+.bar {
+  position: fixed;
+  right: var(--space-3);
+  bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
+  left: var(--space-3);
+  z-index: tokens.z(sticky-cta);
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  visibility: hidden;
+  background: hsl(var(--ink-h) 22% 8% / 94%);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-lift);
+  opacity: 0;
+  transform: translateY(calc(100% + var(--space-4)));
+  transition:
+    transform 260ms var(--ease-out),
+    opacity 200ms var(--ease-out),
+    visibility 0s linear 260ms;
+
+  &[data-visible] {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition:
+      transform 320ms var(--ease-out),
+      opacity 220ms var(--ease-out),
+      visibility 0s;
+  }
+
+  @include bp.up(md) {
+    display: none;
+  }
+
+  @include mixins.motion-reduce {
+    transition: none;
+
+    &[data-visible] {
+      transition: none;
+    }
+  }
+}
+
+.text {
+  font-size: var(--step-down-1);
+  font-weight: 560;
+}
+
+.cta {
+  @include mixins.button-primary;
+
+  min-height: var(--tap-min);
+  padding-inline: var(--space-5);
+}
