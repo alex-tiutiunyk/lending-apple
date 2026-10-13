@@ -4,7 +4,7 @@ import { prefersSavedData } from '@/hooks/saveData'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import styles from './Backdrop.module.scss'
 
-const AppleParticles = lazy(() => import('./AppleParticles'))
+const ShapeParticles = lazy(() => import('./ShapeParticles'))
 
 function subscribeToNothing() {
   return () => undefined
@@ -39,7 +39,7 @@ export function Backdrop() {
       <div className={styles.grain} />
       {!isReducedMotion && !isSavingData && (
         <Suspense fallback={null}>
-          <AppleParticles />
+          <ShapeParticles />
         </Suspense>
       )}
     </div>

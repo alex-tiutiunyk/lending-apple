@@ -18,7 +18,7 @@ export function Features() {
         {featuresCopy.title}
       </h2>
       <div className={styles.grid}>
-        <FeatureCard area="camera" title={camera.title}>
+        <FeatureCard area="camera" title={camera.title} particles="lens">
           <p className={styles.body}>{camera.body}</p>
           <ul className={styles.lenses} aria-label={camera.lensesLabel}>
             {lenses.map((lens) => (
@@ -30,7 +30,7 @@ export function Features() {
           </ul>
         </FeatureCard>
 
-        <FeatureCard area="display" title={display.title}>
+        <FeatureCard area="display" title={display.title} particles="sun">
           <p className={styles.body}>{display.body}</p>
           <div className={styles.brightness} aria-hidden="true">
             <span>1 nit</span>
@@ -38,7 +38,7 @@ export function Features() {
           </div>
         </FeatureCard>
 
-        <FeatureCard area="chip" title={chip.title}>
+        <FeatureCard area="chip" title={chip.title} particles="chip">
           <p className={styles.body}>{chip.body}</p>
           <table className={styles.cores}>
             <caption>{chip.tableCaption}</caption>
@@ -59,7 +59,7 @@ export function Features() {
           </table>
         </FeatureCard>
 
-        <FeatureCard area="titanium" title={titanium.title}>
+        <FeatureCard area="titanium" title={titanium.title} particles="lattice">
           <p className={styles.body}>{titanium.body}</p>
           <div
             ref={sampleRef}

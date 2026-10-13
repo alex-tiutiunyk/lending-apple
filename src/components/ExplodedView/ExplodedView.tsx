@@ -66,7 +66,7 @@ export function ExplodedView() {
             ))}
           </ol>
         </div>
-        <div className={styles.scene} aria-hidden="true">
+        <div className={styles.scene} aria-hidden="true" data-particles="gear">
           <div className={styles.stack}>
             {choreography.map(({ id, Art, order, compactOrder }) => (
               <div

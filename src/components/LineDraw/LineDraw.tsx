@@ -25,7 +25,7 @@ export function LineDraw() {
           </h2>
           <p className={styles.body}>{lineDrawCopy.body}</p>
         </div>
-        <div className={styles.visual}>
+        <div className={styles.visual} data-particles="compass">
           <PhoneOutline className={styles.outline} />
           <PhoneRender className={styles.render} label={lineDrawCopy.renderLabel} />
         </div>

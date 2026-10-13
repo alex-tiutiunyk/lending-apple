@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import type { ParticleShape } from '@/components/Backdrop/particleShapes'
 import { appleBodyPath, appleLeafPath, appleMarkViewBox } from './apple-mark-path'
 import { PhoneLockScreen } from './phone-lock-screen'
 import {
@@ -15,9 +16,10 @@ type PhoneRenderProps = {
   view?: PhoneView
   label: string
   className?: string | undefined
+  particles?: ParticleShape | undefined
 }
 
-export function PhoneRender({ view = 'both', label, className }: PhoneRenderProps) {
+export function PhoneRender({ view = 'both', label, className, particles }: PhoneRenderProps) {
   const id = useId()
   const shellId = `${id}-shell`
   const screenId = `${id}-screen`
@@ -31,6 +33,7 @@ export function PhoneRender({ view = 'both', label, className }: PhoneRenderProp
       viewBox={phoneViewBoxes[view]}
       role="img"
       aria-labelledby={titleId}
+      data-particles={particles}
     >
       <title id={titleId}>{label}</title>
       <defs>

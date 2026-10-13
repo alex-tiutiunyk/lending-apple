@@ -60,6 +60,7 @@ export function Finishes() {
       </div>
       <PhoneRender
         view="back"
+        particles="apple"
         className={styles.render}
         label={`${finishesCopy.renderLabel} ${selected.name}`}
       />

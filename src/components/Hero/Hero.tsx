@@ -31,7 +31,7 @@ export function Hero() {
           </a>
         </div>
       </div>
-      <div className={styles.visual}>
+      <div className={styles.visual} data-particles="spark">
         <PhoneOutline view="front" className={styles.outline} />
       </div>
     </section>

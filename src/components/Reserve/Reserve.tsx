@@ -23,7 +23,11 @@ export function Reserve() {
           <Countdown />
           <ReserveForm onReserved={() => setIsReserved(true)} />
         </div>
-        <div className={styles.renderFrame} data-reserved={isReserved ? '' : undefined}>
+        <div
+          className={styles.renderFrame}
+          data-particles="check"
+          data-reserved={isReserved ? '' : undefined}
+        >
           <PhoneRender view="front" className={styles.render} label={reserveCopy.renderLabel} />
         </div>
       </div>
