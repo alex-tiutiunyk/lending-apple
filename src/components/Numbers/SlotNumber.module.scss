@@ -1,0 +1,54 @@
+@use 'mixins';
+
+.number {
+  display: inline-flex;
+  gap: 0.12em;
+  align-items: baseline;
+  font-size: var(--step-5);
+  font-weight: 560;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.readable {
+  @include mixins.visually-hidden;
+}
+
+.reels {
+  display: inline-flex;
+}
+
+.reel {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    transparent,
+    var(--color-text) 8%,
+    var(--color-text) 92%,
+    transparent
+  );
+}
+
+.strip {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(calc(var(--reel, 0) * -1em));
+
+  span {
+    height: 1em;
+  }
+}
+
+.separator {
+  margin-right: 0.04em;
+}
+
+.unit {
+  margin-left: 0.1em;
+  font-size: 0.32em;
+  font-weight: 520;
+  color: var(--color-text-muted);
+  letter-spacing: 0;
+}
