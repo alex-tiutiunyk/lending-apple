@@ -1,0 +1,87 @@
+@use 'sass:map';
+
+$z-layers: (
+  backdrop: -1,
+  raised: 1,
+  header: 30,
+  sticky-cta: 40,
+  skip-link: 50,
+);
+
+@function z($layer) {
+  @return map.get($z-layers, $layer);
+}
+
+@mixin root-tokens {
+  --accent-h: 192;
+  --accent-s: 62%;
+  --accent-l: 58%;
+  --ink-h: 222;
+
+  --color-bg: hsl(var(--ink-h) 26% 4%);
+  --color-bg-raised: hsl(var(--ink-h) 20% 9% / 72%);
+  --color-line: hsl(var(--ink-h) 12% 60% / 22%);
+  --color-line-strong: hsl(var(--ink-h) 14% 78% / 46%);
+  --color-text: hsl(var(--ink-h) 24% 96%);
+  --color-text-muted: hsl(var(--ink-h) 10% 74%);
+  --color-danger: hsl(4deg 88% 72%);
+  --color-accent: hsl(var(--accent-h) var(--accent-s) var(--accent-l));
+  --color-accent-glow: hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 35%);
+  --color-accent-wash: hsl(var(--accent-h) var(--accent-s) var(--accent-l) / 14%);
+  --color-on-accent: hsl(var(--accent-h) 40% 7%);
+  --color-stroke: hsl(var(--ink-h) 30% 92%);
+
+  --finish-shell: hsl(var(--accent-h) calc(var(--accent-s) * 0.45) 36%);
+  --finish-shell-light: hsl(var(--accent-h) calc(var(--accent-s) * 0.5) 62%);
+  --finish-shell-dark: hsl(var(--accent-h) calc(var(--accent-s) * 0.4) 16%);
+  --finish-screen-a: hsl(calc(var(--accent-h) + 40) 70% 46%);
+  --finish-screen-b: hsl(calc(var(--accent-h) - 30) 76% 22%);
+  --part-copper: hsl(28deg 62% 52%);
+  --part-board: hsl(150deg 26% 22%);
+  --part-chip: hsl(var(--ink-h) 10% 14%);
+  --part-cell: hsl(var(--ink-h) 8% 30%);
+  --part-glass: hsl(var(--ink-h) 40% 90% / 16%);
+
+  --font-sans: 'Bricolage', 'Bricolage Fallback', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', monospace;
+
+  --step-down-1: clamp(0.83rem, 0.8rem + 0.12vw, 0.9rem);
+  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+  --step-1: clamp(1.2rem, 1.12rem + 0.4vw, 1.45rem);
+  --step-2: clamp(1.44rem, 1.28rem + 0.8vw, 1.95rem);
+  --step-3: clamp(1.73rem, 1.42rem + 1.5vw, 2.7rem);
+  --step-4: clamp(2.07rem, 1.5rem + 2.8vw, 3.9rem);
+  --step-5: clamp(2.5rem, 1.5rem + 5vw, 5.6rem);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2.25rem;
+  --space-7: 3.5rem;
+  --space-8: 5rem;
+  --space-9: 8rem;
+  --gutter: clamp(1rem, 0.6rem + 2vw, 2.5rem);
+  --content-max: 76rem;
+  --header-height: 3.75rem;
+  --tap-min: 2.75rem;
+
+  --radius-s: 5px;
+  --radius-m: 14px;
+  --radius-l: 30px;
+  --radius-pill: 999px;
+
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-press: cubic-bezier(0.3, 0.2, 0.2, 1);
+  --dur-press: 120ms;
+  --dur-tint: 200ms;
+  --dur-hover: 180ms;
+  --dur-reveal: 640ms;
+  --dur-sheen: 900ms;
+  --dur-glow: 1100ms;
+
+  --shadow-lift: 0 1px 0 hsl(0deg 0% 100% / 8%) inset, 0 18px 40px -24px hsl(0deg 0% 0% / 80%);
+  --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
+}

@@ -1,0 +1,149 @@
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@mixin container {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+@mixin focus-ring {
+  &:focus-visible {
+    outline: 2px solid transparent;
+    box-shadow: var(--focus-ring);
+  }
+}
+
+@mixin motion-safe {
+  @media (prefers-reduced-motion: no-preference) {
+    @content;
+  }
+}
+
+@mixin motion-reduce {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+@mixin pressable {
+  transition:
+    transform var(--dur-press) var(--ease-press),
+    background-color var(--dur-hover) var(--ease-out),
+    box-shadow var(--dur-hover) var(--ease-out);
+
+  &:active,
+  &[data-pressed] {
+    transform: translateY(2px) scale(0.98);
+  }
+
+  @include motion-reduce {
+    transition: none;
+  }
+}
+
+@mixin button-base {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-5);
+  font: inherit;
+  font-size: var(--step-0);
+  font-weight: 620;
+  line-height: 1.1;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+
+  @include pressable;
+  @include focus-ring;
+}
+
+@mixin button-primary {
+  @include button-base;
+
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  box-shadow: 0 10px 30px -12px var(--color-accent-glow);
+}
+
+@mixin button-quiet {
+  @include button-base;
+
+  color: var(--color-text);
+  background: transparent;
+  border-color: var(--color-line-strong);
+
+  @media (hover: hover) {
+    &:hover {
+      background: var(--color-accent-wash);
+    }
+  }
+}
+
+@mixin reveal($distance: 1.25rem) {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry var(--reveal-from, 4%) entry var(--reveal-to, 62%);
+      --reveal-distance: #{$distance};
+    }
+  }
+
+  @supports not (animation-timeline: view()) {
+    &[data-reveal='hidden'] {
+      opacity: 0;
+      transform: translateY($distance);
+    }
+
+    &[data-reveal='shown'] {
+      transition:
+        opacity var(--dur-reveal) var(--ease-out) var(--reveal-delay, 0ms),
+        transform var(--dur-reveal) var(--ease-out) var(--reveal-delay, 0ms);
+    }
+  }
+}
+
+@mixin sheen-host {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+
+  &::after {
+    position: absolute;
+    inset: -20% auto -20% 0;
+    z-index: 1;
+    width: 45%;
+    pointer-events: none;
+    content: '';
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      hsl(0deg 0% 100% / 0%) 20%,
+      hsl(0deg 0% 100% / 42%) 50%,
+      hsl(0deg 0% 100% / 0%) 80%,
+      transparent 100%
+    );
+    transform: translateX(-120%) skewX(-12deg);
+  }
+
+  @include motion-safe {
+    &[data-sheen='run']::after {
+      animation: sheen-sweep var(--dur-sheen) var(--ease-in-out) 1 both;
+    }
+  }
+}

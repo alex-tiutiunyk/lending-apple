@@ -1,0 +1,154 @@
+@use 'tokens';
+@use 'mixins';
+
+@property --accent-h {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 192;
+}
+
+@property --accent-s {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 62%;
+}
+
+@property --accent-l {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 58%;
+}
+
+@font-face {
+  font-family: Bricolage;
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/bricolage-grotesque-wght.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Bricolage Fallback';
+  src: local('Arial');
+  size-adjust: 97%;
+  ascent-override: 96%;
+  descent-override: 26%;
+  line-gap-override: 0%;
+}
+
+:root {
+  @include tokens.root-tokens;
+
+  color-scheme: dark;
+  transition:
+    --accent-h var(--dur-tint) var(--ease-out),
+    --accent-s var(--dur-tint) var(--ease-out),
+    --accent-l var(--dur-tint) var(--ease-out);
+
+  @include mixins.motion-reduce {
+    transition: none;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 100%;
+  line-height: 1.55;
+  color: var(--color-text);
+  text-size-adjust: 100%;
+  background: var(--color-bg);
+  scroll-padding-top: calc(var(--header-height) + var(--space-4));
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100svh;
+  margin: 0;
+  font-size: var(--step-0);
+  overflow-x: clip;
+}
+
+h1,
+h2,
+h3,
+p,
+figure,
+blockquote,
+dl,
+dd,
+ul,
+ol {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 640;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+ul[class],
+ol[class] {
+  padding: 0;
+  list-style: none;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+
+  @include mixins.focus-ring;
+}
+
+::selection {
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+}
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--reveal-distance, 1.25rem));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sheen-sweep {
+  from {
+    transform: translateX(-120%) skewX(-12deg);
+  }
+
+  to {
+    transform: translateX(340%) skewX(-12deg);
+  }
+}
