@@ -28,12 +28,23 @@ test('content is readable before JavaScript runs', async ({ browser }) => {
   await context.close()
 })
 
-test('reload in the middle of a pinned section restores its progress', async ({ page }) => {
+test('after a reload, pinned progress matches wherever the browser restored scroll', async ({
+  page,
+}) => {
   await page.goto('/')
   await scrollToShare(page, 'inside', 0.5)
   await page.reload()
-  await expect.poll(() => sectionProgress(page, 'inside')).toBeGreaterThan(0.35)
-  expect(await sectionProgress(page, 'inside')).toBeLessThan(0.65)
+  await page.waitForLoadState('load')
+  await expect
+    .poll(() =>
+      page.locator('#inside').evaluate((section) => {
+        const top = section.getBoundingClientRect().top + window.scrollY
+        const length = section.getBoundingClientRect().height - window.innerHeight
+        const expected = Math.min(1, Math.max(0, (window.scrollY - top) / length))
+        return Math.abs(Number(section.style.getPropertyValue('--p')) - expected)
+      }),
+    )
+    .toBeLessThan(0.02)
 })
 
 test('opening a section hash lands below the header at progress 0', async ({ page }) => {
@@ -94,6 +105,7 @@ test('turning reduced motion on while the page is open settles every section', a
 })
 
 test('rapid finish changes end on the last pick', async ({ page }) => {
+  test.slow()
   await page.goto('/')
   await page.locator('#finishes').scrollIntoViewIfNeeded()
   const names = ['Ember', 'Moss', 'Basalt', 'Tidewater', 'Ember', 'Basalt', 'Moss', 'Ember']

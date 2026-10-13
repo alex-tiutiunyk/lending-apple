@@ -37,15 +37,15 @@ test('scrolls through every section without overflow or errors', async ({ page }
 })
 
 test('pinned sections expose scroll progress', async ({ page }) => {
-  const progress = await page.evaluate(async () => {
-    const section = document.getElementById('design')
-    if (!section) return null
-    window.scrollTo(0, section.offsetTop + (section.offsetHeight - window.innerHeight) / 2)
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    return Number(section.style.getPropertyValue('--p'))
+  const design = page.locator('#design')
+  await design.evaluate((section) => {
+    const top = section.getBoundingClientRect().top + window.scrollY
+    window.scrollTo(0, top + (section.getBoundingClientRect().height - window.innerHeight) / 2)
   })
-  expect(progress).toBeGreaterThan(0.3)
-  expect(progress).toBeLessThan(0.7)
+  const readProgress = () =>
+    design.evaluate((section) => Number(section.style.getPropertyValue('--p')))
+  await expect.poll(readProgress).toBeGreaterThan(0.3)
+  expect(await readProgress()).toBeLessThan(0.7)
 })
 
 test('reads final stat values to assistive tech', async ({ page }) => {
