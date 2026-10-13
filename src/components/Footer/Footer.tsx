@@ -1,6 +1,6 @@
 import { BrandMark } from '@/assets/svg/brand-mark'
-import { footerCopy, product } from '@/content/copy'
 import { MotionToggle } from '@/components/MotionToggle/MotionToggle'
+import { footerCopy, product } from '@/content/copy'
 import styles from './Footer.module.scss'
 
 export function Footer() {

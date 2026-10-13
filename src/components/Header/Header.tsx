@@ -1,7 +1,7 @@
 import { BrandMark } from '@/assets/svg/brand-mark'
-import { headerCopy, navigation, product } from '@/content/copy'
 import { MotionToggle } from '@/components/MotionToggle/MotionToggle'
 import { PressableLink } from '@/components/PressableLink/PressableLink'
+import { headerCopy, navigation, product } from '@/content/copy'
 import styles from './Header.module.scss'
 
 export function Header() {
