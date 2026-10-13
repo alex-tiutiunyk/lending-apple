@@ -57,15 +57,28 @@
   min-height: var(--tap-min);
   padding: var(--space-3) var(--space-4);
   cursor: pointer;
+  isolation: isolate;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-m);
-  transition:
-    border-color var(--dur-hover) var(--ease-out),
-    background-color var(--dur-hover) var(--ease-out);
 
-  &:has(:checked) {
+  &::before {
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    content: '';
     background: var(--color-accent-wash);
-    border-color: var(--color-accent);
+    border: 1px solid var(--color-accent);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity var(--dur-hover) var(--ease-out);
+
+    @include mixins.motion-reduce {
+      transition: none;
+    }
+  }
+
+  &:has(:checked)::before {
+    opacity: 1;
   }
 
   &:has(:focus-visible) {

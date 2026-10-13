@@ -64,7 +64,6 @@
   color: var(--color-text-muted);
   text-decoration: none;
   border-radius: var(--radius-pill);
-  transition: color var(--dur-hover) var(--ease-out);
 
   @media (hover: hover) {
     &:hover {

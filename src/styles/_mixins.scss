@@ -45,10 +45,7 @@
 }
 
 @mixin pressable {
-  transition:
-    transform var(--dur-press) var(--ease-press),
-    background-color var(--dur-hover) var(--ease-out),
-    box-shadow var(--dur-hover) var(--ease-out);
+  transition: transform var(--dur-press) var(--ease-press);
 
   &:active,
   &[data-pressed] {
