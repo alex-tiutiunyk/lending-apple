@@ -1,6 +1,7 @@
 import { useId, useRef } from 'react'
 import { SurfaceLens } from '@/components/LivingSurface/SurfaceRipple'
-import { PressableLink } from '@/components/PressableLink/PressableLink'
+import { PressableLink } from '@/components/Pressable/PressableLink'
+import { ScrubText } from '@/components/RevealText/ScrubText'
 import { RevealTitle } from '@/components/RevealTitle/RevealTitle'
 import { numbersCopy } from '@/content/copy'
 import { statFootnotes, stats } from '@/content/specs'
@@ -21,8 +22,9 @@ export function Numbers() {
   useAwakeWhileInView(ctaRef)
 
   return (
-    <section id="numbers" className={styles.section} aria-labelledby={titleId}>
+    <section id="numbers" className={styles.root} aria-labelledby={titleId}>
       <RevealTitle id={titleId} className={styles.title} text={numbersCopy.title} />
+      <ScrubText className={styles.intro} text={numbersCopy.intro} />
       <dl ref={listRef} className={styles.stats}>
         {stats.map((stat, order) => (
           <div key={stat.id} className={styles.stat}>

@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
+import { PressableButton } from '@/components/Pressable/PressableButton'
 import { reserveCopy } from '@/content/copy'
+import { EmailBugs, type BugState } from './EmailBugs'
 import styles from './Reserve.module.scss'
 
 type FormStatus = 'editing' | 'submitting' | 'reserved'
@@ -23,6 +25,7 @@ type ReserveFormProps = {
 export function ReserveForm({ onReserved }: ReserveFormProps) {
   const [status, setStatus] = useState<FormStatus>('editing')
   const [error, setError] = useState<string | null>(null)
+  const [field, setField] = useState({ isFocused: false, isEmpty: true, hasFled: false })
   const emailRef = useRef<HTMLInputElement>(null)
   const successRef = useRef<HTMLDivElement>(null)
   const fieldId = useId()
@@ -62,6 +65,13 @@ export function ReserveForm({ onReserved }: ReserveFormProps) {
   }
 
   const isSubmitting = status === 'submitting'
+  const bugState: BugState = error
+    ? 'error'
+    : field.isFocused || !field.isEmpty
+      ? 'away'
+      : field.hasFled
+        ? 'return'
+        : 'rest'
 
   return (
     <form
@@ -75,23 +85,35 @@ export function ReserveForm({ onReserved }: ReserveFormProps) {
         {reserveCopy.emailLabel}
       </label>
       <div className={styles.fieldRow}>
-        <input
-          ref={emailRef}
-          id={emailId}
-          className={styles.input}
-          type="email"
-          name="email"
-          autoComplete="email"
-          inputMode="email"
-          required
-          readOnly={isSubmitting}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? `${errorId} ${noteId}` : noteId}
-          onInput={() => setError(null)}
+        <span className={styles.field}>
+          <input
+            ref={emailRef}
+            id={emailId}
+            className={styles.input}
+            type="email"
+            name="email"
+            autoComplete="email"
+            inputMode="email"
+            required
+            readOnly={isSubmitting}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${errorId} ${noteId}` : noteId}
+            onInput={(event) => {
+              setError(null)
+              const isEmpty = event.currentTarget.value === ''
+              setField((current) => ({ ...current, isEmpty }))
+            }}
+            onFocus={() => setField((current) => ({ ...current, isFocused: true, hasFled: true }))}
+            onBlur={() => setField((current) => ({ ...current, isFocused: false }))}
+          />
+          <EmailBugs state={bugState} />
+        </span>
+        <PressableButton
+          className={styles.submit}
+          label={reserveCopy.submit}
+          busyLabel={reserveCopy.submitting}
+          isBusy={isSubmitting}
         />
-        <button className={styles.submit} type="submit" disabled={isSubmitting}>
-          {isSubmitting ? reserveCopy.submitting : reserveCopy.submit}
-        </button>
       </div>
       {error && (
         <p id={errorId} className={styles.error}>

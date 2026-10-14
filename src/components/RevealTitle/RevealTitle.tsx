@@ -14,7 +14,7 @@ export function RevealTitle({ id, text, className }: RevealTitleProps) {
   useReveal(titleRef)
 
   return (
-    <h2 ref={titleRef} id={id} className={[styles.title, className].filter(Boolean).join(' ')}>
+    <h2 ref={titleRef} id={id} className={[styles.root, className].filter(Boolean).join(' ')}>
       <SplitWords text={text} wordClassName={styles.word} />
     </h2>
   )

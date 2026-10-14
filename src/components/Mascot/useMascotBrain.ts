@@ -1,8 +1,18 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
-import { subscribeScrollFrame, subscribeTick, type ScrollFrame } from '@/hooks/frameLoop'
-import { actDurationMs, lineFor, nextRandomAct, walkDuration, type MascotAct } from './mascotActs'
+import { subscribeScrollFrame, subscribeTick } from '@/hooks/frameLoop'
+import {
+  actDurationMs,
+  isRandomAct,
+  lineFor,
+  nextRandomAct,
+  walkDuration,
+  type MascotAct,
+  type RandomAct,
+} from './mascotActs'
+import { isComboAct } from './mascotCombos'
+import { flip, stepWalker, type Facing } from './mascotMotion'
+import { createScrollReaction } from './mascotScroll'
 
-export type Facing = 'left' | 'right'
 type HoldReason = 'focus' | 'pointer'
 
 type MascotView = {
@@ -16,14 +26,14 @@ type MascotView = {
 const walkSpeedPxPerSecond = 38
 const longestFrameMs = 100
 const startInsetPx = 16
-const blownSpeedPxPerMs = 2.6
-const turnThresholdPx = 3
+const offstagePx = 64
 
-function flip(facing: Facing): Facing {
-  return facing === 'left' ? 'right' : 'left'
-}
-
-export function useMascotBrain(pip: RefObject<HTMLElement | null>, random: () => number) {
+/** `lineForRandomAct` may replace a random act's line, for example with a hint. */
+export function useMascotBrain(
+  pip: RefObject<HTMLElement | null>,
+  random: () => number,
+  lineForRandomAct: (act: RandomAct) => string | null = () => null,
+) {
   const [view, setView] = useState<MascotView>({
     act: 'walk',
     facing: 'right',
@@ -33,7 +43,9 @@ export function useMascotBrain(pip: RefObject<HTMLElement | null>, random: () =>
   })
   const model = useRef({
     ...view,
-    x: startInsetPx,
+    x: -offstagePx,
+    isEntering: true,
+    hurryTo: startInsetPx,
     remainingMs: 0,
     holds: new Set<HoldReason>(),
   })
@@ -45,12 +57,13 @@ export function useMascotBrain(pip: RefObject<HTMLElement | null>, random: () =>
   }, [])
 
   const startAct = useCallback(
-    (act: MascotAct) => {
+    (act: MascotAct, line?: string | null) => {
       const state = model.current
       state.act = act
-      state.line = lineFor(act, random)
-      state.remainingMs = act === 'walk' ? walkDuration(random) : actDurationMs[act]
-      if (act === 'poked') state.pokeReply = state.line ?? ''
+      state.line = line === undefined ? lineFor(act, random) : line
+      state.remainingMs =
+        act === 'walk' ? walkDuration(random) : act === 'hurry' ? Infinity : actDurationMs[act]
+      if (isComboAct(act)) state.pokeReply = state.line ?? ''
       if (act === 'walk') state.pokeReply = ''
       commit()
     },
@@ -62,71 +75,82 @@ export function useMascotBrain(pip: RefObject<HTMLElement | null>, random: () =>
     if (!element) return
     model.current.remainingMs = walkDuration(random)
     let lastTime: number | null = null
+    const place = (x: number) => element.style.setProperty('--pip-x', `${x.toFixed(1)}px`)
+    const countDown = (elapsed: number) => {
+      const state = model.current
+      state.remainingMs -= elapsed
+      if (state.remainingMs > 0) return
+      if (state.act !== 'walk') return startAct('walk')
+      const next = nextRandomAct(random)
+      startAct(next, lineForRandomAct(next) ?? undefined)
+    }
 
     const onTick = (time: number) => {
       const elapsed = Math.min(longestFrameMs, time - (lastTime ?? time))
       lastTime = time
       const state = model.current
-      if (state.holds.size > 0) return
-
-      if (state.act === 'walk') {
-        const furthest = window.innerWidth - element.offsetWidth - startInsetPx
-        const step = (walkSpeedPxPerSecond * elapsed) / 1000
-        state.x += state.facing === 'right' ? step : -step
-        if (state.x <= startInsetPx || state.x >= furthest) {
-          state.x = Math.min(furthest, Math.max(startInsetPx, state.x))
-          state.facing = flip(state.facing)
-          commit()
-        }
-        element.style.setProperty('--pip-x', `${state.x.toFixed(1)}px`)
+      if (state.holds.size > 0) {
+        // Held Pip stands still, but a running act (a poke combo) still ends
+        if (state.act !== 'walk' && state.act !== 'hurry') countDown(elapsed)
+        return
       }
-
-      state.remainingMs -= elapsed
-      if (state.remainingMs <= 0) startAct(state.act === 'walk' ? nextRandomAct(random) : 'walk')
+      const furthest = window.innerWidth - element.offsetWidth - startInsetPx
+      const step = (walkSpeedPxPerSecond * elapsed) / 1000
+      const result = stepWalker(state, step, startInsetPx, furthest)
+      if (result !== 'still') place(state.x)
+      if (result === 'turned') commit()
+      if (result === 'arrived') startAct(state.act === 'chase' ? 'missed' : 'walk')
+      if (result === 'entering' || result === 'arrived' || state.act === 'hurry') return
+      countDown(elapsed)
     }
 
-    let lastScrollY = window.scrollY
-    let lastScrollAt = performance.now()
-    let lastDirection = 0
-    const onScroll = ({ scrollY }: ScrollFrame) => {
-      const now = performance.now()
-      const travelled = scrollY - lastScrollY
-      const speed = Math.abs(travelled) / Math.max(1, now - lastScrollAt)
-      lastScrollY = scrollY
-      lastScrollAt = now
-      if (Math.abs(travelled) < turnThresholdPx) return
-
-      const state = model.current
-      const direction = Math.sign(travelled)
-      if (state.act === 'walk' && lastDirection !== 0 && direction !== lastDirection) {
+    const onScroll = createScrollReaction({
+      onTurn: () => {
+        const state = model.current
+        if (state.act !== 'walk' || state.isEntering) return
         state.facing = flip(state.facing)
         commit()
-      }
-      lastDirection = direction
-      if (speed > blownSpeedPxPerMs && state.act !== 'blown' && state.act !== 'poked') {
-        startAct('blown')
-      }
-    }
+      },
+      onBlown: () => {
+        if (model.current.act === 'walk' || isRandomAct(model.current.act)) startAct('blown')
+      },
+    })
 
-    element.style.setProperty('--pip-x', `${model.current.x}px`)
+    place(model.current.x)
     const stopTicks = subscribeTick(onTick)
     const stopScroll = subscribeScrollFrame(onScroll)
     return () => {
       stopTicks()
       stopScroll()
     }
-  }, [pip, random, commit, startAct])
+  }, [pip, random, commit, startAct, lineForRandomAct])
 
-  const poke = useCallback(() => startAct('poked'), [startAct])
+  const currentAct = useCallback(() => model.current.act, [])
+  const turnTo = useCallback(
+    (facing: Facing) => {
+      model.current.facing = facing
+      commit()
+    },
+    [commit],
+  )
+  const stepAside = useCallback(
+    (x: number) => {
+      const state = model.current
+      if (state.holds.size > 0 || isComboAct(state.act)) return
+      state.hurryTo = x
+      state.facing = x > state.x ? 'right' : 'left'
+      startAct('hurry')
+    },
+    [startAct],
+  )
   const hold = useCallback(
     (reason: HoldReason, isHeld: boolean) => {
       const { holds } = model.current
-      if (isHeld) holds.add(reason)
-      else holds.delete(reason)
+      holds[isHeld ? 'add' : 'delete'](reason)
       pip.current?.toggleAttribute('data-held', holds.size > 0)
     },
     [pip],
   )
 
-  return { ...view, poke, hold }
+  return { ...view, startAct, currentAct, turnTo, hold, stepAside }
 }

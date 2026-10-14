@@ -8,6 +8,13 @@ import styles from './Features.module.scss'
 
 type FeatureArea = Exclude<keyof typeof featuresCopy, 'title'>
 
+const areaModifier: Record<FeatureArea, string | undefined> = {
+  camera: styles.cardCamera,
+  display: styles.cardDisplay,
+  chip: styles.cardChip,
+  titanium: styles.cardTitanium,
+}
+
 type FeatureCardProps = {
   area: FeatureArea
   title: string
@@ -24,7 +31,7 @@ export function FeatureCard({ area, title, particles, children }: FeatureCardPro
   return (
     <article
       ref={cardRef}
-      className={`${styles.card} ${styles[area]}`}
+      className={`${styles.card} ${areaModifier[area]}`}
       aria-labelledby={titleId}
       data-particles={particles}
       data-surface

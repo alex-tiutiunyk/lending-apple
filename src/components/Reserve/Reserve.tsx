@@ -1,6 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import { PhoneRender } from '@/assets/svg/phone-render'
 import { SurfaceLens } from '@/components/LivingSurface/SurfaceRipple'
+import { RevealText } from '@/components/RevealText/RevealText'
 import { RevealTitle } from '@/components/RevealTitle/RevealTitle'
 import { reserveCopy } from '@/content/copy'
 import { launch } from '@/content/specs'
@@ -16,14 +17,14 @@ export function Reserve() {
   useAwakeWhileInView(panelRef)
 
   return (
-    <section id="reserve" className={styles.section} aria-labelledby={titleId}>
+    <section id="reserve" className={styles.root} aria-labelledby={titleId}>
       <div ref={panelRef} className={styles.panel} data-surface>
         <SurfaceLens />
         <div className={styles.copy}>
           <RevealTitle id={titleId} className={styles.title} text={reserveCopy.title} />
-          <p className={styles.body}>
+          <RevealText className={styles.body} isDelayed>
             {reserveCopy.bodyBefore} <strong>{launch.opensAtLabel}</strong>. {reserveCopy.bodyAfter}
-          </p>
+          </RevealText>
           <Countdown />
           <ReserveForm onReserved={() => setIsReserved(true)} />
         </div>

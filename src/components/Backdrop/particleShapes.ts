@@ -10,9 +10,24 @@ export const particleShapes = [
   'lattice',
   'apple',
   'check',
+  'rocket',
 ] as const
 
 export type ParticleShape = (typeof particleShapes)[number]
+
+/** How far a shape turns with scroll while assembled, in degrees each way (plan 4 §5). */
+export const shapeTurnDegrees: Record<ParticleShape, number> = {
+  spark: 12,
+  compass: 18,
+  gear: 30,
+  lens: 0,
+  sun: 0,
+  chip: 0,
+  lattice: 0,
+  apple: 0,
+  check: 0,
+  rocket: 0,
+}
 
 export function isParticleShape(name: string | undefined): name is ParticleShape {
   return particleShapes.some((shape) => shape === name)
@@ -62,6 +77,18 @@ function latticeLines(): Polyline[] {
   ])
 }
 
+// A small phone standing upright with three flame tongues under it (plan 4 §7.3)
+function rocketLines(): Polyline[] {
+  const body = [0.38, 0.14, 0.62, 0.14, 0.62, 0.7, 0.38, 0.7, 0.38, 0.14]
+  const window = [0.43, 0.2, 0.57, 0.2, 0.57, 0.62, 0.43, 0.62, 0.43, 0.2]
+  const flames = [
+    [0.4, 0.72, 0.46, 0.84, 0.5, 0.72],
+    [0.46, 0.72, 0.5, 0.94, 0.54, 0.72],
+    [0.5, 0.72, 0.54, 0.84, 0.6, 0.72],
+  ]
+  return [body, window, ...flames]
+}
+
 const shapeLines: Record<Exclude<ParticleShape, 'apple'>, Polyline[]> = {
   spark: [radialPolygon((step) => (step % 2 === 0 ? 0.48 : 0.1), 8), ring(0.06, 16)],
   compass: [ring(0.46), [0.5, 0.1, 0.6, 0.5, 0.5, 0.9, 0.4, 0.5, 0.5, 0.1]],
@@ -75,6 +102,7 @@ const shapeLines: Record<Exclude<ParticleShape, 'apple'>, Polyline[]> = {
   ],
   lattice: [[0.5, 0.06, 0.94, 0.5, 0.5, 0.94, 0.06, 0.5, 0.5, 0.06], ...latticeLines()],
   check: [ring(0.46), [0.28, 0.52, 0.43, 0.67, 0.73, 0.35]],
+  rocket: rocketLines(),
 }
 
 function segmentLength(line: Polyline, index: number) {

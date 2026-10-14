@@ -30,7 +30,24 @@ describe('mascot acts', () => {
   it('says a line from the copy for talking acts and nothing while walking', () => {
     expect(mascotCopy.quips).toContain(lineFor('quip', seeded([0.4])))
     expect(mascotCopy.complaints).toContain(lineFor('poked', seeded([0.9])))
-    expect(lineFor('blown', seeded([0]))).toBe(mascotCopy.blown)
+    expect(mascotCopy.blown).toContain(lineFor('blown', seeded([0])))
     expect(lineFor('walk', seeded([0]))).toBeNull()
+  })
+
+  it('has a pool of lines for every talking random act', () => {
+    expect(mascotCopy.quips.length).toBeGreaterThanOrEqual(8)
+    expect(mascotCopy.complaints.length).toBeGreaterThanOrEqual(8)
+    for (const act of randomActs.filter((act) => act !== 'quip' && act !== 'dance')) {
+      expect(mascotCopy[act].length).toBeGreaterThanOrEqual(3)
+      expect(mascotCopy[act]).toContain(lineFor(act, seeded([0.5])))
+    }
+  })
+
+  it('complains about the section under Pip some of the time', () => {
+    expect(mascotCopy.sectionComplaints.finishes).toContain(
+      lineFor('poked', seeded([0.1, 0.4]), 'finishes'),
+    )
+    expect(mascotCopy.complaints).toContain(lineFor('poked', seeded([0.9, 0.4]), 'finishes'))
+    expect(lineFor('airplane', seeded([0]))).toBe(mascotCopy.combos.airplane)
   })
 })

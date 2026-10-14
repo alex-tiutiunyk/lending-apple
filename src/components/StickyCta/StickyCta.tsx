@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { PressableLink } from '@/components/PressableLink/PressableLink'
+import { PressableLink } from '@/components/Pressable/PressableLink'
 import { stickyCtaCopy } from '@/content/copy'
 import { documentTop, subscribeScrollFrame, type ScrollFrame } from '@/hooks/frameLoop'
 import styles from './StickyCta.module.scss'
@@ -42,7 +42,7 @@ export function StickyCta() {
 
   return (
     <aside
-      className={styles.bar}
+      className={styles.root}
       aria-label={stickyCtaCopy.label}
       data-sticky-cta
       data-pip-avoid
@@ -50,7 +50,7 @@ export function StickyCta() {
       inert={!isVisible}
     >
       <p className={styles.text}>{stickyCtaCopy.text}</p>
-      <PressableLink href="#reserve" label={stickyCtaCopy.cta} />
+      <PressableLink href="#reserve" label={stickyCtaCopy.cta} hasNudges />
     </aside>
   )
 }

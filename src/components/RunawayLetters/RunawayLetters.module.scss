@@ -1,0 +1,85 @@
+@use 'tokens';
+
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: tokens.z(mascot);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+// The original glyph while its copy is away: painted transparent through the Custom Highlight
+// API, so the text node, its kerning and the line stay exactly as they are
+::highlight(runaway-letters) {
+  color: transparent;
+}
+
+// Moved by translate only; font, size and color are copied from the source glyph
+.letter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-block;
+  white-space: pre;
+  text-align: center;
+  transform-origin: 50% 100%;
+  rotate: var(--tilt, 0deg);
+  will-change: translate;
+}
+
+// Two tiny legs that grow out under the letter and walk while it runs
+.leg {
+  position: absolute;
+  bottom: -0.5em;
+  width: max(2px, 0.1em);
+  height: 0.5em;
+  background: currentcolor;
+  border-radius: 1px;
+  transform-origin: 50% 0;
+  scale: 1 0;
+  transition: scale 200ms var(--ease-out);
+
+  // A small foot pointing forward, so the legs read as legs even at body-text size
+  &::after {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0.3em;
+    height: max(2px, 0.1em);
+    content: '';
+    background: currentcolor;
+    border-radius: 1px;
+  }
+
+  &:first-of-type {
+    left: 28%;
+  }
+
+  &:last-of-type {
+    left: 60%;
+  }
+
+  .letter[data-phase]:not([data-phase='settle'], [data-phase='done']) & {
+    scale: 1 1;
+  }
+
+  .letter:is([data-phase='run'], [data-phase='back'], [data-phase='jump'], [data-phase='home'])
+    &:first-of-type {
+    animation: leg-walk 160ms ease-in-out infinite alternate;
+  }
+
+  .letter:is([data-phase='run'], [data-phase='back'], [data-phase='jump'], [data-phase='home'])
+    &:last-of-type {
+    animation: leg-walk 160ms ease-in-out infinite alternate-reverse;
+  }
+}
+
+@keyframes leg-walk {
+  from {
+    rotate: -30deg;
+  }
+
+  to {
+    rotate: 30deg;
+  }
+}

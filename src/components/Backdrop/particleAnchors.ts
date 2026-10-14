@@ -1,10 +1,17 @@
 import { documentTop } from '@/hooks/frameLoop'
 import type { AnchorTrack } from './particleField'
-import { isParticleShape, shapePoints, type ParticleShape } from './particleShapes'
+import {
+  isParticleShape,
+  shapePoints,
+  shapeTurnDegrees,
+  type ParticleShape,
+} from './particleShapes'
 
 export type ShapeAnchor = AnchorTrack & {
+  shape: ParticleShape
   centerX: number
   size: number
+  turnMax: number
   points: Float32Array
 }
 
@@ -56,8 +63,10 @@ export function measureAnchors(count: number, isCompact: boolean): ShapeAnchor[]
       const shape = element.dataset.particles
       if (!isParticleShape(shape)) return []
       return {
+        shape,
         ...trackOf(element),
         ...placement(element.getBoundingClientRect(), isCompact),
+        turnMax: shapeTurnDegrees[shape],
         points: cachedPoints(shape, count),
       }
     },

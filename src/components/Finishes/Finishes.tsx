@@ -1,8 +1,11 @@
 import { useId, useState } from 'react'
 import { PhoneRender } from '@/assets/svg/phone-render'
+import { DecodeText } from '@/components/RevealText/DecodeText'
+import { RevealText } from '@/components/RevealText/RevealText'
 import { RevealTitle } from '@/components/RevealTitle/RevealTitle'
 import { finishesCopy } from '@/content/copy'
-import { finishes, type Finish, type FinishId } from '@/content/specs'
+import { finishes, type Finish } from '@/content/specs'
+import { chooseFinish, useStoredFinish } from './useStoredFinish'
 import styles from './Finishes.module.scss'
 
 function applyFinishToPage({ hue, saturation, lightness }: Finish) {
@@ -18,24 +21,28 @@ function swatchColor({ hue, saturation, lightness }: Finish) {
 
 export function Finishes() {
   const titleId = useId()
-  const [selectedId, setSelectedId] = useState<FinishId>(finishes[0].id)
+  const selectedId = useStoredFinish()
   const [changeCount, setChangeCount] = useState(0)
   const selected = finishes.find(({ id }) => id === selectedId) ?? finishes[0]
-  const tiltClassName = changeCount % 2 === 1 ? styles.tiltOdd : styles.tiltEven
+  const tiltClassName = changeCount % 2 === 1 ? styles.renderTiltOdd : styles.renderTiltEven
 
   const selectFinish = (finish: Finish) => {
-    setSelectedId(finish.id)
+    chooseFinish(finish.id)
     setChangeCount((count) => count + 1)
     applyFinishToPage(finish)
   }
 
   return (
-    <section id="finishes" className={styles.section} aria-labelledby={titleId}>
+    <section id="finishes" className={styles.root} aria-labelledby={titleId}>
       <div className={styles.copy}>
         <RevealTitle id={titleId} className={styles.title} text={finishesCopy.title} />
-        <p className={styles.body}>{finishesCopy.body}</p>
+        <RevealText className={styles.body} isDelayed>
+          {finishesCopy.body}
+        </RevealText>
         <fieldset className={styles.picker}>
-          <legend className={styles.legend}>{finishesCopy.legend}</legend>
+          <legend className={styles.legend}>
+            <DecodeText text={finishesCopy.legend} />
+          </legend>
           {finishes.map((finish) => (
             <label key={finish.id} className={styles.option}>
               <input

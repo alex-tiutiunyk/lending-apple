@@ -31,6 +31,7 @@ export const heroCopy = {
   lede: 'A concept for the next iPhone: a 2 nm chip, a 120 mm periscope that fits in 8.2 mm of titanium, and a battery that lasts a long-haul flight plus the taxi after it.',
   primaryCta: 'Reserve yours',
   secondaryCta: 'See how it is built',
+  notifications: ['Pre-orders open Nov 20', '31 h of video on one charge', 'Pip: let me out'],
 } as const
 
 export const lineDrawCopy = {
@@ -48,6 +49,8 @@ export const explodedCopy = {
 
 export const numbersCopy = {
   title: 'The numbers',
+  intro:
+    'Five figures, each measured the way a reviewer would check it rather than the way a launch slide would round it.',
   ctaText: 'Pre-orders open November 20.',
   cta: 'Reserve yours',
 } as const
@@ -73,7 +76,13 @@ export const featuresCopy = {
   titanium: {
     title: 'A band of grade 5 titanium',
     body: 'It weighs 19 g less than steel and wears scratches as patina, not damage.',
-    renderLabel: 'Brushed titanium band sample in the selected finish',
+    renderLabel:
+      'Close-up of the phone corner: titanium band, cover glass and display, in the selected finish',
+    callouts: {
+      band: 'Titanium band, 1.2 mm',
+      glass: 'Cover glass',
+      display: 'Display',
+    },
   },
 } as const
 
@@ -118,18 +127,62 @@ export const mascotCopy = {
     'Yes, the cutout is my face. No, you cannot tap it.',
     'Thirty-one hours of video and not one of them about me.',
     'Grade 5 titanium. Grade 2 sense of direction.',
+    'My legs are not in the spec sheet.',
+    'I scroll so you do not have to.',
+    'Somebody render me a pair of shoes.',
   ],
   complaints: [
     'Hey. Fingerprints.',
     'That was my camera.',
     'Rude. I just got polished.',
     'Poke me again and I go to airplane mode.',
+    'I am not a button. Well, I am.',
+    'That tickles the face sensors.',
+    'You will void my warranty.',
+    'Ow. Right on the glass.',
   ],
-  selfie: 'Hold still.',
-  nap: 'Low battery. Back in five.',
-  mirror: 'Looking sharp.',
-  trip: 'I meant to do that.',
-  blown: 'Whoa.',
+  sectionComplaints: {
+    finishes: [
+      'Careful, that finish is new.',
+      'Do not smudge the color.',
+      'I picked this shade myself.',
+    ],
+    inside: [
+      'Hands off, my layers are showing.',
+      'Do not poke the battery.',
+      'Screws are not toys.',
+    ],
+    reserve: [
+      'Reserve one, then poke it.',
+      'I am not for sale. They are.',
+      'Poking does not count as a pre-order.',
+    ],
+  },
+  excuses: ['Excuse me.', 'Pardon me.', 'Coming through.'],
+  selfie: ['Hold still.', 'Say cheese.', 'One more, I blinked.'],
+  nap: ['Low battery. Back in five.', 'Wake me at 20 %.', 'Just closing my apps.'],
+  mirror: ['Looking sharp.', 'Is that a scratch?', 'Still got it.'],
+  trip: ['I meant to do that.', 'The floor moved.', 'Nobody saw that.'],
+  blown: ['Whoa.', 'Slow down.', 'Hold on to something.'],
+  wave: ['Hi.', 'Oh, hello.', 'Hey there.'],
+  ring: ['Unknown number.', 'Not now, Mom.', 'Probably spam.'],
+  charge: ['Ah, that is better.', 'Topping up.', 'Five percent is not a number.'],
+  moonwalk: ['Hee hee.', 'Smooth.', 'Backwards counts too.'],
+  stretch: ['Long day.', 'Mmm, stretch.', 'Taller than last year.'],
+  juggle: ['Watch this.', 'Spare screws.', 'Oops. Got it.'],
+  chase: ['Hey!', 'Come back here!', 'That is my letter!'],
+  missed: ['So close!', 'It had a head start.', 'Next time.'],
+  cheer: ['Done!', 'You read it all!', 'The end. Finally.'],
+  combos: {
+    screenshot: 'Saved to my camera roll.',
+    dizzy: 'Everything is spinning.',
+    airplane: 'Fine. Airplane mode.',
+  },
+  hints: {
+    screenshot: 'Psst. Poke me twice.',
+    dizzy: 'Three pokes. I dare you.',
+    airplane: 'Four pokes and I fly.',
+  },
 } as const
 
 export const footerCopy = {
@@ -137,9 +190,56 @@ export const footerCopy = {
     'Concept 18 Pro is an unofficial design study made for a portfolio. It is not affiliated with, endorsed by or connected to Apple Inc. iPhone is a trademark of Apple Inc., registered in the U.S. and other countries. Every specification on this page is invented.',
   fontCredit: 'Set in Bricolage Grotesque, SIL Open Font License.',
   linksLabel: 'Footer',
+  backToTop: 'Back to top',
+  arrow: '→',
+  fileArrow: '↗',
   links: [
-    { href: '#top', label: 'Back to top' },
-    { href: '#reserve', label: 'Reserve' },
-    { href: '/fonts/OFL.txt', label: 'Font license' },
+    { href: '#reserve', label: 'Reserve', isFile: false },
+    { href: '/fonts/OFL.txt', label: 'Font license', isFile: true },
   ],
+} as const
+
+export const a11yCopy = {
+  handle: 'Accessibility settings',
+  title: 'Accessibility settings',
+  motion: {
+    legend: 'Motion',
+    levels: { full: 'Full', calm: 'Calm', off: 'Off' },
+    note: 'Calm stops ambient motion and keeps scroll effects. Off stops everything.',
+  },
+  text: {
+    legend: 'Text size',
+    smaller: 'Smaller text',
+    larger: 'Larger text',
+  },
+  theme: {
+    legend: 'Theme',
+    levels: { dark: 'Dark', light: 'Light' },
+  },
+  contrast: {
+    legend: 'Contrast',
+    levels: { standard: 'Standard', high: 'High' },
+  },
+  reading: {
+    legend: 'Reading',
+    spacing: 'Wider spacing',
+    font: 'Readable font',
+    links: 'Underline links',
+  },
+  pip: {
+    legend: 'Pip',
+    show: 'Show Pip, the walking phone',
+  },
+  reset: 'Reset all',
+  systemMotion: 'Your system asks for reduced motion, so motion stays off.',
+  systemContrast: 'Your system asks for more contrast.',
+  notRemembered: 'This browser blocks storage: settings last until you leave the page.',
+  announce: {
+    motion: (level: string) => `Motion ${level.toLowerCase()}`,
+    text: (scale: number) => `Text size ${scale} %`,
+    contrast: (level: string) => `Contrast ${level.toLowerCase()}`,
+    theme: (level: string) => `${level} theme`,
+    toggle: (label: string, isOn: boolean) => `${label} ${isOn ? 'on' : 'off'}`,
+    reset: 'Settings reset',
+  },
 } as const

@@ -2,7 +2,7 @@
 @use 'mixins';
 @use 'breakpoints' as bp;
 
-.footer {
+.root {
   position: relative;
   z-index: tokens.z(raised);
   padding-block: var(--space-7) calc(var(--space-9) + env(safe-area-inset-bottom));
@@ -48,16 +48,92 @@
   }
 }
 
+// Links (plan 4 §7.1): an underline that grows from the left and shrinks to the right, letters
+// that roll once (RollingText) and an arrow that slides in. Hover and keyboard focus alike.
 .link {
+  position: relative;
   display: inline-flex;
   align-items: center;
   min-height: var(--tap-min);
   color: var(--color-text-muted);
+  text-decoration: none;
   border-radius: var(--radius-s);
+  transition: color var(--dur-hover) var(--ease-out);
+
+  &::after {
+    position: absolute;
+    right: 0;
+    bottom: calc(50% - 0.75em);
+    left: 0;
+    height: 1px;
+    content: '';
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--dur-hover) var(--ease-out);
+  }
+
+  &:focus-visible {
+    color: var(--color-text);
+  }
+
+  &:focus-visible::after {
+    transform: none;
+    transform-origin: left;
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      color: var(--color-text);
+    }
+
+    &:hover::after {
+      transform: none;
+      transform-origin: left;
+    }
+  }
+
+  // Always underlined where the reader or the contrast mode asks for it: the real underline
+  @include mixins.high-contrast {
+    text-decoration: underline;
+
+    &::after {
+      display: none;
+    }
+  }
+
+  // "Underline links" (plan 3 §5) draws the real underline through global.scss; no second line
+  :root[data-links='underline'] &::after {
+    display: none;
+  }
 }
 
-.motion {
-  justify-self: start;
+.arrow {
+  margin-left: 0.3em;
+  opacity: 0;
+  transform: translateX(-0.3em);
+  transition:
+    opacity var(--dur-hover) var(--ease-out),
+    transform var(--dur-hover) var(--ease-out);
+
+  .link:focus-visible & {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (hover: hover) {
+    .link:hover & {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
 }
 
 .legal,
@@ -69,4 +145,14 @@
   @include bp.up(md) {
     grid-column: 1 / -1;
   }
+}
+
+// The particle anchor for the rocket: an invisible box right above the footer's right edge
+.rocket {
+  position: absolute;
+  top: calc(-12rem - var(--space-4));
+  right: var(--gutter);
+  width: 12rem;
+  height: 12rem;
+  pointer-events: none;
 }

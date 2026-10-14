@@ -1,0 +1,60 @@
+@use 'mixins';
+
+.name {
+  @include mixins.visually-hidden;
+}
+
+.letters,
+.word {
+  display: inline-flex;
+}
+
+.letters {
+  flex-wrap: wrap;
+  column-gap: 0.28em;
+  justify-content: inherit;
+}
+
+.letter {
+  display: inline-block;
+  height: 1lh;
+  overflow: hidden;
+}
+
+.strip {
+  display: flex;
+  flex-direction: column;
+
+  // --i is the letter's position in the label: a 22 ms stagger
+  transition: transform var(--dur-roll) var(--ease-out) calc(var(--i, 0) * 22ms);
+
+  :where([data-roll-host]:focus-visible) & {
+    transform: translateY(-50%);
+  }
+
+  @media (hover: hover) {
+    :where([data-roll-host]:not([data-busy]):hover) & {
+      transform: translateY(-50%);
+    }
+  }
+
+  :where([data-roll-host][data-busy]) & {
+    @include mixins.motion-safe {
+      animation: roll-in var(--dur-roll) var(--ease-out) calc(var(--i, 0) * 22ms) both;
+    }
+  }
+}
+
+@keyframes roll-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@include mixins.motion-reduce {
+  .strip,
+  :where([data-roll-host]:hover, [data-roll-host]:focus-visible) .strip {
+    transform: none;
+    transition: none;
+  }
+}

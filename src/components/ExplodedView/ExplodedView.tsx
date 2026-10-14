@@ -4,8 +4,10 @@ import { BatteryLayer } from '@/assets/svg/layers/battery-layer'
 import { CameraLayer } from '@/assets/svg/layers/camera-layer'
 import { DisplayLayer } from '@/assets/svg/layers/display-layer'
 import { FrameLayer } from '@/assets/svg/layers/frame-layer'
+import { BandSlice } from '@/assets/svg/layers/band-slice'
 import { FrontGlassLayer } from '@/assets/svg/layers/front-glass-layer'
 import { LogicBoardLayer } from '@/assets/svg/layers/logic-board-layer'
+import { RevealText } from '@/components/RevealText/RevealText'
 import { RevealTitle } from '@/components/RevealTitle/RevealTitle'
 import { explodedCopy } from '@/content/copy'
 import { layers, type LayerId } from '@/content/specs'
@@ -21,6 +23,10 @@ const layerArt: Record<LayerId, ComponentType> = {
   display: DisplayLayer,
   'front-glass': FrontGlassLayer,
 }
+
+const bandSlices = [1, 2, 3, 4]
+const compactSlices = 2
+const frameOrder = layers.findIndex(({ id }) => id === 'frame')
 
 const compactLayerIds: LayerId[] = layers.filter((layer) => layer.inCompactView).map(({ id }) => id)
 
@@ -43,14 +49,16 @@ export function ExplodedView() {
     <section
       ref={sectionRef}
       id="inside"
-      className={styles.section}
+      className={styles.root}
       aria-labelledby={titleId}
       data-pinned
     >
       <div className={styles.stage} data-stage>
         <div className={styles.copy}>
           <RevealTitle id={titleId} className={styles.title} text={explodedCopy.title} />
-          <p className={styles.intro}>{explodedCopy.intro}</p>
+          <RevealText className={styles.intro} isDelayed>
+            {explodedCopy.intro}
+          </RevealText>
           <ol className={styles.labels} aria-label={explodedCopy.listLabel}>
             {choreography.map(({ id, name, detail, order, compactOrder }) => (
               <li
@@ -67,6 +75,18 @@ export function ExplodedView() {
         </div>
         <div className={styles.scene} aria-hidden="true" data-particles="gear">
           <div className={styles.stack}>
+            <div className={styles.shadow} />
+            {bandSlices.map((slice) => (
+              <div
+                key={slice}
+                className={`${styles.layer} ${styles.slice}`}
+                data-order={frameOrder}
+                data-compact-order={slice <= compactSlices ? 0 : undefined}
+                data-slice={slice}
+              >
+                <BandSlice />
+              </div>
+            ))}
             {choreography.map(({ id, Art, order, compactOrder }) => (
               <div
                 key={id}

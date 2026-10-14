@@ -4,8 +4,14 @@
 
 $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E";
 
-.backdrop {
-  --doc-p: 0;
+// The page position comes from useDocumentProgress on <body> (plan 4 §2.1); the drift reads
+// it only with motion on, so the backdrop stands still at "off" as before
+.root {
+  --backdrop-p: 0;
+
+  @include mixins.motion-safe {
+    --backdrop-p: var(--doc-p, 0);
+  }
 
   position: fixed;
   inset: 0;
@@ -20,6 +26,27 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
     hsl(calc(var(--accent-h) - 40) 40% 9%) 70%,
     hsl(var(--ink-h) 30% 5%)
   );
+
+  // Light theme: the same sweep, as tinted paper
+  @include mixins.light-theme {
+    background: conic-gradient(
+      from 210deg at 72% 18%,
+      hsl(var(--ink-h) 30% 97%),
+      hsl(var(--accent-h) 45% 90%) 18%,
+      hsl(var(--ink-h) 30% 98%) 42%,
+      hsl(calc(var(--accent-h) - 40) 40% 93%) 70%,
+      hsl(var(--ink-h) 30% 97%)
+    );
+  }
+
+  // High contrast: nothing sits behind the text
+  @include mixins.high-contrast {
+    background: var(--color-bg);
+
+    > * {
+      display: none;
+    }
+  }
 }
 
 .blob,
@@ -32,9 +59,9 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
   transform: translate3d(var(--shift-x, 0), var(--shift-y, 0), 0);
 }
 
-.blobHigh {
-  --shift-x: calc(var(--doc-p) * -18vw);
-  --shift-y: calc(var(--doc-p) * 22vh);
+.blob--high {
+  --shift-x: calc(var(--backdrop-p) * -18vw);
+  --shift-y: calc(var(--backdrop-p) * 22vh);
 
   top: -30vmax;
   right: -20vmax;
@@ -47,9 +74,9 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
   );
 }
 
-.blobLow {
-  --shift-x: calc(var(--doc-p) * 26vw);
-  --shift-y: calc(var(--doc-p) * -30vh);
+.blob--low {
+  --shift-x: calc(var(--backdrop-p) * 26vw);
+  --shift-y: calc(var(--backdrop-p) * -30vh);
 
   bottom: -45vmax;
   left: -30vmax;
@@ -72,7 +99,7 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
   }
 }
 
-.tintCool {
+.tint--cool {
   top: -20vmax;
   left: -30vmax;
   background: radial-gradient(
@@ -80,10 +107,10 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
     hsl(calc(var(--accent-h) - 18) 60% 40% / 30%),
     hsl(calc(var(--accent-h) - 18) 60% 20% / 0%)
   );
-  opacity: calc(1 - var(--doc-p));
+  opacity: calc(1 - var(--backdrop-p));
 }
 
-.tintWarm {
+.tint--warm {
   right: -40vmax;
   bottom: -30vmax;
   background: radial-gradient(
@@ -91,7 +118,7 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
     hsl(calc(var(--accent-h) + 18) 60% 40% / 30%),
     hsl(calc(var(--accent-h) + 18) 60% 20% / 0%)
   );
-  opacity: var(--doc-p);
+  opacity: var(--backdrop-p);
 }
 
 .waves {
@@ -102,8 +129,8 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
 
   @include mixins.wave-mask;
 
-  @media (prefers-reduced-motion: no-preference) {
-    :root:not([data-motion-paused]) .backdrop[data-awake] & {
+  .root[data-awake] & {
+    @include mixins.motion-ambient {
       will-change: transform;
       animation: wave-drift calc(var(--dur-wave) * 1.6) linear infinite;
     }
@@ -123,4 +150,10 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+@media (forced-colors: active) {
+  .root {
+    display: none;
+  }
 }

@@ -1,7 +1,7 @@
 @use 'tokens';
 @use 'mixins';
 
-.pip {
+.root {
   position: fixed;
   bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
   left: 0;
@@ -18,7 +18,13 @@
     opacity: 0;
   }
 
+  &[data-behind] {
+    z-index: tokens.z(backdrop);
+  }
+
   :global(body:has([data-sticky-cta][data-visible])) & {
+    --pip-lift: var(--sticky-cta-clearance);
+
     transform: translateY(calc(var(--sticky-cta-clearance) * -1));
   }
 
@@ -41,7 +47,7 @@
 
   @include mixins.focus-ring;
 
-  .pip[data-hiding] & {
+  .root[data-hiding] & {
     pointer-events: none;
   }
 }
@@ -49,7 +55,7 @@
 .art {
   overflow: visible;
 
-  .pip[data-facing='left'] & {
+  .root[data-facing='left'] & {
     scale: -1 1;
   }
 }
@@ -81,15 +87,21 @@
   fill: var(--color-bg);
 }
 
+.eye,
+.eye-on-screen {
+  translate: var(--look-x, 0) var(--look-y, 0);
+  transition: translate 120ms var(--ease-out);
+}
+
 .eye {
   fill: var(--color-text);
 }
 
-.eyeOnScreen {
+.eye-on-screen {
   fill: var(--color-bg);
 }
 
-.eyeLine {
+.eye-line {
   fill: none;
   stroke: var(--color-text);
   stroke-width: 1;
@@ -133,13 +145,13 @@
   fill: var(--color-text);
 }
 
-.batteryCase {
+.battery-case {
   fill: none;
   stroke: var(--color-text);
   stroke-width: 0.9;
 }
 
-.batteryLevel {
+.battery-level {
   fill: var(--color-danger);
 }
 
@@ -162,6 +174,11 @@
     right: 0;
     left: auto;
   }
+
+  .root[data-act='nap'] &,
+  .root[data-act='charge'] & {
+    bottom: calc(100% + var(--space-5));
+  }
 }
 
 .sleep {
@@ -175,7 +192,7 @@
   color: var(--color-text-muted);
 }
 
-.sleepLetter {
+.sleep-letter {
   animation: pip-snore 1.8s var(--ease-out) infinite;
 
   &:nth-child(2) {
@@ -191,7 +208,7 @@
   @include mixins.visually-hidden;
 }
 
-.pip[data-act='selfie'] {
+.root[data-act='selfie'] {
   .art {
     animation: pip-turn 2.6s var(--ease-in-out) both;
   }
@@ -209,7 +226,7 @@
   }
 }
 
-.pip[data-act='nap'] {
+.root[data-act='nap'] {
   .body {
     rotate: 8deg;
   }
@@ -219,32 +236,46 @@
   }
 }
 
-.pip[data-act='dance'] .body {
+.root[data-act='dance'] .body {
   animation: pip-dance 400ms var(--ease-in-out) infinite alternate;
 }
 
-.pip[data-act='trip'] .body {
+.root[data-act='trip'] .body {
   animation: pip-trip 2.2s var(--ease-out) both;
 }
 
-.pip[data-act='mirror'] .art {
+.root[data-act='mirror'] .art {
   animation: pip-mirror 3s var(--ease-in-out) both;
 }
 
-.pip[data-act='blown'] .body {
+.root[data-act='blown'] .body {
   animation: pip-blown 1.4s var(--ease-out) both;
 }
 
-.pip[data-act='poked'] .art {
+.root[data-act='hurry'] {
+  .body {
+    rotate: 10deg;
+  }
+
+  .leg--left {
+    animation: pip-step calc(var(--dur-step) / 2) var(--ease-in-out) infinite alternate;
+  }
+
+  .leg--right {
+    animation: pip-step calc(var(--dur-step) / 2) var(--ease-in-out) infinite alternate-reverse;
+  }
+}
+
+.root[data-act='poked'] .art {
   animation: pip-jump 700ms var(--ease-out) both;
 }
 
-.pip[data-act='walk']:not([data-held]) {
-  .legLeft {
+.root[data-act='walk']:not([data-held]) {
+  .leg--left {
     animation: pip-step var(--dur-step) var(--ease-in-out) infinite alternate;
   }
 
-  .legRight {
+  .leg--right {
     animation: pip-step var(--dur-step) var(--ease-in-out) infinite alternate-reverse;
   }
 

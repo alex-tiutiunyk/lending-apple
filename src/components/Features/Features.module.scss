@@ -1,7 +1,7 @@
 @use 'mixins';
 @use 'breakpoints' as bp;
 
-.section {
+.root {
   @include mixins.container;
 
   display: grid;
@@ -47,7 +47,7 @@
   }
 }
 
-.cardTitle {
+.card-title {
   font-size: var(--step-2);
 }
 
@@ -56,7 +56,7 @@
   color: var(--color-text-muted);
 }
 
-.camera {
+.card--camera {
   --reveal-to: 52%;
 
   border-radius: var(--radius-l) var(--radius-m) var(--radius-m) var(--radius-l);
@@ -72,7 +72,7 @@
   }
 }
 
-.display {
+.card--display {
   --reveal-to: 60%;
   --reveal-delay: 70ms;
 
@@ -81,7 +81,7 @@
   }
 }
 
-.chip {
+.card--chip {
   --reveal-to: 68%;
   --reveal-delay: 150ms;
 
@@ -90,7 +90,7 @@
   }
 }
 
-.titanium {
+.card--titanium {
   --reveal-to: 58%;
   --reveal-delay: 40ms;
 
@@ -100,15 +100,13 @@
     gap: var(--space-3) var(--space-6);
     align-items: center;
 
-    > * {
+    .card-title {
       grid-column: 2;
-    }
-
-    .cardTitle {
       align-self: end;
     }
 
     .body {
+      grid-column: 2;
       align-self: start;
     }
 
@@ -189,6 +187,39 @@
     font-size: var(--step-1);
     font-variant-numeric: tabular-nums;
     text-align: right;
+  }
+}
+
+$core-rows: 3;
+
+.cores tbody tr {
+  @supports (animation-timeline: view()) {
+    @include mixins.motion-safe {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: entry var(--row-from) entry calc(var(--row-from) + 60%);
+      --reveal-distance: 0.75rem;
+    }
+  }
+
+  @supports not (animation-timeline: view()) {
+    .card[data-reveal='hidden'] & {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+
+    .card[data-reveal='shown'] & {
+      transition:
+        opacity var(--dur-reveal) var(--ease-out) var(--row-delay),
+        transform var(--dur-reveal) var(--ease-out) var(--row-delay);
+    }
+  }
+}
+
+@for $i from 1 through $core-rows {
+  .cores tbody tr:nth-child(#{$i}) {
+    --row-from: #{10% + ($i - 1) * 10%};
+    --row-delay: #{240ms + ($i - 1) * 60ms};
   }
 }
 

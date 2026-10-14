@@ -2,11 +2,11 @@
 @use 'mixins';
 @use 'breakpoints' as bp;
 
-.header {
+.root {
   position: sticky;
   top: 0;
   z-index: tokens.z(header);
-  background: hsl(var(--ink-h) 26% 4% / 88%);
+  background: var(--color-bar);
   border-bottom: 1px solid var(--color-line);
 }
 
@@ -36,34 +36,57 @@
   color: var(--color-accent);
 }
 
-.nav {
-  display: none;
-  margin-left: auto;
+// Page progress along the bottom edge (plan 4 §2.1): the accent line grows over the border
+// with --doc-p from useDocumentProgress. It follows the scroll at every motion level like a
+// scrollbar would; only the glow on its tip is motion, so it goes with reduced motion.
+.progress {
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 1px;
+  pointer-events: none;
 
-  @include bp.up(md) {
-    display: block;
+  @include mixins.high-contrast {
+    height: 2px;
   }
 }
 
-.links {
-  display: flex;
-  gap: var(--space-1);
+.progress-line {
+  position: absolute;
+  inset: 0;
+  background: var(--color-accent);
+  transform: scaleX(var(--doc-p, 0));
+  transform-origin: left;
+
+  @media (forced-colors: active) {
+    background: Highlight;
+  }
 }
 
-.link {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--tap-min);
-  padding-inline: var(--space-3);
-  font-size: var(--step-down-1);
-  color: var(--color-text-muted);
-  text-decoration: none;
-  border-radius: var(--radius-pill);
+.progress-tip {
+  position: absolute;
+  inset: 0;
+  transform: translateX(calc((var(--doc-p, 0) - 1) * 100%));
 
-  @media (hover: hover) {
-    &:hover {
-      color: var(--color-text);
-    }
+  &::after {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    content: '';
+    background: radial-gradient(circle, var(--color-accent-bright), transparent 70%);
+    border-radius: 50%;
+    box-shadow: 0 0 8px 2px var(--color-accent-glow);
+    opacity: calc(0.4 + min(1, max(var(--scroll-v, 0), -1 * var(--scroll-v, 0))) * 0.6);
+    translate: 50% -50%;
+  }
+
+  @include mixins.motion-reduce {
+    display: none;
+  }
+
+  @include mixins.high-contrast {
+    display: none;
   }
 }
 
@@ -72,5 +95,23 @@
 
   @include bp.up(md) {
     margin-left: 0;
+  }
+}
+
+// Large text on a narrow screen: the bar keeps the mark and the pause toggle. The name stays
+// readable to assistive tech; Reserve stays one tap away in the hero and the sticky CTA.
+.name {
+  :root[data-text-scale] & {
+    @include bp.down(sm) {
+      @include mixins.visually-hidden;
+    }
+  }
+}
+
+.reserve {
+  :root[data-text-scale] & {
+    @include bp.down(sm) {
+      display: none;
+    }
   }
 }

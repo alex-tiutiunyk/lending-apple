@@ -1,0 +1,105 @@
+@use 'mixins';
+
+// Breathing and the leaf swing are ambient (awake only); the scroll turn and the hover spin
+// are responses, so they run at "calm" too. Without JS or at "off" the mark is simply filled.
+.root {
+  overflow: visible;
+
+  @include mixins.motion-safe {
+    rotate: clamp(-8deg, calc(var(--scroll-v, 0) * 3deg), 8deg);
+    transition: rotate 160ms var(--ease-out);
+  }
+
+  // --breath-delay pins the loop to a shared clock, so both marks breathe in step (§7.2)
+  @include mixins.when-awake {
+    animation: breathe 4s ease-in-out var(--breath-delay, 0s) infinite;
+  }
+}
+
+.spin {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+
+  :where([data-mark-host]:hover, [data-mark-host]:focus-visible) & {
+    @include mixins.hover-motion {
+      animation: spin 600ms var(--ease-out);
+    }
+  }
+}
+
+.fill {
+  .root[data-drawing] & {
+    @include mixins.motion-safe {
+      animation: fill-in 400ms var(--ease-out) 700ms both;
+    }
+  }
+}
+
+.leaf {
+  transform-box: fill-box;
+  transform-origin: 10% 100%;
+
+  @include mixins.when-awake {
+    animation: leaf-swing 4s ease-in-out var(--breath-delay, 0s) infinite;
+  }
+}
+
+.stroke {
+  path {
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 1.1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+
+  .root[data-drawing] & path {
+    @include mixins.motion-safe {
+      animation: draw-line 900ms var(--ease-out) both;
+    }
+  }
+}
+
+@keyframes breathe {
+  50% {
+    scale: 1.04;
+  }
+}
+
+@keyframes leaf-swing {
+  50% {
+    rotate: 5deg;
+  }
+}
+
+@keyframes spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes fill-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes draw-line {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+
+  80% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}

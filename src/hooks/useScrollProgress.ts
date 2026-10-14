@@ -1,6 +1,6 @@
 import { useEffect, type RefObject } from 'react'
 import { documentTop, subscribeScrollFrame, type ScrollFrame } from './frameLoop'
-import { useReducedMotion } from './useReducedMotion'
+import { useStaticScenes } from './useReducedMotion'
 
 type PinnedGeometry = {
   top: number
@@ -19,13 +19,13 @@ export function pinnedProgress(scrollY: number, { top, scrollLength }: PinnedGeo
 const progressPrecision = 1000
 
 export function useScrollProgress(section: RefObject<HTMLElement | null>) {
-  const isReducedMotion = useReducedMotion()
+  const isStatic = useStaticScenes()
 
   useEffect(() => {
     const element = section.current
     if (!element) return
 
-    if (isReducedMotion) {
+    if (isStatic) {
       element.style.setProperty('--p', '1')
       element.removeAttribute('data-near')
       return
@@ -65,5 +65,5 @@ export function useScrollProgress(section: RefObject<HTMLElement | null>) {
       unsubscribe()
       element.removeAttribute('data-near')
     }
-  }, [section, isReducedMotion])
+  }, [section, isStatic])
 }

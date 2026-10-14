@@ -14,7 +14,7 @@ export function Features() {
   const { camera, display, chip, titanium } = featuresCopy
 
   return (
-    <section className={styles.section} aria-labelledby={titleId}>
+    <section className={styles.root} aria-labelledby={titleId}>
       <RevealTitle id={titleId} className={styles.title} text={featuresCopy.title} />
       <div className={styles.grid}>
         <FeatureCard area="camera" title={camera.title} particles="lens">
@@ -65,7 +65,7 @@ export function Features() {
             className={styles.sample}
             data-sheen={isSampleSeen ? 'run' : undefined}
           >
-            <TitaniumSample label={titanium.renderLabel} />
+            <TitaniumSample label={titanium.renderLabel} callouts={titanium.callouts} />
           </div>
         </FeatureCard>
       </div>

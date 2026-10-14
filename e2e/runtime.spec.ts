@@ -80,7 +80,7 @@ test('scroll-driven effects reverse while counters stay rolled', async ({ page }
   await scrollToShare(page, 'inside', 1)
   expect(await sectionProgress(page, 'inside')).toBe(1)
   await page.locator('#numbers').scrollIntoViewIfNeeded()
-  await expect(page.locator('#numbers [class*="strip"]').first()).toHaveAttribute(
+  await expect(page.locator('#numbers .slot-number__strip').first()).toHaveAttribute(
     'style',
     /--reel: 2\.000/,
     { timeout: 4000 },
@@ -90,7 +90,7 @@ test('scroll-driven effects reverse while counters stay rolled', async ({ page }
   expect(reversed).toBeGreaterThan(0.1)
   expect(reversed).toBeLessThan(0.3)
   await page.locator('#numbers').scrollIntoViewIfNeeded()
-  await expect(page.locator('#numbers [class*="strip"]').first()).toHaveAttribute(
+  await expect(page.locator('#numbers .slot-number__strip').first()).toHaveAttribute(
     'style',
     /--reel: 2\.000/,
   )
@@ -112,7 +112,10 @@ test('rapid finish changes end on the last pick', async ({ page }) => {
   await page.goto('/')
   await page.locator('#finishes').scrollIntoViewIfNeeded()
   const names = ['Ember', 'Moss', 'Basalt', 'Tidewater', 'Ember', 'Basalt', 'Moss', 'Ember']
-  for (const name of names) await page.getByRole('radio', { name: new RegExp(name) }).check()
+  // Tap the option tiles: on phones the accessibility tab covers the left edge mid-screen
+  const option = (name: string) =>
+    page.locator('label', { has: page.getByRole('radio', { name: new RegExp(name) }) })
+  for (const name of names) await option(name).click()
   const hue = await page.evaluate(() =>
     document.documentElement.style.getPropertyValue('--accent-h'),
   )
@@ -137,7 +140,8 @@ test('keyboard focus moves through the page without getting trapped', async ({
         const isOnScreen = rect.bottom > 0 && rect.top < window.innerHeight
         return `${active.tagName}:${active.textContent?.trim().slice(0, 24)}:${isOnScreen}`
       })
-    await expect.poll(readFocus, { timeout: 2000 }).not.toMatch(/:false$/)
+    // Smooth scrolling to the next focus target can cross several pinned sections
+    await expect.poll(readFocus, { timeout: 4000 }).not.toMatch(/:false$/)
     seen.add(await readFocus())
   }
   expect([...seen].some((label) => label.startsWith('INPUT'))).toBe(true)
@@ -165,4 +169,116 @@ test('a full scroll has no long tasks over 50 ms after load @perf', async ({
     return durations
   })
   expect(longTasks.filter((duration) => duration > 50)).toEqual([])
+})
+
+test('the nav marks the section in view and its phone matches the link text', async ({ page }) => {
+  test.slow()
+  for (const width of [1440, 768]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/')
+    const nav = page.getByRole('navigation', { name: 'Sections' })
+    await expect(nav.locator('[aria-current]')).toHaveCount(0)
+
+    for (const [id, label] of [
+      ['design', 'Design'],
+      ['inside', 'Inside'],
+      ['numbers', 'Numbers'],
+      ['finishes', 'Finishes'],
+    ]) {
+      await scrollToShare(page, String(id), 0.3)
+      const link = nav.getByRole('link', { name: String(label) })
+      await expect(link).toHaveAttribute('aria-current', 'location')
+      await expect
+        .poll(() =>
+          page.evaluate((name) => {
+            const text = Array.from(document.querySelectorAll('[data-nav-text]')).find(
+              (element) => element.textContent === name,
+            )
+            const caps = document.querySelectorAll('[data-shown] .section-nav__cap')
+            const start = caps[0]?.getBoundingClientRect()
+            const end = caps[1]?.getBoundingClientRect()
+            if (!text || !start || !end) return 999
+            const a = text.getBoundingClientRect()
+            return Math.abs(a.left - start.left) + Math.abs(a.right - end.right)
+          }, String(label)),
+        )
+        .toBeLessThan(2)
+    }
+
+    await page.locator('#reserve').scrollIntoViewIfNeeded()
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight / 2))
+    await expect(nav.locator('[aria-current]')).toHaveCount(0)
+  }
+})
+
+test.describe('idle nudges', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'timer driven, one engine is enough')
+
+  test('the hero button nudges at most five times and stops after a hover', async ({ page }) => {
+    test.slow()
+    await page.clock.install()
+    await page.goto('/')
+    const button = page.locator('#hero').getByRole('link', { name: 'Reserve yours', exact: true })
+    await expect(button).toHaveAttribute('data-awake', '')
+    const kinds: string[] = []
+    await page.clock.runFor(7800 + 7000 - 100)
+    for (let step = 0; step < 6; step += 1) {
+      await page.clock.runFor(200)
+      kinds.push((await button.getAttribute('data-nudge')) ?? 'none')
+      await page.clock.runFor(7000 - 200)
+    }
+    expect(kinds).toEqual(['buzz', 'sheen', 'buzz', 'sheen', 'buzz', 'none'])
+
+    await page.evaluate(() => window.scrollTo({ top: 3000, behavior: 'instant' }))
+    await expect(button).not.toHaveAttribute('data-awake')
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+    await expect(button).toHaveAttribute('data-awake', '')
+    await button.hover()
+    await page.clock.runFor(7800 + 7000 + 400)
+    await expect(button).not.toHaveAttribute('data-nudge')
+  })
+})
+
+test('the hero boots its screen and its floating parts stop when motion is paused', async ({
+  page,
+}) => {
+  await page.goto('/')
+  const hero = page.locator('#hero')
+  await expect(hero.getByText('Pip: let me out')).toHaveCount(1)
+  const driftNames = () =>
+    hero
+      .locator('[data-order="0"] > span')
+      .evaluate((drift) => getComputedStyle(drift).animationName)
+  await expect.poll(driftNames).toContain('part-drift')
+  await page.locator('header').getByRole('button', { name: 'Pause motion' }).click()
+  await expect.poll(driftNames).not.toContain('part-drift')
+})
+
+test('the chosen finish survives a reload from the first paint', async ({ page }) => {
+  await page.goto('/')
+  await page.locator('#finishes').scrollIntoViewIfNeeded()
+  await page.getByRole('radio', { name: /Ember/ }).check()
+  await page.addInitScript(() => {
+    document.addEventListener('readystatechange', () => {
+      if (document.readyState !== 'interactive') return
+      const root = document.documentElement
+      root.dataset.firstHue = root.style.getPropertyValue('--accent-h')
+    })
+  })
+  await page.reload()
+  await expect(page.locator('html')).toHaveAttribute('data-first-hue', '18')
+  await expect(page.getByRole('radio', { name: /Ember/ })).toBeChecked()
+  await expect(page.getByRole('img', { name: 'Back of the phone in Ember' })).toHaveCount(1)
+})
+
+test('the assembled phone wakes its screen and turns it off when scrolled back', async ({
+  page,
+}) => {
+  await page.goto('/')
+  const wake = page.locator('#inside .layers__screen-wake').first()
+  const opacity = () => wake.evaluate((group) => Number(getComputedStyle(group).opacity))
+  await scrollToShare(page, 'inside', 1)
+  await expect.poll(opacity).toBe(1)
+  await scrollToShare(page, 'inside', 0.5)
+  await expect.poll(opacity).toBe(0)
 })

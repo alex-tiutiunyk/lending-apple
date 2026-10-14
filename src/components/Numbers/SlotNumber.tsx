@@ -56,7 +56,7 @@ export function SlotNumber({ value, unit, isRunning, delay }: SlotNumberProps) {
   })
 
   return (
-    <span className={styles.number}>
+    <span className={styles.root}>
       <span className={styles.readable}>{`${formatted} ${unit}`}</span>
       <span className={styles.reels} aria-hidden="true">
         {glyphs}

@@ -10,3 +10,4 @@ playwright-report
 *.local
 *.log
 dist-ssr
+.playwright-mcp

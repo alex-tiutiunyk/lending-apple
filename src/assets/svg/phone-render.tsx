@@ -29,7 +29,7 @@ export function PhoneRender({ view = 'both', label, className, particles }: Phon
 
   return (
     <svg
-      className={className ? `${styles.render} ${className}` : styles.render}
+      className={className ? `${styles.root} ${className}` : styles.root}
       viewBox={phoneViewBoxes[view]}
       role="img"
       aria-labelledby={titleId}

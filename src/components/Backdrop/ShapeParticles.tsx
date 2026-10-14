@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { subscribeScrollFrame, subscribeTick, type ScrollFrame } from '@/hooks/frameLoop'
-import { isMotionPaused } from '@/hooks/motionPause'
+import { isLayoutAtLeast } from '@/hooks/layoutWidth'
+import { getA11ySettings } from '@/hooks/a11yStore'
+import { particleRequests } from '@/hooks/particleRequests'
 import {
   anchorPointX,
   anchorPointY,
@@ -13,13 +15,16 @@ import {
   blendWeights,
   createParticles,
   pickAnchor,
+  rotatedX,
+  rotatedY,
   settleAmount,
+  settleAtPageEnd,
   type Particle,
 } from './particleField'
+import { createTurnTracker } from './particleTurn'
 import styles from './Backdrop.module.scss'
 
 const maxPixelRatio = 2
-const compactQuery = '(max-width: 767.98px)'
 const particleCount = { compact: 120, wide: 400 }
 const wrapMargin = 20
 const driftSpeed = 0.35
@@ -50,6 +55,17 @@ export default function ShapeParticles() {
     let isMoving = false
     let isWobbling = false
     let stopTicks: (() => void) | null = null
+    let launch: { index: number; startedAt: number; durationMs: number } | null = null
+    const turns = createTurnTracker()
+
+    // A launched shape (plan 4 §7.3) rises off the top of the viewport; as its center leaves,
+    // the dots loosen into their drift on their own
+    const liftOf = (index: number, now: number, viewportHeight: number) => {
+      if (!launch || launch.index !== index) return 0
+      const share = Math.min(1, (now - launch.startedAt) / launch.durationMs)
+      if (share >= 1) launch = null
+      return share * share * viewportHeight * 1.2
+    }
 
     const draw = (frame: ScrollFrame) => {
       const now = performance.now()
@@ -57,10 +73,17 @@ export default function ShapeParticles() {
       lastFrame = frame
       lastDrawAt = now
       const viewportCenter = frame.scrollY + frame.viewportHeight / 2
-      const centers = anchors.map((anchor) => anchorDocumentY(anchor, frame.scrollY))
+      const centers = anchors.map(
+        (anchor, index) =>
+          anchorDocumentY(anchor, frame.scrollY) - liftOf(index, now, frame.viewportHeight),
+      )
       const settles = centers.map((y) => settleAmount(viewportCenter, y, frame.viewportHeight))
+      // The last shape always forms at the page end, except while it is lifting off
+      if (!launch)
+        settleAtPageEnd(settles, frame.scrollY, frame.viewportHeight, frame.documentHeight)
       const weights = blendWeights(settles)
-      isWobbling = Math.max(0, ...settles) > formedThreshold && !isMotionPaused()
+      turns.update(anchors, frame, easing)
+      isWobbling = Math.max(0, ...settles) > formedThreshold && getA11ySettings().motion === 'full'
       const wobble = isWobbling ? wobbleAmplitude : 0
       const wrapHeight = height + wrapMargin * 2
       const settledAlpha = isCompact ? 0.35 : 0.7
@@ -76,10 +99,13 @@ export default function ShapeParticles() {
         const chosen = pickAnchor(particle.pick, weights)
         const anchor = anchors[chosen]
         const settle = settles[chosen] ?? 0
-        const shapeX = anchor ? anchorPointX(anchor, slot) : driftX
-        const shapeY = anchor
-          ? anchorPointY(anchor, slot, (centers[chosen] ?? 0) - frame.scrollY)
-          : driftY
+        const centerY = (centers[chosen] ?? 0) - frame.scrollY
+        const pointX = anchor ? anchorPointX(anchor, slot) : driftX
+        const pointY = anchor ? anchorPointY(anchor, slot, centerY) : driftY
+        const cos = turns.cosines[chosen] ?? 1
+        const sin = turns.sines[chosen] ?? 0
+        const shapeX = anchor ? rotatedX(pointX, pointY, anchor.centerX, centerY, cos, sin) : pointX
+        const shapeY = anchor ? rotatedY(pointX, pointY, anchor.centerX, centerY, cos, sin) : pointY
         const swayX = Math.sin(now * 0.0011 + particle.phase) * wobble
         const swayY = Math.cos(now * 0.0013 + particle.phase) * wobble
         const goalX = driftX + (shapeX + swayX - driftX) * settle
@@ -102,7 +128,7 @@ export default function ShapeParticles() {
         context.fill(layer)
       })
 
-      isMoving = largestGap > settledGap
+      isMoving = largestGap > settledGap || turns.remaining > settledGap || launch !== null
       const needsTicks = isMoving || isWobbling
       if (needsTicks && !stopTicks) stopTicks = subscribeTick(onTick)
       else if (!needsTicks && stopTicks) {
@@ -119,7 +145,7 @@ export default function ShapeParticles() {
       const pixelRatio = Math.min(window.devicePixelRatio || 1, maxPixelRatio)
       width = window.innerWidth
       height = window.innerHeight
-      isCompact = window.matchMedia(compactQuery).matches
+      isCompact = !isLayoutAtLeast('md')
       canvas.width = Math.round(width * pixelRatio)
       canvas.height = Math.round(height * pixelRatio)
       context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
@@ -138,13 +164,25 @@ export default function ShapeParticles() {
     })
     accentObserver.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['style', 'data-motion-paused'],
+      attributeFilter: ['style', 'data-motion'],
+    })
+
+    const stopRequests = particleRequests.subscribe((request) => {
+      const index = anchors.findIndex((anchor) => anchor.shape === request.shape)
+      if (index < 0) return false
+      launch =
+        request.type === 'launch'
+          ? { index, startedAt: performance.now(), durationMs: request.durationMs }
+          : null
+      if (lastFrame) draw(lastFrame)
+      return true
     })
 
     const unsubscribe = subscribeScrollFrame(draw, layout)
     return () => {
       unsubscribe()
       stopTicks?.()
+      stopRequests()
       accentObserver.disconnect()
     }
   }, [])

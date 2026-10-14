@@ -1,0 +1,65 @@
+import { describe, expect, it } from 'vitest'
+import { candidateBlocks, letterSpots, pickSpots } from './letterPicker'
+
+function page(html: string) {
+  const root = document.createElement('main')
+  root.innerHTML = html
+  return root
+}
+
+describe('candidateBlocks', () => {
+  it('takes headings and paragraphs, not links, forms, the nav, stats or opted-out blocks', () => {
+    const root = page(`
+      <h2>It starts as one stroke</h2>
+      <p>Body copy here.</p>
+      <nav><p>Design</p></nav>
+      <form><p>Enter your email</p></form>
+      <dl><dd><p>31</p></dd></dl>
+      <p data-letters="still">Lights up word by word</p>
+      <p aria-hidden="true">Decoration</p>
+      <a href="#x"><h3>Linked title</h3></a>
+      <p data-reveal="hidden">Not yet shown</p>
+      <p><span data-decoding="">Unofficial</span></p>
+    `)
+    expect(candidateBlocks(root).map((block) => block.textContent?.trim())).toEqual([
+      'It starts as one stroke',
+      'Body copy here.',
+    ])
+  })
+})
+
+describe('letterSpots', () => {
+  it('skips spaces, digits, punctuation, links, footnote marks and hidden copies', () => {
+    const block = page(
+      '<p>Up 2x, <a href="#">not me</a><sup>1</sup> ok<span aria-hidden="true">no</span></p>',
+    ).firstElementChild as HTMLElement
+    const spots = letterSpots(block)
+    const glyphs = spots.map(({ node, offset }) => node.data[offset])
+    expect(glyphs.join('')).toBe('Upxok')
+  })
+})
+
+describe('pickSpots', () => {
+  it('returns distinct spots, no two from one word, later offsets first', () => {
+    const block = page('<p>abcdefgh ijklmnop</p>').firstElementChild as HTMLElement
+    const spots = letterSpots(block)
+    const values = [0, 0, 0, 0]
+    let turn = 0
+    const random = () => values[turn++ % values.length] ?? 0
+    const picked = pickSpots(spots, 3, random)
+    expect(picked.length).toBeGreaterThan(0)
+    const offsets = picked.map(({ offset }) => offset)
+    expect(new Set(offsets).size).toBe(offsets.length)
+    offsets.forEach((offset, index) => {
+      offsets
+        .slice(index + 1)
+        .forEach((other) => expect(Math.abs(offset - other)).toBeGreaterThanOrEqual(4))
+    })
+    expect([...offsets].sort((a, b) => b - a)).toEqual(offsets)
+  })
+
+  it('stops when the pool runs dry', () => {
+    const block = page('<p>ab</p>').firstElementChild as HTMLElement
+    expect(pickSpots(letterSpots(block), 3, () => 0)).toHaveLength(1)
+  })
+})

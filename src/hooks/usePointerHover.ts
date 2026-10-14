@@ -23,9 +23,10 @@ function pullMagnetic(element: HTMLElement, { x, y }: PointerFrame) {
 }
 
 function trackSurface(element: HTMLElement, { x, y }: PointerFrame) {
+  // The lens is absolutely positioned, so it is offset from the padding box, inside the border
   const rect = element.getBoundingClientRect()
-  element.style.setProperty('--mx', `${(x - rect.left).toFixed(1)}px`)
-  element.style.setProperty('--my', `${(y - rect.top).toFixed(1)}px`)
+  element.style.setProperty('--mx', `${(x - rect.left - element.clientLeft).toFixed(1)}px`)
+  element.style.setProperty('--my', `${(y - rect.top - element.clientTop).toFixed(1)}px`)
 }
 
 function releaseMagnetic(element: HTMLElement) {

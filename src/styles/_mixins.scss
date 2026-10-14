@@ -17,12 +17,37 @@ $wave-tile: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width=
   border: 0;
 }
 
+// Readable font (plan 3 §5)
+@mixin plain-font {
+  @if & {
+    :where(:root[data-font='plain']) & {
+      @content;
+    }
+  } @else {
+    :where(:root[data-font='plain']) {
+      @content;
+    }
+  }
+}
+
 @mixin mono-label {
   font-family: var(--font-mono);
   font-size: var(--step-down-1);
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+
+  @include high-contrast {
+    font-size: var(--step-0);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  @include plain-font {
+    font-family: inherit;
+    text-transform: none;
+    letter-spacing: 0;
+  }
 }
 
 @mixin container {
@@ -36,12 +61,40 @@ $wave-tile: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width=
   &:focus-visible {
     outline: 2px solid transparent;
     box-shadow: var(--focus-ring);
+
+    // Forced colors drop the box-shadow ring; the transparent outline would win over the
+    // global Highlight outline here, so the mixin draws it itself
+    @media (forced-colors: active) {
+      outline: 3px solid Highlight;
+      outline-offset: 2px;
+    }
+  }
+}
+
+// Motion switch (plan 3 §2): the OS setting or `data-motion` on <html>. Scopes sit in :where()
+// so they add no specificity. Content must not put `&` after another selector: write
+// `.parent & { @include motion-safe { … } }` instead, because the scope goes in front of `&`.
+$motion-on: ':where(:root:not([data-motion="off"]))';
+$motion-off: ':where(:root[data-motion="off"])';
+$motion-ambient: ':where(:root:not([data-motion="calm"], [data-motion="off"]))';
+
+@mixin within-scope($scope) {
+  @if & {
+    #{$scope} & {
+      @content;
+    }
+  } @else {
+    #{$scope} {
+      @content;
+    }
   }
 }
 
 @mixin motion-safe {
   @media (prefers-reduced-motion: no-preference) {
-    @content;
+    @include within-scope($motion-on) {
+      @content;
+    }
   }
 }
 
@@ -49,14 +102,91 @@ $wave-tile: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width=
   @media (prefers-reduced-motion: reduce) {
     @content;
   }
+
+  @include within-scope($motion-off) {
+    @content;
+  }
+}
+
+// Hover responses that move: a pointer that hovers and motion allowed.
+@mixin hover-motion {
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    @include within-scope($motion-on) {
+      @content;
+    }
+  }
+}
+
+// Ambient motion: only at the `full` level ("calm" pauses it).
+@mixin motion-ambient {
+  @media (prefers-reduced-motion: no-preference) {
+    @include within-scope($motion-ambient) {
+      @content;
+    }
+  }
 }
 
 @mixin when-awake {
   @media (prefers-reduced-motion: no-preference) {
-    :root:not([data-motion-paused]) [data-awake] &,
-    :root:not([data-motion-paused]) &[data-awake] {
+    #{$motion-ambient} [data-awake] &,
+    #{$motion-ambient} &[data-awake] {
       @content;
     }
+  }
+}
+
+// Pinned scroll stages drop the pin under reduced motion and from 150 % text (plan 3 §4)
+$static-scene: ':where(:root[data-text-scale="150"], :root[data-text-scale="175"], :root[data-text-scale="200"])';
+
+@mixin static-scene {
+  @include motion-reduce {
+    @content;
+  }
+
+  @include within-scope($static-scene) {
+    @content;
+  }
+}
+
+// High contrast (plan 3 §3): picked in the panel, or the OS asks and the reader did not pick Standard
+$contrast-high: ':where(:root[data-contrast="high"])';
+$contrast-auto: ':where(:root:not([data-contrast="standard"]))';
+
+@mixin high-contrast {
+  @include within-scope($contrast-high) {
+    @content;
+  }
+
+  @media (prefers-contrast: more) {
+    @include within-scope($contrast-auto) {
+      @content;
+    }
+  }
+}
+
+// Light theme (plan 3 §5a)
+@mixin light-theme {
+  @include within-scope(':where(:root[data-theme="light"])') {
+    @content;
+  }
+}
+
+// For rules on <html> itself, where the scope cannot be an ancestor.
+@mixin root-motion-safe {
+  @media (prefers-reduced-motion: no-preference) {
+    &:not([data-motion='off']) {
+      @content;
+    }
+  }
+}
+
+@mixin root-motion-reduce {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+
+  &[data-motion='off'] {
+    @content;
   }
 }
 
@@ -117,7 +247,7 @@ $wave-tile: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width=
 
 @mixin reveal($distance: 1.25rem) {
   @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
+    @include motion-safe {
       animation: reveal-rise linear both;
       animation-timeline: view();
       animation-range: entry var(--reveal-from, 4%) entry var(--reveal-to, 62%);
@@ -174,6 +304,12 @@ $wave-tile: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width=
   overflow: hidden;
   isolation: isolate;
 
+  @include high-contrast {
+    &::before {
+      display: none;
+    }
+  }
+
   &::before {
     position: absolute;
     inset: 0 calc(var(--wave-tile-width) * -1) 0 0;
@@ -186,8 +322,8 @@ $wave-tile: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width=
     @include wave-mask;
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    :root:not([data-motion-paused]) &[data-awake]::before {
+  @include motion-ambient {
+    &[data-awake]::before {
       will-change: transform;
       animation: wave-drift var(--dur-wave) linear infinite;
     }

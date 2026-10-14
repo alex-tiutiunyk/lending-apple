@@ -5,3 +5,4 @@ public/fonts
 playwright-report
 test-results
 PLAN.md
+.playwright-mcp

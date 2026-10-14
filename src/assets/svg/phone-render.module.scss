@@ -1,42 +1,51 @@
-.render {
+@use 'mixins';
+@use 'tokens';
+
+.root {
+  @include tokens.device-tokens;
+
   overflow: visible;
+
+  @include mixins.high-contrast {
+    @include tokens.device-high-contrast-tokens;
+  }
 }
 
-.shellLight {
+.shell-light {
   stop-color: var(--finish-shell-light);
 }
 
-.shellMid {
+.shell-mid {
   stop-color: var(--finish-shell);
 }
 
-.shellDark {
+.shell-dark {
   stop-color: var(--finish-shell-dark);
 }
 
-.screenA {
+.screen-a {
   stop-color: var(--finish-screen-a);
 }
 
-.screenB {
+.screen-b {
   stop-color: var(--finish-screen-b);
 }
 
-.glareOn {
+.glare-on {
   stop-color: var(--color-text);
   stop-opacity: 0.16;
 }
 
-.glareOff {
+.glare-off {
   stop-color: var(--color-text);
   stop-opacity: 0;
 }
 
-.lensHighlight {
+.lens-highlight {
   stop-color: var(--finish-screen-a);
 }
 
-.lensDeep {
+.lens-deep {
   stop-color: var(--color-bg);
 }
 
@@ -52,7 +61,7 @@
   fill: var(--finish-shell-dark);
 }
 
-.backGlass {
+.back-glass {
   fill: var(--finish-shell);
   fill-opacity: 0.55;
 }
@@ -64,18 +73,22 @@
   stroke-width: 0.8;
 }
 
-.lensRing {
+.lens-ring {
   fill: var(--finish-shell-dark);
   stroke: var(--finish-shell-light);
   stroke-width: 1;
 }
 
-.glassWindow {
+.glass-window {
   fill: var(--finish-shell-light);
   fill-opacity: 0.18;
   stroke: var(--finish-shell-light);
   stroke-opacity: 0.35;
   stroke-width: 0.6;
+
+  @include mixins.high-contrast {
+    stroke-opacity: 1;
+  }
 }
 
 .mark {
@@ -83,56 +96,68 @@
   fill-opacity: 0.7;
 }
 
-.depthSensor {
+.depth-sensor {
   fill: var(--color-bg);
   stroke: var(--finish-shell-dark);
   stroke-width: 1;
 }
 
-.statusIcon {
+.status-icon {
   fill: var(--color-text);
 }
 
-.statusOutline {
+.status-outline {
   fill: none;
   stroke: var(--color-text);
   stroke-opacity: 0.7;
   stroke-width: 0.6;
+
+  @include mixins.high-contrast {
+    stroke-opacity: 1;
+  }
 }
 
-.lockDate {
+.lock-date {
   font-family: var(--font-mono);
   font-size: 6.4px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   fill: var(--color-text);
   fill-opacity: 0.82;
+
+  @include mixins.high-contrast {
+    fill-opacity: 1;
+  }
 }
 
-.lockTime {
+.lock-time {
   font-family: var(--font-sans);
   font-size: 40px;
   font-weight: 300;
   letter-spacing: -0.03em;
   fill: var(--color-text);
+
+  @include mixins.high-contrast {
+    font-weight: 450;
+  }
 }
 
-.quickAction {
+.quick-action {
   fill: var(--color-bg);
   fill-opacity: 0.45;
 }
 
-.quickGlyph {
+.quick-glyph {
   fill: var(--color-text);
 }
 
-.quickGlyphStroke {
+.quick-glyph-stroke {
   fill: none;
   stroke: var(--color-text);
   stroke-width: 1.4;
 }
 
-.homeIndicator {
+.home-indicator {
   fill: var(--color-text);
   fill-opacity: 0.85;
 }

@@ -1,6 +1,7 @@
 @use 'mixins';
 
-.toggle {
+.root {
+  position: relative;
   display: inline-flex;
   gap: var(--space-2);
   align-items: center;
@@ -14,8 +15,27 @@
   background: transparent;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-pill);
+  transition:
+    border-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out),
+    transform var(--dur-press) var(--ease-press);
 
   @include mixins.focus-ring;
+
+  &:active {
+    transform: scale(0.92);
+  }
+
+  // Response to the reader's own click, so it runs while motion is paused, too
+  &::after {
+    position: absolute;
+    inset: -1px;
+    pointer-events: none;
+    content: '';
+    border: 1px solid var(--color-accent);
+    border-radius: inherit;
+    opacity: 0;
+  }
 
   &[aria-pressed='true'] {
     color: var(--color-text);
@@ -32,10 +52,133 @@
 .icon {
   width: 1rem;
   height: 1rem;
+  overflow: visible;
   fill: currentcolor;
 }
 
-.toggle[data-compact] {
+.bar-left,
+.bar-right {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition:
+    d 220ms var(--ease-in-out),
+    translate var(--dur-hover) var(--ease-out);
+}
+
+.bar-left {
+  d: path('M4 3.5 L6.6 3.5 L6.6 12.5 L4 12.5 Z');
+
+  .root[aria-pressed='true'] & {
+    d: path('M5 3.5 L8.75 5.75 L8.75 10.25 L5 12.5 Z');
+  }
+}
+
+.bar-right {
+  d: path('M9.4 3.5 L12 3.5 L12 12.5 L9.4 12.5 Z');
+
+  .root[aria-pressed='true'] & {
+    d: path('M8.75 5.75 L12.5 8 L12.5 8 L8.75 10.25 Z');
+  }
+}
+
+@include mixins.hover-motion {
+  .root[aria-pressed='false']:hover .bar-left,
+  .root[aria-pressed='false']:hover .bar-right {
+    animation: toggle-eq 360ms var(--ease-in-out) infinite alternate;
+  }
+
+  .root[aria-pressed='false']:hover .bar-right {
+    animation-delay: -180ms;
+  }
+
+  .root[aria-pressed='true']:hover .bar-left,
+  .root[aria-pressed='true']:hover .bar-right {
+    translate: 1.5px 0;
+  }
+}
+
+@include mixins.motion-safe {
+  .root[data-toggled][aria-pressed='true']::after {
+    animation: toggle-freeze 380ms var(--ease-out);
+  }
+
+  .root[data-toggled][aria-pressed='false']::after {
+    animation: toggle-thaw 380ms var(--ease-out);
+  }
+
+  // No CSS `d` in this engine (WebKit): crossfade the new icon in with a small turn
+  @supports not (d: path('M0 0')) {
+    .root[data-toggled][aria-pressed='true'] .icon {
+      animation: toggle-swap-on 220ms var(--ease-out);
+    }
+
+    .root[data-toggled][aria-pressed='false'] .icon {
+      animation: toggle-swap-off 220ms var(--ease-out);
+    }
+  }
+}
+
+@include mixins.motion-reduce {
+  .root,
+  .bar-left,
+  .bar-right {
+    transition: color var(--dur-hover) var(--ease-out);
+  }
+
+  .root:active {
+    transform: none;
+  }
+}
+
+@keyframes toggle-eq {
+  to {
+    scale: 1 0.55;
+  }
+}
+
+@keyframes toggle-freeze {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes toggle-thaw {
+  0% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+
+  60% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes toggle-swap-on {
+  from {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.6);
+  }
+}
+
+@keyframes toggle-swap-off {
+  from {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.6);
+  }
+}
+
+.root[data-compact] {
   padding: 0;
 
   .label {

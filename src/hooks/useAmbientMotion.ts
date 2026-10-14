@@ -1,6 +1,5 @@
 import { useEffect, type RefObject } from 'react'
-import { useMotionPaused } from './motionPause'
-import { useReducedMotion } from './useReducedMotion'
+import { useMotionPaused, useReducedMotion } from './useReducedMotion'
 
 const awakeAttribute = 'data-awake'
 let sharedObserver: IntersectionObserver | null = null

@@ -4,7 +4,7 @@
     "declaration-no-important": true,
     "no-descending-specificity": true,
     "max-nesting-depth": 2,
-    "selector-class-pattern": "^[a-z][a-zA-Z0-9]*$",
+    "selector-class-pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(--[a-z0-9]+(-[a-z0-9]+)*)?$",
     "property-no-vendor-prefix": true,
     "value-no-vendor-prefix": true,
     "scss/dollar-variable-pattern": "^[a-z][a-z0-9-]*$",
@@ -17,6 +17,26 @@
       }
     ],
     "comment-no-empty": true,
-    "custom-property-empty-line-before": null
-  }
+    "custom-property-empty-line-before": null,
+    "media-feature-name-disallowed-list": [
+      ["prefers-reduced-motion"],
+      {
+        "message": "Use the motion mixins in _mixins.scss, they also follow the panel's Motion setting (plan 3 \u00a72)"
+      }
+    ],
+    "selector-disallowed-list": [
+      ["/data-motion-paused/"],
+      {
+        "message": "The pause attribute is gone; use the motion mixins (plan 3 \u00a72)"
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/styles/_mixins.scss"],
+      "rules": {
+        "media-feature-name-disallowed-list": null
+      }
+    }
+  ]
 }

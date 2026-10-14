@@ -1,7 +1,7 @@
 @use 'mixins';
 @use 'breakpoints' as bp;
 
-.section {
+.root {
   @include mixins.container;
 
   display: grid;
@@ -106,32 +106,37 @@
   height: 1.75rem;
   border-radius: 50%;
   box-shadow: 0 0 0 1px var(--color-line-strong);
+  transition: transform var(--dur-hover) var(--ease-out);
+
+  .option:hover & {
+    @include mixins.hover-motion {
+      transform: scale(1.1);
+    }
+  }
 }
 
-.optionName {
+.option-name {
   font-weight: 620;
 }
 
-.optionNote {
+.option-note {
   font-size: var(--step-down-1);
   color: var(--color-text-muted);
 }
 
-.tiltOdd,
-.tiltEven {
+.render--tilt-odd,
+.render--tilt-even {
   transform-origin: 50% 90%;
 
   @include mixins.motion-safe {
-    animation: var(--tilt-name) var(--dur-tilt) var(--ease-out);
+    animation: tilt-settle-odd var(--dur-tilt) var(--ease-out);
   }
 }
 
-.tiltOdd {
-  --tilt-name: tilt-settle-odd;
-}
-
-.tiltEven {
-  --tilt-name: tilt-settle-even;
+.render--tilt-even {
+  @include mixins.motion-safe {
+    animation-name: tilt-settle-even;
+  }
 }
 
 @keyframes tilt-settle-odd {
@@ -163,5 +168,19 @@
   @include bp.up(md) {
     order: -1;
     width: min(100%, 20rem);
+  }
+}
+
+// Forced colors drop the wash and the ring shadow: the checked option gets a thick Highlight
+// border instead, and focus an outline on the option (the radio itself is invisible)
+@media (forced-colors: active) {
+  .option:has(:checked) {
+    padding: calc(var(--space-3) - 2px) calc(var(--space-4) - 2px);
+    border: 3px solid Highlight;
+  }
+
+  .option:has(:focus-visible) {
+    outline: 3px solid Highlight;
+    outline-offset: 2px;
   }
 }

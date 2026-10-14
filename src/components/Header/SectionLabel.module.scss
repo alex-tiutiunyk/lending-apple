@@ -1,0 +1,26 @@
+@use 'mixins';
+@use 'breakpoints' as bp;
+
+// Shown only where the nav is, so a collapsed bar does not get a label without its nav
+.root {
+  @include mixins.mono-label;
+
+  display: none;
+  white-space: nowrap;
+
+  @include bp.up(md) {
+    display: grid;
+  }
+}
+
+.item {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 150ms var(--ease-out);
+
+  &[data-active] {
+    visibility: visible;
+    opacity: 1;
+  }
+}

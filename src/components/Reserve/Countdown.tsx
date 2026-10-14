@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { DecodeText } from '@/components/RevealText/DecodeText'
 import { reserveCopy } from '@/content/copy'
 import { launch } from '@/content/specs'
 import { useMinuteClock } from '@/hooks/useMinuteClock'
@@ -20,7 +21,7 @@ export function Countdown() {
   return (
     <div className={styles.countdown} role="group" aria-labelledby={labelId}>
       <p id={labelId} className={styles.countdownLabel}>
-        {reserveCopy.countdownLabel}
+        <DecodeText text={reserveCopy.countdownLabel} />
       </p>
       <dl className={styles.countdownUnits} aria-live="off">
         {unitOrder.map((unit) => (

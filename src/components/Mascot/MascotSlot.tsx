@@ -1,4 +1,5 @@
 import { lazy, Suspense, useSyncExternalStore } from 'react'
+import { useA11ySettings } from '@/hooks/a11yStore'
 import { useAmbientMotion } from '@/hooks/useAmbientMotion'
 
 const Mascot = lazy(() => import('./Mascot'))
@@ -14,7 +15,8 @@ export function MascotSlot() {
     () => false,
   )
   const isAmbient = useAmbientMotion()
-  if (!isMounted || !isAmbient) return null
+  const { pip } = useA11ySettings()
+  if (!isMounted || !isAmbient || !pip) return null
 
   return (
     <Suspense fallback={null}>

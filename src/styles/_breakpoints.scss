@@ -1,20 +1,22 @@
 @use 'sass:map';
 
+// In rem and queried against the page container (`body`), so the layout follows the text size:
+// at 200 % text a 1280 px screen gets the layout of a 640 px one (plan 3 §4)
 $breakpoints: (
-  sm: 480px,
-  md: 768px,
-  lg: 1024px,
-  xl: 1440px,
+  sm: 30rem,
+  md: 48rem,
+  lg: 64rem,
+  xl: 90rem,
 );
 
 @mixin up($name) {
-  @media (min-width: map.get($breakpoints, $name)) {
+  @container page (min-width: #{map.get($breakpoints, $name)}) {
     @content;
   }
 }
 
 @mixin down($name) {
-  @media (max-width: (map.get($breakpoints, $name) - 0.02px)) {
+  @container page (max-width: #{map.get($breakpoints, $name) - 0.01rem}) {
     @content;
   }
 }

@@ -1,7 +1,7 @@
 @use 'mixins';
 @use 'breakpoints' as bp;
 
-.section {
+.root {
   @include mixins.container;
 
   padding-block: var(--space-8) var(--space-9);
@@ -48,17 +48,18 @@
   gap: var(--space-2);
 }
 
-.countdownLabel {
+.countdown-label {
   @include mixins.mono-label;
 }
 
-.countdownUnits {
+.countdown-units {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-5);
   margin: 0;
 }
 
-.countdownUnit {
+.countdown-unit {
   display: flex;
   flex-direction: column-reverse;
 
@@ -76,7 +77,7 @@
   }
 }
 
-.countdownDone {
+.countdown-done {
   font-size: var(--step-2);
   font-weight: 600;
 }
@@ -87,12 +88,13 @@
   max-width: 34rem;
 }
 
-.fieldLabel {
+.field-label {
   font-weight: 600;
 }
 
-.fieldRow {
+.field-row {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
 
   @include bp.up(sm) {
@@ -100,11 +102,17 @@
   }
 }
 
+.field {
+  position: relative;
+  display: grid;
+}
+
 .input {
+  min-width: 0;
   min-height: 3rem;
   padding: var(--space-2) var(--space-4);
   font-size: var(--step-0);
-  background: hsl(var(--ink-h) 20% 3% / 70%);
+  background: var(--color-field);
   border: 1px solid var(--color-line-strong);
   border-radius: var(--radius-pill);
 
@@ -116,13 +124,9 @@
 }
 
 .submit {
-  @include mixins.button-primary;
-  @include mixins.sheen-host;
-
   min-height: 3rem;
 
   &:disabled {
-    cursor: progress;
     opacity: 0.75;
   }
 }
@@ -148,12 +152,12 @@
   @include mixins.focus-ring;
 }
 
-.successTitle {
+.success-title {
   font-size: var(--step-2);
   font-weight: 640;
 }
 
-.renderFrame {
+.render-frame {
   position: relative;
   display: grid;
   place-items: center;

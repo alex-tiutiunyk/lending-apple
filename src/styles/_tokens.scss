@@ -6,6 +6,7 @@ $z-layers: (
   header: 30,
   mascot: 35,
   sticky-cta: 40,
+  a11y-panel: 45,
   skip-link: 50,
 );
 
@@ -21,6 +22,10 @@ $z-layers: (
 
   --color-bg: hsl(var(--ink-h) 26% 4%);
   --color-bg-raised: hsl(var(--ink-h) 20% 9% / 72%);
+  --color-bg-panel: hsl(var(--ink-h) 22% 8%);
+  --color-bar: hsl(var(--ink-h) 26% 4% / 88%);
+  --color-bar-strong: hsl(var(--ink-h) 22% 8% / 94%);
+  --color-field: hsl(var(--ink-h) 20% 3% / 70%);
   --color-line: hsl(var(--ink-h) 12% 60% / 22%);
   --color-line-strong: hsl(var(--ink-h) 14% 78% / 46%);
   --color-text: hsl(var(--ink-h) 24% 96%);
@@ -39,27 +44,28 @@ $z-layers: (
   --finish-screen-a: hsl(calc(var(--accent-h) + 40) 70% 46%);
   --finish-screen-b: hsl(calc(var(--accent-h) - 30) 76% 22%);
   --part-copper: hsl(28deg 62% 52%);
-  --part-board: hsl(150deg 26% 22%);
+  --part-board: hsl(152deg 34% 12%);
   --part-chip: hsl(var(--ink-h) 10% 14%);
-  --part-cell: hsl(var(--ink-h) 8% 30%);
-  --part-glass: hsl(var(--ink-h) 40% 90% / 16%);
+  --part-cell: hsl(var(--ink-h) 8% 56%);
+  --part-glass: hsl(var(--ink-h) 40% 90% / 4%);
+  --part-panel-off: hsl(var(--ink-h) 18% 5%);
   --part-steel: hsl(var(--ink-h) 6% 70%);
   --part-steel-edge: hsl(var(--ink-h) 10% 40%);
   --part-steel-dark: hsl(var(--ink-h) 10% 30%);
-  --part-shield: hsl(var(--ink-h) 10% 70% / 18%);
+  --part-shield: hsl(var(--ink-h) 6% 46%);
   --part-shield-edge: hsl(var(--ink-h) 10% 80% / 50%);
   --part-sensor: hsl(var(--ink-h) 30% 30%);
 
   --font-sans: 'Bricolage', 'Bricolage Fallback', system-ui, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', monospace;
 
-  --step-down-1: clamp(0.83rem, 0.8rem + 0.12vw, 0.9rem);
-  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
-  --step-1: clamp(1.2rem, 1.12rem + 0.4vw, 1.45rem);
-  --step-2: clamp(1.44rem, 1.28rem + 0.8vw, 1.95rem);
-  --step-3: clamp(1.73rem, 1.42rem + 1.5vw, 2.7rem);
-  --step-4: clamp(2.07rem, 1.5rem + 2.8vw, 3.9rem);
-  --step-5: clamp(2.5rem, 1.5rem + 5vw, 5.6rem);
+  --step-down-1: clamp(0.83rem, 0.8rem + 0.12vw * var(--text-scale, 1), 0.9rem);
+  --step-0: clamp(1rem, 0.96rem + 0.2vw * var(--text-scale, 1), 1.125rem);
+  --step-1: clamp(1.2rem, 1.12rem + 0.4vw * var(--text-scale, 1), 1.45rem);
+  --step-2: clamp(1.44rem, 1.28rem + 0.8vw * var(--text-scale, 1), 1.95rem);
+  --step-3: clamp(1.73rem, 1.42rem + 1.5vw * var(--text-scale, 1), 2.7rem);
+  --step-4: clamp(2.07rem, 1.5rem + 2.8vw * var(--text-scale, 1), 3.9rem);
+  --step-5: clamp(2.5rem, 1.5rem + 5vw * var(--text-scale, 1), 5.6rem);
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -93,7 +99,7 @@ $z-layers: (
   --dur-glow: 1100ms;
   --dur-fill: 420ms;
   --dur-roll: 360ms;
-  --dur-pulse: 2.6s;
+  --dur-pulse-loop: 4.3s;
   --dur-pulse-hover: 1.1s;
   --dur-wave: 22s;
   --dur-word-rise: 900ms;
@@ -107,4 +113,108 @@ $z-layers: (
 
   --shadow-lift: 0 1px 0 hsl(0deg 0% 100% / 8%) inset, 0 18px 40px -24px hsl(0deg 0% 0% / 80%);
   --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
+  --scrollbar-thumb: hsl(var(--accent-h) 30% 45%);
+  --scrollbar-thumb-hover: hsl(var(--accent-h) 45% 58%);
+  --scrollbar-track: hsl(var(--ink-h) 22% 8%);
+  --stroke-cool: hsl(calc(var(--accent-h) + 150) 50% 70%);
+}
+
+// Low vision (plan 3 §3): opaque surfaces, no gray body copy, lines at 3 : 1 or more, accent
+// lightness raised for every finish, and a focus ring that does not depend on the finish.
+// Same names as root-tokens; config/contrast.test.ts checks the ratios.
+@mixin high-contrast-tokens {
+  --color-bg: hsl(var(--ink-h) 30% 3%);
+  --color-bg-raised: hsl(var(--ink-h) 22% 9%);
+  --color-bg-panel: hsl(var(--ink-h) 22% 9%);
+  --color-bar: hsl(var(--ink-h) 30% 3%);
+  --color-bar-strong: hsl(var(--ink-h) 22% 9%);
+  --color-field: hsl(var(--ink-h) 30% 3%);
+  --color-line: hsl(var(--ink-h) 10% 62%);
+  --color-line-strong: hsl(var(--ink-h) 10% 82%);
+  --color-text: hsl(0deg 0% 98%);
+  --color-text-muted: hsl(0deg 0% 98%);
+  --color-danger: hsl(4deg 100% 80%);
+  --color-accent: hsl(var(--accent-h) var(--accent-s) max(var(--accent-l), 70%));
+  --color-accent-bright: hsl(var(--accent-h) var(--accent-s) max(var(--accent-l), 80%));
+  --color-accent-wash: transparent;
+  --color-accent-glow: transparent;
+  --color-on-accent: hsl(var(--accent-h) 40% 4%);
+  --color-stroke: hsl(0deg 0% 98%);
+  --focus-ring: 0 0 0 2px hsl(0deg 0% 0%), 0 0 0 5px hsl(54deg 100% 60%);
+  --scrollbar-thumb: hsl(var(--accent-h) 40% 72%);
+  --scrollbar-thumb-hover: hsl(var(--accent-h) 40% 84%);
+  --scrollbar-track: hsl(var(--ink-h) 30% 3%);
+  --stroke-cool: hsl(0deg 0% 98%);
+}
+
+// Light theme (plan 3 §5a): same names, dark ink on paper. The accent gets darker instead of
+// lighter, so accent text and white text on an accent fill both stay at 4.5 : 1 for every finish.
+@mixin light-tokens {
+  --color-bg: hsl(var(--ink-h) 30% 97%);
+  --color-bg-raised: hsl(var(--ink-h) 25% 99% / 80%);
+  --color-bg-panel: hsl(var(--ink-h) 25% 99%);
+  --color-bar: hsl(var(--ink-h) 30% 97% / 90%);
+  --color-bar-strong: hsl(var(--ink-h) 25% 99% / 96%);
+  --color-field: hsl(var(--ink-h) 25% 99%);
+  --color-line: hsl(var(--ink-h) 12% 55%);
+  --color-line-strong: hsl(var(--ink-h) 12% 42%);
+  --color-text: hsl(var(--ink-h) 30% 12%);
+  --color-text-muted: hsl(var(--ink-h) 12% 38%);
+  --color-danger: hsl(4deg 72% 40%);
+  --color-accent: hsl(var(--accent-h) var(--accent-s) min(var(--accent-l), 34%));
+  --color-accent-glow: hsl(var(--accent-h) var(--accent-s) 40% / 30%);
+  --color-accent-bright: hsl(var(--accent-h) var(--accent-s) min(var(--accent-l), 26%));
+  --color-accent-wash: hsl(var(--accent-h) var(--accent-s) 40% / 12%);
+  --color-on-accent: hsl(var(--accent-h) 30% 98%);
+  --color-stroke: hsl(var(--ink-h) 30% 14%);
+  --shadow-lift:
+    0 1px 0 hsl(0deg 0% 100% / 60%) inset, 0 18px 40px -24px hsl(var(--ink-h) 30% 20% / 45%);
+  --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-accent);
+  --scrollbar-thumb: hsl(var(--accent-h) 30% 42%);
+  --scrollbar-thumb-hover: hsl(var(--accent-h) 40% 36%);
+  --scrollbar-track: hsl(var(--ink-h) 20% 92%);
+  --stroke-cool: hsl(calc(var(--accent-h) + 150) 45% 32%);
+}
+
+// Light and high contrast together: near-black text and lines on white, accent at 7 : 1
+@mixin light-high-contrast-tokens {
+  --color-bg: hsl(0deg 0% 100%);
+  --color-bg-raised: hsl(0deg 0% 100%);
+  --color-bg-panel: hsl(0deg 0% 100%);
+  --color-bar: hsl(0deg 0% 100%);
+  --color-bar-strong: hsl(0deg 0% 100%);
+  --color-field: hsl(0deg 0% 100%);
+  --color-line: hsl(var(--ink-h) 10% 45%);
+  --color-line-strong: hsl(var(--ink-h) 10% 20%);
+  --color-text: hsl(0deg 0% 5%);
+  --color-text-muted: hsl(0deg 0% 5%);
+  --color-danger: hsl(4deg 80% 30%);
+  --color-accent: hsl(var(--accent-h) var(--accent-s) min(var(--accent-l), 26%));
+  --color-accent-bright: hsl(var(--accent-h) var(--accent-s) min(var(--accent-l), 20%));
+  --color-accent-wash: transparent;
+  --color-accent-glow: transparent;
+  --color-on-accent: hsl(0deg 0% 100%);
+  --color-stroke: hsl(0deg 0% 5%);
+  --focus-ring: 0 0 0 2px hsl(0deg 0% 100%), 0 0 0 5px hsl(230deg 100% 35%);
+  --scrollbar-thumb: hsl(var(--accent-h) 40% 28%);
+  --scrollbar-thumb-hover: hsl(var(--accent-h) 40% 18%);
+  --scrollbar-track: hsl(0deg 0% 100%);
+  --stroke-cool: hsl(0deg 0% 5%);
+}
+
+// Device drawings (phone render, exploded layers, the hero screen): black glass and white
+// highlights are colors of the object, not of the page, so they stay put in the light theme
+@mixin device-tokens {
+  --color-bg: hsl(var(--ink-h) 26% 4%);
+  --color-text: hsl(var(--ink-h) 24% 96%);
+  --color-text-muted: hsl(var(--ink-h) 10% 74%);
+  --color-line: hsl(var(--ink-h) 12% 60% / 22%);
+  --color-line-strong: hsl(var(--ink-h) 14% 78% / 46%);
+}
+
+// Device drawings in high contrast (plan 3 §3): the phone is content, so its lines go opaque
+@mixin device-high-contrast-tokens {
+  --color-text-muted: hsl(var(--ink-h) 24% 96%);
+  --color-line: hsl(var(--ink-h) 12% 62%);
+  --color-line-strong: hsl(var(--ink-h) 14% 88%);
 }

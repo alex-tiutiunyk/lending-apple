@@ -23,16 +23,22 @@
   translate: var(--mx, 0) var(--my, 0);
   transition: opacity var(--dur-hover) var(--ease-out);
 
-  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  @include mixins.hover-motion {
     display: block;
+  }
 
-    [data-surface]:hover > & {
+  [data-surface]:hover > & {
+    @include mixins.hover-motion {
       opacity: 1;
     }
   }
+
+  @include mixins.high-contrast {
+    visibility: hidden;
+  }
 }
 
-.lensWaves {
+.lens-waves {
   position: absolute;
   inset: 0;
   background: var(--color-accent);

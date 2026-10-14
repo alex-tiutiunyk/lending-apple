@@ -1,4 +1,6 @@
-.outline {
+@use 'mixins';
+
+.root {
   overflow: visible;
 
   path {
@@ -9,7 +11,13 @@
     stroke-linejoin: round;
     stroke-dasharray: 1 1;
     stroke-dashoffset: calc(1 - var(--draw, 1));
-    opacity: clamp(0, var(--draw, 1) * 40, 1);
+    opacity: calc(clamp(0, var(--draw, 1) * 40, 1) * var(--part-alpha, 1));
+  }
+
+  // Drawn first and quietest; they step back further as the color render opens (--reveal)
+  [data-part='guides'] {
+    --draw: var(--draw-guides, 1);
+    --part-alpha: calc(0.4 * (1 - var(--reveal, 0)));
   }
 
   [data-part='body'] {
@@ -35,4 +43,79 @@
   [data-part='details'] {
     --draw: var(--draw-details, 1);
   }
+}
+
+// Blueprint variant (plan 4 §8): hairlines in two weights that stay thin at every size, a
+// diagonal gradient that follows the finish, and a bright head on the main contours while
+// they draw. The ordinary variant (hero) keeps the flat stroke above.
+.root--blueprint {
+  path {
+    stroke: var(--outline-stroke, var(--color-stroke));
+    stroke-width: 0.6;
+    vector-effect: non-scaling-stroke;
+  }
+
+  // Below one device pixel a hairline breaks up into grey dust
+  @media (resolution < 1.5dppx) {
+    path {
+      stroke-width: 0.75;
+    }
+  }
+
+  [data-part='camera'] path {
+    stroke-width: 0.75;
+  }
+
+  [data-part='body'] path {
+    stroke-width: 0.9;
+  }
+
+  [data-part='buttons'] {
+    --part-alpha: 0.7;
+  }
+
+  [data-part='details'] {
+    --part-alpha: 0.55;
+  }
+
+  // A short bright dash that ends where the line is being drawn; gone once the part is complete
+  .head {
+    stroke: var(--color-accent-bright);
+    stroke-width: 1.4;
+    stroke-dasharray: 0.05 1;
+    stroke-dashoffset: calc(1.1 - var(--draw, 1));
+    opacity: calc(clamp(0, var(--draw, 1) * 40, 1) * clamp(0, (1 - var(--draw, 1)) * 20, 1));
+  }
+
+  @include mixins.high-contrast {
+    [data-part] path {
+      --part-alpha: 1;
+
+      stroke: var(--color-stroke);
+      stroke-width: 1.2;
+    }
+
+    [data-part='guides'],
+    .head {
+      display: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    [data-part] path {
+      stroke: CanvasText;
+    }
+  }
+}
+
+.stop-accent {
+  stop-color: var(--color-accent);
+}
+
+.stop-mid {
+  stop-color: var(--color-stroke);
+}
+
+.stop-cool {
+  stop-color: var(--stroke-cool);
 }

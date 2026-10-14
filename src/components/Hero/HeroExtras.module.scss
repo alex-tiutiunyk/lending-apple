@@ -1,0 +1,229 @@
+@use 'sass:list';
+@use 'mixins';
+@use 'breakpoints' as bp;
+@use 'tokens';
+
+$boot-start: 1.3s;
+
+// Per floating part, by data-order: left, top, width, parallax depth (1 to 3)
+$part-spots: (
+  (2%, 18%, 2.6rem, 3),
+  (86%, 8%, 1.1rem, 1),
+  (88%, 58%, 2.4rem, 2),
+  (0%, 66%, 2rem, 2),
+  (16%, 0%, 1rem, 1),
+  (86%, 90%, 2.8rem, 3),
+  (8%, 94%, 0.9rem, 1)
+);
+$phone-parts: 3;
+
+.boot {
+  @include tokens.device-tokens;
+
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+
+  @include mixins.high-contrast {
+    @include tokens.device-high-contrast-tokens;
+  }
+}
+
+.glow-center {
+  stop-color: var(--color-accent);
+  stop-opacity: 0.32;
+}
+
+.glow-edge {
+  stop-color: var(--color-bg);
+  stop-opacity: 0.9;
+}
+
+.island {
+  fill: var(--color-bg);
+}
+
+.time {
+  font-size: 30px;
+  font-weight: 600;
+  fill: var(--color-text);
+  text-anchor: middle;
+  letter-spacing: -0.02em;
+}
+
+.card {
+  fill: hsl(var(--ink-h) 20% 12% / 88%);
+  stroke: var(--color-line);
+  stroke-width: 0.6;
+}
+
+.app-dot {
+  fill: var(--color-accent);
+}
+
+.message {
+  font-size: 7.8px;
+  font-weight: 560;
+  fill: var(--color-text);
+}
+
+.cable {
+  fill: none;
+  stroke: var(--color-text-muted);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0;
+}
+
+.plug {
+  fill: var(--part-steel);
+}
+
+.charge-ring {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1.4;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0;
+  opacity: 0.5;
+  transform: rotate(-90deg);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.notification {
+  transform-box: fill-box;
+}
+
+@include mixins.motion-safe {
+  .screen {
+    animation: boot-fade 600ms var(--ease-out) $boot-start both;
+  }
+
+  .time {
+    animation: boot-fade 400ms var(--ease-out) calc($boot-start + 0.5s) both;
+  }
+
+  .notification {
+    animation: boot-notify 450ms var(--ease-out) both;
+
+    @for $i from 1 through 3 {
+      &:nth-of-type(#{$i}) {
+        animation-delay: calc($boot-start + 0.9s + #{($i - 1) * 0.4s});
+      }
+    }
+  }
+
+  .cable {
+    animation: boot-draw 900ms var(--ease-out) 0.9s both;
+  }
+
+  .plug {
+    animation: boot-fade 200ms var(--ease-out) 1.7s both;
+  }
+
+  .charge-ring {
+    animation: boot-charge 900ms var(--ease-in-out) 1.8s both;
+  }
+}
+
+.parts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.part {
+  position: absolute;
+  opacity: calc(1 - var(--hero-out, 0));
+
+  @include mixins.motion-safe {
+    transform: translate(
+      calc(var(--px, 0) * var(--depth) * 4px),
+      calc(var(--py, 0) * var(--depth) * 4px)
+    );
+    transition: transform 400ms var(--ease-out);
+  }
+}
+
+@for $i from 1 through list.length($part-spots) {
+  $spot: list.nth($part-spots, $i);
+
+  .part[data-order='#{$i - 1}'] {
+    top: list.nth($spot, 2);
+    left: list.nth($spot, 1);
+    width: list.nth($spot, 3);
+
+    --depth: #{list.nth($spot, 4)};
+    --drift-delay: #{(1 - $i) * 1.3s};
+
+    @if $i > $phone-parts {
+      @include bp.down(md) {
+        display: none;
+      }
+    }
+  }
+}
+
+.drift {
+  display: block;
+
+  @include mixins.motion-safe {
+    animation: boot-fade 700ms var(--ease-out) calc(1s + var(--drift-delay) * -0.1) both;
+  }
+
+  @include mixins.when-awake {
+    animation:
+      boot-fade 700ms var(--ease-out) calc(1s + var(--drift-delay) * -0.1) both,
+      part-drift 9s var(--ease-in-out) var(--drift-delay) infinite alternate;
+  }
+}
+
+.part-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+@keyframes boot-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes boot-notify {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.96);
+  }
+}
+
+@keyframes boot-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes boot-charge {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+
+  70% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes part-drift {
+  from {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  to {
+    transform: translate(6px, -10px) rotate(14deg);
+  }
+}

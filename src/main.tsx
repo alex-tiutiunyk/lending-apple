@@ -1,10 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import { App } from '@/app/App'
-import { applyStoredMotionPause } from '@/hooks/motionPause'
+import { applySettings, getA11ySettings } from '@/hooks/a11yStore'
 import '@/styles/global.scss'
 
-applyStoredMotionPause()
+applySettings(getA11ySettings())
 
 const rootElement = document.getElementById('root')
 const page = (

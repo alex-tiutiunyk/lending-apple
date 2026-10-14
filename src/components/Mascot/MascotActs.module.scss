@@ -1,0 +1,422 @@
+// Art and motion for the acts added in plan 2. Pip's own parts are reached through
+// data-pip-part, because their classes belong to Mascot.module.scss.
+
+[data-pip-part='art'],
+[data-pip-part='body'],
+[data-pip-part='leg-left'],
+[data-pip-part='leg-right'],
+.arm,
+.screw,
+.wings path,
+.polaroid {
+  transform-box: fill-box;
+}
+
+.arm {
+  fill: none;
+  stroke: var(--finish-shell-light);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.arm--left {
+  transform-origin: 100% 0;
+}
+
+.arm--right {
+  transform-origin: 0 0;
+}
+
+.screw {
+  fill: var(--part-steel);
+  stroke: var(--part-steel-edge);
+  stroke-width: 0.5;
+  transform-origin: center;
+  animation: juggle-arc 900ms var(--ease-in-out) infinite;
+
+  &:nth-child(2) {
+    animation-delay: -300ms;
+  }
+
+  &:nth-child(3) {
+    animation:
+      juggle-arc 900ms var(--ease-in-out) 3,
+      juggle-drop 1100ms var(--ease-in-out) 2.7s both;
+    animation-delay: -600ms, 2.7s;
+  }
+}
+
+.buzz path {
+  fill: none;
+  stroke: var(--color-text-muted);
+  stroke-width: 1;
+  stroke-linecap: round;
+  animation: buzz-flash 300ms steps(2) infinite;
+}
+
+.cable {
+  fill: none;
+  stroke: var(--color-text-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  animation: cable-plug 900ms var(--ease-out) both;
+}
+
+.wings path {
+  fill: var(--finish-shell-light);
+  transform-origin: 50% 0;
+  animation: wings-out 400ms var(--ease-out) 300ms both;
+}
+
+.flash {
+  fill: #fff;
+  opacity: 0;
+  animation: screen-flash 420ms var(--ease-out) 150ms;
+}
+
+.polaroid {
+  opacity: 0;
+  transform-origin: center;
+  animation: polaroid-drop 1.6s var(--ease-out) 350ms both;
+}
+
+.polaroid-frame {
+  fill: var(--color-text);
+}
+
+.polaroid-photo {
+  fill: var(--color-accent);
+}
+
+[data-act='wave'] .arm--right {
+  animation: arm-wave 320ms var(--ease-in-out) 6 alternate both;
+}
+
+[data-act='stretch'] {
+  .arm--left {
+    animation: arm-up-left 2.6s var(--ease-in-out) both;
+  }
+
+  .arm--right {
+    animation: arm-up-right 2.6s var(--ease-in-out) both;
+  }
+
+  [data-pip-part='body'] {
+    animation: body-stretch 2.6s var(--ease-in-out) both;
+  }
+}
+
+[data-act='juggle'] {
+  .arm--left {
+    rotate: 100deg;
+  }
+
+  .arm--right {
+    rotate: -100deg;
+  }
+}
+
+[data-act='ring'] [data-pip-part='body'] {
+  animation: body-ring 80ms linear infinite alternate;
+}
+
+[data-act='charge'] {
+  [data-pip-part='battery'] {
+    opacity: 1;
+  }
+
+  [data-pip-part='battery-level'] {
+    fill: var(--color-accent);
+    transform-box: fill-box;
+    transform-origin: 0 50%;
+    animation: battery-fill 2.8s var(--ease-out) 800ms both;
+  }
+}
+
+[data-act='moonwalk'] {
+  [data-pip-part='leg-left'] {
+    animation: leg-step var(--dur-step) var(--ease-in-out) infinite alternate;
+  }
+
+  [data-pip-part='leg-right'] {
+    animation: leg-step var(--dur-step) var(--ease-in-out) infinite alternate-reverse;
+  }
+}
+
+[data-act='dizzy'] {
+  [data-pip-part='art'] {
+    animation: dizzy-spin 3.4s var(--ease-out) both;
+  }
+
+  [data-pip-part='body'] {
+    animation: dizzy-sit 3.4s var(--ease-in-out) both;
+  }
+}
+
+[data-act='airplane'] {
+  // Highest point of the flight: the top of Pip (8 px gap, 88 px art, room for wings and the loop)
+  // stays inside the bottom 40 % of the viewport, also when Pip is lifted over the sticky CTA
+  --fly-dir: 1;
+  --fly-height: max(0px, 40vh - 8.5rem - var(--pip-lift, 0px));
+
+  &[data-flight='left'] {
+    --fly-dir: -1;
+  }
+
+  [data-pip-part='art'] {
+    animation: airplane-flight 4.6s var(--ease-in-out) both;
+  }
+
+  .arm--left {
+    rotate: 70deg;
+  }
+
+  .arm--right {
+    rotate: -70deg;
+  }
+}
+
+@keyframes juggle-arc {
+  0% {
+    transform: translate(-10px, 30px);
+  }
+
+  50% {
+    transform: translate(0, -6px);
+  }
+
+  100% {
+    transform: translate(10px, 30px);
+  }
+}
+
+@keyframes juggle-drop {
+  0% {
+    opacity: 1;
+    transform: translate(10px, 30px);
+  }
+
+  40% {
+    transform: translate(18px, 84px);
+  }
+
+  70% {
+    transform: translate(18px, 84px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(10px, 30px);
+  }
+}
+
+@keyframes buzz-flash {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes cable-plug {
+  from {
+    stroke-dashoffset: -1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes wings-out {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes screen-flash {
+  30% {
+    opacity: 1;
+  }
+}
+
+@keyframes polaroid-drop {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0.4);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translate(14px, 30px) scale(1) rotate(10deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(26px, 70px) scale(1) rotate(24deg);
+  }
+}
+
+@keyframes arm-wave {
+  from {
+    rotate: -140deg;
+  }
+
+  to {
+    rotate: -100deg;
+  }
+}
+
+@keyframes arm-up-left {
+  20%,
+  80% {
+    rotate: 125deg;
+  }
+}
+
+@keyframes arm-up-right {
+  20%,
+  80% {
+    rotate: -125deg;
+  }
+}
+
+@keyframes body-stretch {
+  25%,
+  75% {
+    scale: 1 1.1;
+  }
+}
+
+@keyframes body-ring {
+  from {
+    translate: -0.8px 0;
+  }
+
+  to {
+    translate: 0.8px 0;
+  }
+}
+
+@keyframes battery-fill {
+  to {
+    transform: scaleX(3.8);
+  }
+}
+
+@keyframes leg-step {
+  from {
+    rotate: 18deg;
+  }
+
+  to {
+    rotate: -18deg;
+  }
+}
+
+@keyframes dizzy-spin {
+  0% {
+    rotate: 0deg;
+  }
+
+  30% {
+    rotate: 720deg;
+    translate: 0 0;
+  }
+
+  42% {
+    translate: -5px 0;
+  }
+
+  54% {
+    translate: 5px 0;
+  }
+
+  64%,
+  100% {
+    rotate: 720deg;
+    translate: 0 0;
+  }
+}
+
+@keyframes dizzy-sit {
+  0%,
+  60% {
+    translate: 0 0;
+  }
+
+  72%,
+  95% {
+    translate: 0 9px;
+  }
+}
+
+@keyframes airplane-flight {
+  0% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+
+  15% {
+    translate: calc(var(--fly-dir) * 30px) calc(var(--fly-height) * -0.27);
+    rotate: calc(var(--fly-dir) * 20deg);
+  }
+
+  40% {
+    translate: calc(var(--fly-dir) * 140px) calc(var(--fly-height) * -0.87);
+    rotate: calc(var(--fly-dir) * 200deg);
+  }
+
+  60% {
+    translate: calc(var(--fly-dir) * 90px) calc(var(--fly-height) * -1);
+    rotate: calc(var(--fly-dir) * 360deg);
+  }
+
+  85% {
+    translate: calc(var(--fly-dir) * 10px) calc(var(--fly-height) * -0.13);
+    rotate: calc(var(--fly-dir) * 360deg);
+  }
+
+  92% {
+    translate: 0 0;
+    rotate: calc(var(--fly-dir) * 380deg);
+  }
+
+  100% {
+    translate: 0 0;
+    rotate: calc(var(--fly-dir) * 360deg);
+  }
+}
+
+// Plan 4: the chase after a runaway letter, the miss, a glance at the header and a cheer
+[data-act='chase'] {
+  [data-pip-part='body'] {
+    rotate: 14deg;
+  }
+
+  [data-pip-part='leg-left'] {
+    animation: leg-step calc(var(--dur-step) / 2.5) var(--ease-in-out) infinite alternate;
+  }
+
+  [data-pip-part='leg-right'] {
+    animation: leg-step calc(var(--dur-step) / 2.5) var(--ease-in-out) infinite alternate-reverse;
+  }
+}
+
+[data-act='missed'],
+[data-act='glance'] {
+  --look-y: -1.5px;
+
+  [data-pip-part='body'] {
+    rotate: -8deg;
+  }
+}
+
+[data-act='cheer'] [data-pip-part='art'] {
+  animation: cheer-jump 600ms var(--ease-out) 2 both;
+}
+
+@keyframes cheer-jump {
+  50% {
+    translate: 0 -14px;
+  }
+}

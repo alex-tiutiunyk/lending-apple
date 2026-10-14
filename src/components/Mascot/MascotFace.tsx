@@ -33,6 +33,16 @@ export function MascotFace({ expression }: MascotFaceProps) {
           />
         </g>
       )
+    case 'dizzy':
+      return (
+        <g>
+          <rect x={14} y={6} width={20} height={8.5} rx={4.25} className={styles.cutout} />
+          <path
+            d="M20 10.25 m-0.4 0 a0.4 0.4 0 1 1 0.8 0 a0.9 0.9 0 1 1 -1.8 0 a1.4 1.4 0 1 1 2.8 0 M28 10.25 m-0.4 0 a0.4 0.4 0 1 1 0.8 0 a0.9 0.9 0 1 1 -1.8 0 a1.4 1.4 0 1 1 2.8 0"
+            className={styles.eyeLine}
+          />
+        </g>
+      )
     case 'calm':
       return (
         <g>

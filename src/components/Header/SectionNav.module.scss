@@ -1,0 +1,208 @@
+@use 'mixins';
+@use 'breakpoints' as bp;
+
+$cap: 4px;
+$middle-base: 10px;
+$body-height: 5px;
+
+.root {
+  position: relative;
+  display: none;
+  margin-left: auto;
+
+  --dur-run: 520ms;
+
+  @include bp.up(md) {
+    display: block;
+  }
+}
+
+.links {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  padding-inline: var(--space-3);
+  font-size: var(--step-down-1);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  border-radius: var(--radius-pill);
+  transition: color var(--dur-hover) var(--ease-out);
+
+  &[aria-current] {
+    color: var(--color-text);
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      color: var(--color-text);
+    }
+  }
+}
+
+.indicator {
+  position: absolute;
+  bottom: 1px;
+  left: 0;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(var(--runner-x, 0));
+  transition:
+    transform var(--dur-run) var(--ease-in-out),
+    opacity var(--dur-hover) var(--ease-out);
+
+  &[data-shown] {
+    opacity: 1;
+  }
+
+  &[data-instant] {
+    transition: opacity var(--dur-hover) var(--ease-out);
+  }
+}
+
+.phone {
+  position: relative;
+  display: block;
+  height: $body-height + 4px;
+
+  .indicator[data-settle] & {
+    @include mixins.motion-safe {
+      animation: nav-phone-bob 320ms var(--ease-out);
+    }
+  }
+}
+
+.cap,
+.middle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: $body-height;
+  background: var(--color-accent);
+}
+
+.cap {
+  width: $cap;
+}
+
+.cap--start {
+  border-radius: 2px 0 0 2px;
+}
+
+.cap--end {
+  border-radius: 0 2px 2px 0;
+  transform: translateX(var(--end-x, 0));
+  transition: transform var(--dur-run) var(--ease-in-out);
+
+  .indicator[data-instant] & {
+    transition: none;
+  }
+}
+
+.middle {
+  left: $cap;
+  width: $middle-base;
+  transform: scaleX(var(--middle-scale, 0));
+  transform-origin: 0 50%;
+  transition: transform var(--dur-run) var(--ease-in-out);
+
+  .indicator[data-instant] & {
+    transition: none;
+  }
+}
+
+.bump {
+  position: absolute;
+  top: -2px;
+  width: 2px;
+  height: 2px;
+  background: var(--color-accent-bright);
+  border-radius: 1px 1px 0 0;
+  opacity: 0;
+  transition: opacity var(--dur-hover) var(--ease-out);
+
+  .cap--start & {
+    left: 0;
+  }
+
+  .cap--end & {
+    right: 0;
+  }
+
+  .indicator[data-facing='left'] .cap--start &,
+  .indicator[data-facing='right'] .cap--end & {
+    opacity: 1;
+  }
+}
+
+.leg {
+  position: absolute;
+  top: $body-height;
+  width: 1px;
+  height: 3px;
+  background: var(--color-text-muted);
+  transform-origin: 50% 0;
+
+  &:nth-child(2) {
+    left: 0;
+  }
+
+  &:nth-child(3) {
+    right: 0;
+  }
+
+  .indicator[data-running] & {
+    @include mixins.motion-ambient {
+      animation: nav-leg-step 130ms var(--ease-in-out) infinite alternate;
+    }
+  }
+
+  .indicator[data-running] &:nth-child(3) {
+    @include mixins.motion-ambient {
+      animation-direction: alternate-reverse;
+    }
+  }
+}
+
+@include mixins.motion-reduce {
+  .indicator,
+  .cap--end,
+  .middle {
+    transition: none;
+  }
+
+  .bump,
+  .leg {
+    display: none;
+  }
+
+  .phone {
+    height: 2px;
+  }
+
+  .cap,
+  .middle {
+    height: 2px;
+    border-radius: 0;
+  }
+}
+
+@keyframes nav-leg-step {
+  from {
+    transform: rotate(-30deg);
+  }
+
+  to {
+    transform: rotate(30deg);
+  }
+}
+
+@keyframes nav-phone-bob {
+  40% {
+    transform: translateY(-2px);
+  }
+}

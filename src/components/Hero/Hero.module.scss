@@ -1,7 +1,7 @@
 @use 'mixins';
 @use 'breakpoints' as bp;
 
-.hero {
+.root {
   @include mixins.container;
 
   display: grid;
@@ -67,6 +67,7 @@
 }
 
 .visual {
+  position: relative;
   display: grid;
   grid-template-rows: minmax(0, 1fr);
   place-items: center;
@@ -80,6 +81,10 @@
     will-change: transform;
     animation: phone-float var(--dur-float) var(--ease-in-out) var(--dur-draw-total) infinite;
   }
+}
+
+.visual > * {
+  grid-area: 1 / 1;
 }
 
 .outline {

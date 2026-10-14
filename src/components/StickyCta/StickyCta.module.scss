@@ -2,7 +2,7 @@
 @use 'mixins';
 @use 'breakpoints' as bp;
 
-.bar {
+.root {
   position: fixed;
   right: var(--space-3);
   bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
@@ -14,7 +14,7 @@
   justify-content: space-between;
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
   visibility: hidden;
-  background: hsl(var(--ink-h) 22% 8% / 94%);
+  background: var(--color-bar-strong);
   border: 1px solid var(--color-line-strong);
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-lift);

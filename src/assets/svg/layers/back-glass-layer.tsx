@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import { circlePath, layerViewBox, plateauPath, roundedRectPath } from '../phone-geometry'
+import { LayerLight } from './layer-light'
 import { layerShapes } from './layer-geometry'
 import styles from './layers.module.scss'
 
@@ -25,6 +26,7 @@ export function BackGlassLayer() {
         className={styles.plateauCutout}
       />
       <path d={roundedRectPath(glassWindow)} className={styles.glassWindow} />
+      <LayerLight box={body} />
       {magnetSegments.map((angle) => (
         <rect
           key={angle}

@@ -1,43 +1,21 @@
-import {
-  back,
-  circlePath,
-  front,
-  phoneViewBoxes,
-  plateauPath,
-  roundedRectPath,
-  type PhoneView,
-} from './phone-geometry'
+import { useId, type CSSProperties } from 'react'
+import { phoneViewBoxes, type PhoneView } from './phone-geometry'
+import { blueprintHeads, blueprintParts, plainParts, type PartPaths } from './phone-outline-parts'
 import styles from './phone-outline.module.scss'
 
-const frontParts = {
-  body: [roundedRectPath(front.body), roundedRectPath(front.band)],
-  screen: [roundedRectPath(front.screen)],
-  island: [roundedRectPath(front.island)],
-  buttons: front.buttons.map(roundedRectPath),
-  details: [roundedRectPath(front.earpiece), ...front.antennaBreaks.map(roundedRectPath)],
+type PartGroupsProps = {
+  parts: PartPaths
+  heads?: PartPaths
 }
 
-const backParts = {
-  body: [roundedRectPath(back.body), roundedRectPath(back.band)],
-  camera: [
-    plateauPath(back.plateau, back.plateau.radius, back.plateauBottomRadius),
-    ...back.lenses.map(({ cx, cy }) => circlePath(cx, cy, back.lensRadius)),
-    ...back.lenses.map(({ cx, cy }) => circlePath(cx, cy, back.lensGlassRadius)),
-    circlePath(back.flash.cx, back.flash.cy, back.flash.r),
-    circlePath(back.microphone.cx, back.microphone.cy, back.microphone.r),
-    circlePath(back.depthSensor.cx, back.depthSensor.cy, back.depthSensor.r),
-  ],
-  buttons: back.buttons.map(roundedRectPath),
-  details: [roundedRectPath(back.glassWindow), ...back.antennaBreaks.map(roundedRectPath)],
-}
-
-type PartPaths = Record<string, string[]>
-
-function PartGroups({ parts }: { parts: PartPaths }) {
+function PartGroups({ parts, heads = {} }: PartGroupsProps) {
   return Object.entries(parts).map(([part, paths]) => (
     <g key={part} data-part={part}>
       {paths.map((d) => (
         <path key={d} d={d} pathLength={1} />
+      ))}
+      {heads[part]?.map((d) => (
+        <path key={`head:${d}`} className={styles.head} d={d} pathLength={1} />
       ))}
     </g>
   ))
@@ -45,19 +23,46 @@ function PartGroups({ parts }: { parts: PartPaths }) {
 
 type PhoneOutlineProps = {
   view?: PhoneView
+  /** `blueprint` (plan 4 §8): hairlines in two weights, more paths, a gradient and drawing heads. */
+  detail?: 'plain' | 'blueprint'
   className?: string | undefined
 }
 
-export function PhoneOutline({ view = 'both', className }: PhoneOutlineProps) {
+export function PhoneOutline({ view = 'both', detail = 'plain', className }: PhoneOutlineProps) {
+  const gradientId = useId()
+  const isBlueprint = detail === 'blueprint'
+  const parts = isBlueprint ? blueprintParts : plainParts
+  const heads = isBlueprint ? blueprintHeads : { front: {}, back: {} }
+  const classes = [styles.root, isBlueprint && styles.rootBlueprint, className]
+
   return (
     <svg
-      className={className ? `${styles.outline} ${className}` : styles.outline}
+      className={classes.filter(Boolean).join(' ')}
       viewBox={phoneViewBoxes[view]}
       aria-hidden="true"
       focusable="false"
+      style={
+        isBlueprint ? ({ '--outline-stroke': `url("#${gradientId}")` } as CSSProperties) : undefined
+      }
     >
-      {view !== 'back' && <PartGroups parts={frontParts} />}
-      {view !== 'front' && <PartGroups parts={backParts} />}
+      {isBlueprint && (
+        <defs>
+          <linearGradient
+            id={gradientId}
+            gradientUnits="userSpaceOnUse"
+            x1="8"
+            y1="8"
+            x2="392"
+            y2="352"
+          >
+            <stop offset="0" className={styles.stopAccent} />
+            <stop offset="0.5" className={styles.stopMid} />
+            <stop offset="1" className={styles.stopCool} />
+          </linearGradient>
+        </defs>
+      )}
+      {view !== 'back' && <PartGroups parts={parts.front} heads={heads.front} />}
+      {view !== 'front' && <PartGroups parts={parts.back} heads={heads.back} />}
     </svg>
   )
 }

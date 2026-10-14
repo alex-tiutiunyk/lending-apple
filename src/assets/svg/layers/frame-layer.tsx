@@ -1,4 +1,5 @@
 import { layerViewBox, roundedRectPath } from '../phone-geometry'
+import { LayerLight } from './layer-light'
 import { layerShapes } from './layer-geometry'
 import { AntennaClip, PentalobeScrew } from './small-parts'
 import styles from './layers.module.scss'
@@ -57,6 +58,7 @@ export function FrameLayer() {
       {grilleHoles.map((x) => (
         <circle key={x} cx={x} cy={bottom - 3.5} r={1.1} className={styles.port} />
       ))}
+      <LayerLight box={body} strength="strong" />
       <PentalobeScrew slot={0} x={68} y={bottom - 3.5} />
       <PentalobeScrew slot={1} x={112} y={bottom - 3.5} />
       <AntennaClip slot={2} x={body.x + 9} y={body.y + 60} />

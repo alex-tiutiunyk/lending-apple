@@ -1,0 +1,306 @@
+@use 'mixins';
+
+.root {
+  position: relative;
+  display: inline-flex;
+  min-height: var(--tap-min);
+  font-size: var(--step-0);
+  font-weight: 620;
+  line-height: 1.2;
+  color: var(--color-on-accent);
+  text-decoration: none;
+  border-radius: var(--radius-pill);
+  isolation: isolate;
+
+  @include mixins.focus-ring;
+}
+
+.body {
+  position: relative;
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--button-inline, var(--space-5));
+  border-radius: inherit;
+  translate: var(--pull-x, 0) var(--pull-y, 0);
+  transition:
+    transform var(--dur-press) var(--ease-press),
+    translate var(--dur-hover) var(--ease-out);
+
+  .root[data-nudge='buzz'] & {
+    animation: nudge-buzz 360ms linear;
+  }
+
+  .root[data-busy] & {
+    translate: none;
+  }
+
+  .root:active:not(:disabled) & {
+    transform: translateY(2px) scale(0.98);
+  }
+}
+
+.root--button {
+  padding: 0;
+  font-family: inherit;
+  cursor: pointer;
+  background: none;
+  border: 0;
+
+  &[data-busy] {
+    cursor: progress;
+  }
+}
+
+.root--compact {
+  min-height: 2.5rem;
+  font-size: var(--step-down-1);
+
+  --button-inline: var(--space-4);
+}
+
+.surface {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--color-accent);
+  border-radius: inherit;
+  box-shadow: 0 10px 30px -12px var(--color-accent-glow);
+}
+
+.fill {
+  position: absolute;
+  top: var(--fill-y, 50%);
+  left: var(--fill-x, 50%);
+  width: 260%;
+  aspect-ratio: 1;
+  background: var(--color-accent-bright);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform var(--dur-fill) var(--ease-out);
+
+  .root:focus-visible & {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  @media (hover: hover) {
+    .root:hover & {
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  .root[data-busy] & {
+    transform: translate(-50%, -50%) scale(0);
+  }
+}
+
+.sheen {
+  position: absolute;
+  inset: -20% auto -20% 0;
+  width: 45%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    hsl(0deg 0% 100% / 0%) 20%,
+    hsl(0deg 0% 100% / 42%) 50%,
+    hsl(0deg 0% 100% / 0%) 80%,
+    transparent 100%
+  );
+  transform: translateX(-120%) skewX(-12deg);
+
+  .root[data-sheen='run'] & {
+    @include mixins.motion-safe {
+      animation: sheen-sweep var(--dur-sheen) var(--ease-in-out) 1 both;
+    }
+  }
+}
+
+.ring,
+.hover-ring {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 2px solid var(--color-accent);
+  border-radius: inherit;
+  opacity: 0;
+}
+
+// The attention ring pulses without end while the button is awake (plan 4 §3). The compact
+// (header) variant starts half a cycle in, so two visible buttons do not blink together.
+// Hover, focus and a nudge drop the loop: the hover ring, the fill or the nudge take over.
+.ring {
+  @include mixins.when-awake {
+    animation: ring-pulse-loop var(--dur-pulse-loop) var(--ease-out) infinite;
+  }
+
+  .root--compact & {
+    animation-delay: calc(var(--dur-pulse-loop) / -2);
+  }
+
+  .root:focus-visible &,
+  .root[data-nudge] & {
+    animation: none;
+  }
+
+  @media (hover: hover) {
+    .root:hover & {
+      animation: none;
+    }
+  }
+}
+
+.hover-ring {
+  .root:hover & {
+    @include mixins.hover-motion {
+      animation: ring-pulse var(--dur-pulse-hover) var(--ease-out) 1;
+    }
+  }
+}
+
+// Idle nudges (useIdleNudge): the data-nudge attribute only appears with motion allowed.
+// The sheen nudge needs its own keyframes: the hero already ran sheen-sweep once, and
+// setting the same animation again would not restart it.
+.root::before,
+.root::after {
+  position: absolute;
+  top: 50%;
+  width: 0.4rem;
+  height: 0.9rem;
+  pointer-events: none;
+  content: '';
+  border: 2px solid var(--color-accent);
+  border-block: 0;
+  border-radius: 50%;
+  opacity: 0;
+  transform: translateY(-50%);
+}
+
+.root::before {
+  left: -0.75rem;
+  border-right: 0;
+}
+
+.root::after {
+  right: -0.75rem;
+  border-left: 0;
+}
+
+.root[data-nudge='buzz'] {
+  &::before,
+  &::after {
+    animation: nudge-marks 420ms var(--ease-out);
+  }
+}
+
+.root[data-nudge='sheen'] .sheen {
+  animation: nudge-sheen var(--dur-sheen) var(--ease-in-out) 1 both;
+}
+
+.beam {
+  position: absolute;
+  inset: -2px;
+  padding: 2px;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+
+  &::before {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 140%;
+    aspect-ratio: 1;
+    content: '';
+    background: conic-gradient(
+      transparent 0deg 250deg,
+      hsl(0deg 0% 100% / 90%) 330deg,
+      transparent 360deg
+    );
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  .root[data-nudge] &::before {
+    animation: nudge-beam 900ms var(--ease-in-out);
+  }
+}
+
+.root[data-busy] .ring,
+.root[data-busy] .hover-ring {
+  display: none;
+}
+
+@include mixins.motion-reduce {
+  .body,
+  .root:active .body {
+    translate: none;
+    transform: none;
+  }
+
+  .fill {
+    transition: none;
+  }
+}
+
+@keyframes nudge-buzz {
+  17%,
+  83% {
+    transform: translateX(-1.5px);
+  }
+
+  50% {
+    transform: translateX(1.5px);
+  }
+}
+
+@keyframes nudge-sheen {
+  from {
+    transform: translateX(-120%) skewX(-12deg);
+  }
+
+  to {
+    transform: translateX(340%) skewX(-12deg);
+  }
+}
+
+@keyframes nudge-marks {
+  30% {
+    opacity: 1;
+  }
+}
+
+@keyframes nudge-beam {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+// Forced colors drop backgrounds: the button keeps a system outline instead of its fill
+@media (forced-colors: active) {
+  .surface,
+  .ring,
+  .hover-ring,
+  .beam {
+    display: none;
+  }
+
+  .body {
+    border: 1px solid ButtonText;
+    border-radius: inherit;
+  }
+}

@@ -1,7 +1,7 @@
 @use 'mixins';
 @use 'breakpoints' as bp;
 
-.section {
+.root {
   @include mixins.container;
 
   display: grid;
@@ -13,6 +13,13 @@
 
 .title {
   font-size: var(--step-4);
+}
+
+.intro {
+  max-width: 40rem;
+  margin-top: calc(var(--space-4) - var(--space-6));
+  font-size: var(--step-1);
+  line-height: 1.4;
 }
 
 .stats {
@@ -53,7 +60,7 @@
   margin: 0;
 }
 
-.footnoteRef {
+.footnote-ref {
   display: inline-block;
   min-width: 1.2em;
   margin-left: 0.15em;

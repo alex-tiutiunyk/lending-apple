@@ -4,10 +4,19 @@
 
 $layer-count: 7;
 $compact-count: 5;
-$window: 0.3;
-$compact-window: 0.32;
+$step: 0.09;
+$window: 0.27;
+$compact-step: 0.13;
+$compact-window: 0.28;
+$rest-step: 0.22rem;
+$slice-step: 0.26rem;
 
-.section {
+// The last layer lands at about 0.85; the rest of the scroll is the payoff
+$turn-start: 0.8;
+$wake-start: 0.85;
+$glint-start: 0.9;
+
+.root {
   position: relative;
   height: 220svh;
 
@@ -15,7 +24,7 @@ $compact-window: 0.32;
     height: 350svh;
   }
 
-  @include mixins.motion-reduce {
+  @include mixins.static-scene {
     height: auto;
   }
 }
@@ -41,7 +50,7 @@ $compact-window: 0.32;
     align-items: center;
   }
 
-  @include mixins.motion-reduce {
+  @include mixins.static-scene {
     --progress: 1;
 
     position: static;
@@ -88,7 +97,7 @@ $compact-window: 0.32;
   position: relative;
   display: grid;
   padding-left: var(--space-4);
-  color: hsl(var(--ink-h) 16% calc(70% + 26% * var(--landed)));
+  color: color-mix(in hsl, var(--color-text-muted), var(--color-text) calc(var(--landed) * 100%));
   transform: translateX(calc((1 - var(--landed)) * 0.4rem));
 
   &::before {
@@ -104,7 +113,7 @@ $compact-window: 0.32;
   }
 }
 
-.layerName {
+.layer-name {
   font-size: var(--step-down-1);
   font-weight: 620;
 
@@ -113,7 +122,7 @@ $compact-window: 0.32;
   }
 }
 
-.layerDetail {
+.layer-detail {
   @include mixins.visually-hidden;
 
   @include bp.up(md) {
@@ -136,17 +145,31 @@ $compact-window: 0.32;
   overflow-x: clip;
   perspective: 1800px;
 
-  @include mixins.motion-reduce {
+  @include mixins.static-scene {
     height: min(70svh, 34rem);
   }
 }
 
 .stack {
+  --turn-linear: clamp(0, (var(--progress) - #{$turn-start}) / #{1 - $turn-start}, 1);
+  --turn: calc(var(--turn-linear) * (2 - var(--turn-linear)));
+  --wake: clamp(0, (var(--progress) - #{$wake-start}) / 0.06, 1);
+  --glint: clamp(0, (var(--progress) - #{$glint-start}) / 0.08, 1);
+
   position: relative;
   height: min(46svh, 28rem);
   aspect-ratio: 180 / 360;
-  transform: rotateX(56deg) rotateZ(-34deg);
+  transform: rotateX(calc(56deg - 32deg * var(--turn))) rotateZ(calc(-34deg + 20deg * var(--turn)));
   transform-style: preserve-3d;
+}
+
+.shadow {
+  position: absolute;
+  inset: 4% 2%;
+  background: radial-gradient(closest-side, hsl(0deg 0% 0% / 70%), hsl(0deg 0% 0% / 0%));
+  border-radius: 30%;
+  opacity: calc(0.25 + 0.6 * var(--progress));
+  transform: translateZ(-1.2rem) scale(calc(1.35 - 0.3 * var(--progress)));
 }
 
 .layer {
@@ -159,7 +182,7 @@ $compact-window: 0.32;
   transform: translateZ(calc(var(--rest-z) + (1 - var(--eased)) * var(--spread)))
     scale(calc(0.94 + 0.06 * var(--eased)));
 
-  .section[data-near] & {
+  .root[data-near] & {
     will-change: transform;
   }
 }
@@ -167,13 +190,13 @@ $compact-window: 0.32;
 @for $i from 0 to $layer-count {
   .layer[data-order='#{$i}'],
   .label[data-order='#{$i}'] {
-    --start: #{0.04 + $i * 0.1};
+    --start: #{0.04 + $i * $step};
     --length: #{$window};
   }
 
   .layer[data-order='#{$i}'] {
     --spread: #{($i - math.div($layer-count - 1, 2)) * 4.4}rem;
-    --rest-z: #{$i * 0.2}rem;
+    --rest-z: #{$i * $rest-step};
   }
 }
 
@@ -186,13 +209,28 @@ $compact-window: 0.32;
   @for $i from 0 to $compact-count {
     .layer[data-compact-order='#{$i}'],
     .label[data-compact-order='#{$i}'] {
-      --start: #{0.04 + $i * 0.15};
+      --start: #{0.04 + $i * $compact-step};
       --length: #{$compact-window};
     }
 
     .layer[data-compact-order='#{$i}'] {
       --spread: #{($i - math.div($compact-count - 1, 2)) * 3.2}rem;
     }
+  }
+}
+
+// Band slices sit in front of the frame and get lighter toward the glass
+.layer.slice {
+  transform: translateZ(
+      calc(var(--rest-z) + var(--slice) * #{$slice-step} + (1 - var(--eased)) * var(--spread))
+    )
+    scale(calc(0.94 + 0.06 * var(--eased)));
+}
+
+@for $slice from 1 through 4 {
+  .slice[data-slice='#{$slice}'] {
+    --slice: #{$slice};
+    --slice-color: hsl(var(--accent-h) calc(var(--accent-s) * 0.4) #{20% + $slice * 7%});
   }
 }
 

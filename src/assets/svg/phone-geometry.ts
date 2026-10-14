@@ -1,4 +1,4 @@
-type Box = { x: number; y: number; width: number; height: number; radius: number }
+export type Box = { x: number; y: number; width: number; height: number; radius: number }
 
 export function roundedRectPath({ x, y, width, height, radius }: Box) {
   const right = x + width
@@ -53,7 +53,7 @@ const bodyHeight = 330
 const bodyRadius = 28
 const viewTop = 15
 
-function phoneAt(left: number) {
+function phoneAt(left: number, simTraySide: 'left' | 'right') {
   const body: Box = {
     x: left,
     y: viewTop,
@@ -61,10 +61,30 @@ function phoneAt(left: number) {
     height: bodyHeight,
     radius: bodyRadius,
   }
+  const centerX = left + bodyWidth / 2
+  const bottom = viewTop + bodyHeight
+  const speakerSlot = (x: number): Box => ({ x, y: bottom - 3, width: 2.2, height: 2, radius: 0.8 })
   return {
     body,
     band: inset(body, 4),
     screen: inset(body, 7, 6),
+    // Blueprint details (plan 4 §8) live with the geometry, so the render can draw them too
+    port: { x: centerX - 9, y: bottom - 3.2, width: 18, height: 2.2, radius: 1.1 } as Box,
+    speakerSlots: [0, 1, 2, 3].flatMap((step) => [
+      speakerSlot(centerX + 14 + step * 5),
+      speakerSlot(centerX - 16.2 - step * 5),
+    ]),
+    simTray: {
+      x: simTraySide === 'left' ? left + 0.8 : left + bodyWidth - 3,
+      y: viewTop + 181,
+      width: 2.2,
+      height: 20,
+      radius: 1,
+    } as Box,
+    topAntennaBreaks: [
+      { x: left + 50, y: viewTop, width: 1.6, height: 4, radius: 0.6 },
+      { x: left + bodyWidth - 52, y: viewTop, width: 1.6, height: 4, radius: 0.6 },
+    ] as Box[],
     antennaBreaks: [
       { x: left, y: viewTop + 46, width: 4, height: 1.6, radius: 0.6 },
       { x: left, y: viewTop + bodyHeight - 48, width: 4, height: 1.6, radius: 0.6 },
@@ -76,8 +96,18 @@ function phoneAt(left: number) {
   }
 }
 
+const frontPhone = phoneAt(20, 'left')
+
 export const front = {
-  ...phoneAt(20),
+  ...frontPhone,
+  statusBarY: frontPhone.screen.y + 16,
+  homeIndicator: {
+    x: frontPhone.screen.x + frontPhone.screen.width / 2 - 22,
+    y: frontPhone.screen.y + frontPhone.screen.height - 10,
+    width: 44,
+    height: 2.2,
+    radius: 1.1,
+  } as Box,
   island: { x: 79, y: 28, width: 42, height: 12, radius: 6 },
   earpiece: { x: 88, y: 19.6, width: 24, height: 1.6, radius: 0.8 },
   buttons: [
@@ -90,7 +120,7 @@ export const front = {
 }
 
 export const back = {
-  ...phoneAt(220),
+  ...phoneAt(220, 'right'),
   plateau: { x: 225, y: 20, width: 150, height: 84, radius: 23 },
   plateauBottomRadius: 10,
   lenses: [
@@ -104,7 +134,7 @@ export const back = {
   microphone: { cx: 352, cy: 60, r: 1.6 },
   depthSensor: { cx: 352, cy: 82, r: 5 },
   glassWindow: { x: 229, y: 112, width: 142, height: 224, radius: 20 },
-  mark: { x: 288, y: 206, size: 24 },
+  mark: { x: 300, y: 224, size: 46 },
   buttons: [
     { name: 'side', x: 216.5, y: 120, width: 3.5, height: 46, radius: 1.5 },
     { name: 'camera-control', x: 216.5, y: 218, width: 3.5, height: 26, radius: 1.5 },
