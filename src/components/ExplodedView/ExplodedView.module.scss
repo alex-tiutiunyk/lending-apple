@@ -215,9 +215,15 @@ $part-travel: 110px;
 
 @for $order from 0 to $layer-count {
   @for $slot from 0 to $parts-per-layer {
+    $spin-direction: 1;
+
+    @if $slot % 2 != 0 {
+      $spin-direction: -1;
+    }
+
     .layer[data-order='#{$order}'] [data-part-slot='#{$slot}'] {
       --part-angle: #{($order * 67 + $slot * 137) % 360}deg;
-      --part-spin: #{if($slot % 2 == 0, 1, -1) * (200 + $slot * 90)}deg;
+      --part-spin: #{$spin-direction * (200 + $slot * 90)}deg;
       --slot-delay: #{$slot * 0.025};
     }
   }
