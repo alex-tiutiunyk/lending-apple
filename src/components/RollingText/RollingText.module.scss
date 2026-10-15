@@ -45,9 +45,48 @@
   }
 }
 
+// Hop (plan 5 §2): the letters lift in a wave and flash to the accent as they land. One-shot
+// keyframes, so leaving only lets the colour fade back through the host's own transition.
+// The second strip copy is not needed here and the letter must not clip the lift.
+.letters--hop {
+  .letter {
+    overflow: visible;
+  }
+
+  .strip {
+    transform: none;
+    transition: none;
+  }
+
+  .strip > span + span {
+    display: none;
+  }
+}
+
+@include mixins.hover-motion {
+  :where([data-roll-host]:hover, [data-roll-host]:focus-visible) .letters--hop .letter {
+    animation: hop 360ms var(--ease-out) calc(var(--i, 0) * 35ms);
+  }
+}
+
 @keyframes roll-in {
   from {
     transform: translateY(100%);
+  }
+}
+
+@keyframes hop {
+  35% {
+    transform: translateY(-0.18em);
+  }
+
+  70% {
+    color: var(--color-accent);
+    transform: none;
+  }
+
+  100% {
+    color: var(--color-text);
   }
 }
 

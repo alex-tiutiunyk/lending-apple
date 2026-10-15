@@ -13,6 +13,13 @@ export function MascotProps({ act }: { act: MascotAct }) {
           <path d="M41 36 q7 4 9 16" className={`${styles.arm} ${styles.armRight}`} />
         </g>
       )}
+      {act === 'throw' && (
+        <g className={styles.slingshot}>
+          <path d="M41 36 q6 2 8 -4" className={`${styles.arm} ${styles.armRight}`} />
+          <path d="M49 34 V22 M49 26 L45 18 M49 26 L53 18" className={styles.slingFrame} />
+          <path d="M45 18 Q49 28 53 18" className={styles.slingBand} />
+        </g>
+      )}
       {act === 'juggle' && (
         <g className={styles.juggle}>
           {juggledScrews.map((screw) => (

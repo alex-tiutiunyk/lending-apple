@@ -19,6 +19,29 @@
   initial-value: 58%;
 }
 
+// Per-frame values never inherit (plan 6 rule 1): a value written on every frame is registered
+// here with `inherits: false` and lands on the element whose rule reads it, so a write restyles
+// that element alone. `config/perFrameProperties.test.ts` keeps the list complete.
+@property --scroll-v {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --reel {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+// A pinned section's own progress, animated 0 → 1 over its view timeline so tests and the
+// particles can read it; nothing inside the section inherits it (plan 6 §4)
+@property --section-p {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
 @font-face {
   font-family: Bricolage;
   font-style: normal;
@@ -40,14 +63,9 @@
   @include tokens.root-tokens;
 
   color-scheme: dark;
-  transition:
-    --accent-h var(--dur-tint) var(--ease-out),
-    --accent-s var(--dur-tint) var(--ease-out),
-    --accent-l var(--dur-tint) var(--ease-out);
 
-  @include mixins.root-motion-reduce {
-    transition: none;
-  }
+  // A finish pick writes the accent once; the ease happens on the surfaces in view, never as a
+  // root transition that restyles the whole page on every frame (plan 6 §6)
 }
 
 :root[data-theme='light'] {
@@ -194,11 +212,13 @@ a {
 
 // Safety net for reduced motion (system or "Motion: off"): catches what a component forgot.
 // Short color fades stay where an element opts in with data-calm-fade.
-@include mixins.motion-reduce {
+// The calm-fade limit is a scope boundary rather than a `:not(... *)` ancestor walk (plan 6 §13)
+@include mixins.motion-reduce-scope('[data-calm-fade]') {
   /* stylelint-disable declaration-no-important */
-  *:not(:where([data-calm-fade], [data-calm-fade] *)),
-  *::before,
-  *::after {
+  :scope,
+  :scope *,
+  :scope *::before,
+  :scope *::after {
     scroll-behavior: auto !important;
     transition-duration: 0s !important;
     animation-duration: 0s !important;
@@ -223,14 +243,21 @@ a {
 
 // WCAG 1.4.12 text spacing, on every element like the user stylesheets that test it. Drawings
 // keep their own lettering.
-:root[data-spacing='wide'] {
+// The svg limit of the scope keeps the drawings' own lettering. A `:not(svg, svg *)` here
+// walked every element's ancestors on every style recalc, setting on or off: about a quarter
+// of the cost of a page-wide restyle such as a finish pick (plan 6 §6, §13)
+@scope (:root[data-spacing='wide']) to (svg) {
   /* stylelint-disable declaration-no-important */
-  :not(svg, svg *) {
+  :scope * {
     line-height: 1.6 !important;
     letter-spacing: 0.12em !important;
     word-spacing: 0.16em !important;
   }
+  /* stylelint-enable declaration-no-important */
+}
 
+:root[data-spacing='wide'] {
+  /* stylelint-disable declaration-no-important */
   :is(h1, h2, h3) {
     line-height: 1.3 !important;
   }

@@ -1,6 +1,23 @@
 @use 'tokens';
 @use 'mixins';
 
+// Pip's position on its line is written as `translate` on the root by the brain (plan 6 rule 1:
+// no inherited per-frame property). The root carries no transform transition of its own, so the
+// per-frame write shares the element with nothing (rule 4).
+// The pebble Pip shoots at a letter (plan 7 §2): fixed to the window and moved by `transform`
+// and `opacity` (the bounce off the letter) on the shared tick, hidden at rest
+.projectile {
+  position: fixed;
+  top: -2px;
+  left: -2px;
+  z-index: tokens.z(mascot);
+  width: 4px;
+  height: 4px;
+  pointer-events: none;
+  background: var(--part-steel);
+  border-radius: 50%;
+}
+
 .root {
   position: fixed;
   bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
@@ -8,10 +25,8 @@
   z-index: tokens.z(mascot);
   width: var(--pip-width);
   pointer-events: none;
-  translate: var(--pip-x, var(--space-4)) 0;
-  transition:
-    transform var(--dur-hover) var(--ease-out),
-    opacity var(--dur-hover) var(--ease-out);
+  translate: var(--space-4) 0;
+  transition: opacity var(--dur-hover) var(--ease-out);
 
   &[data-hiding] {
     pointer-events: none;
@@ -22,16 +37,24 @@
     z-index: tokens.z(backdrop);
   }
 
-  :global(body:has([data-sticky-cta][data-visible])) & {
+  // Over the sticky CTA (set by useMascotLift from the bar's own attribute, plan 6 §9); the
+  // airplane act reads --pip-lift to keep its flight on screen
+  &[data-lifted] {
     --pip-lift: var(--sticky-cta-clearance);
 
-    transform: translateY(calc(var(--sticky-cta-clearance) * -1));
-  }
-
-  @media (width < 360px) {
-    :global(body:has([data-sticky-cta][data-visible])) & {
+    @media (width < 360px) {
       display: none;
     }
+  }
+}
+
+// Everything Pip carries lifts together on a wrapper, so the transition on `transform` never
+// shares the root with the per-frame `translate`
+.lift {
+  transition: transform var(--dur-hover) var(--ease-out);
+
+  .root[data-lifted] & {
+    transform: translateY(calc(var(--sticky-cta-clearance) * -1));
   }
 }
 
@@ -41,6 +64,9 @@
   padding: 0;
   cursor: pointer;
   pointer-events: auto;
+
+  // A finger can carry Pip without scrolling the page; the button is only Pip wide
+  touch-action: none;
   background: none;
   border: 0;
   border-radius: var(--radius-m);
@@ -52,25 +78,41 @@
   }
 }
 
-.art {
-  overflow: visible;
+// The rig (plan 6 §7): an HTML box in Pip's 48 × 88 proportions with the legs and the body as
+// three `<svg>` roots stacked on the same viewBox, so each piece keeps its coordinates and the
+// walk loops move whole SVG elements on the compositor
+.figure {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 48 / 88;
 
   .root[data-facing='left'] & {
     scale: -1 1;
   }
 }
 
-.body,
-.leg {
-  transform-box: fill-box;
+.piece {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+
+  @include mixins.promote-while-awake;
 }
 
+// Origins in the figure box: the hips at (18, 66) and (30, 66), the shell's bottom centre (24, 68)
 .body {
-  transform-origin: 50% 100%;
+  transform-origin: 50% 77.3%;
 }
 
-.leg {
-  transform-origin: 50% 0;
+.leg--left {
+  transform-origin: 37.5% 75%;
+}
+
+.leg--right {
+  transform-origin: 62.5% 75%;
 }
 
 .shell {
@@ -87,9 +129,9 @@
   fill: var(--color-bg);
 }
 
+// The eyes follow the pointer through a `translate` written on them by useMascotGaze
 .eye,
 .eye-on-screen {
-  translate: var(--look-x, 0) var(--look-y, 0);
   transition: translate 120ms var(--ease-out);
 }
 
@@ -208,8 +250,11 @@
   @include mixins.visually-hidden;
 }
 
+// Acts. The figure is an HTML box, so its keyframes may use the individual transform
+// properties; the body and the legs are SVG roots, whose keyframes use `transform` (an
+// individual property on an SVG element never reaches the compositor)
 .root[data-act='selfie'] {
-  .art {
+  .figure {
     animation: pip-turn 2.6s var(--ease-in-out) both;
   }
 
@@ -228,7 +273,7 @@
 
 .root[data-act='nap'] {
   .body {
-    rotate: 8deg;
+    transform: rotate(8deg);
   }
 
   .battery {
@@ -244,7 +289,7 @@
   animation: pip-trip 2.2s var(--ease-out) both;
 }
 
-.root[data-act='mirror'] .art {
+.root[data-act='mirror'] .figure {
   animation: pip-mirror 3s var(--ease-in-out) both;
 }
 
@@ -254,7 +299,7 @@
 
 .root[data-act='hurry'] {
   .body {
-    rotate: 10deg;
+    transform: rotate(10deg);
   }
 
   .leg--left {
@@ -266,7 +311,7 @@
   }
 }
 
-.root[data-act='poked'] .art {
+.root[data-act='poked'] .figure {
   animation: pip-jump 700ms var(--ease-out) both;
 }
 
@@ -286,17 +331,17 @@
 
 @keyframes pip-step {
   from {
-    rotate: -18deg;
+    transform: rotate(-18deg);
   }
 
   to {
-    rotate: 18deg;
+    transform: rotate(18deg);
   }
 }
 
 @keyframes pip-bob {
   to {
-    translate: 0 -1px;
+    transform: translateY(-1px);
   }
 }
 
@@ -361,35 +406,33 @@
 
 @keyframes pip-dance {
   from {
-    rotate: -9deg;
-    translate: 0 0;
+    transform: rotate(-9deg) translateY(0);
   }
 
   to {
-    rotate: 9deg;
-    translate: 0 -3px;
+    transform: rotate(9deg) translateY(-3px);
   }
 }
 
 @keyframes pip-trip {
   0% {
-    rotate: 0deg;
+    transform: rotate(0deg);
   }
 
   18% {
-    rotate: 78deg;
+    transform: rotate(78deg);
   }
 
   60% {
-    rotate: 78deg;
+    transform: rotate(78deg);
   }
 
   80% {
-    rotate: -6deg;
+    transform: rotate(-6deg);
   }
 
   100% {
-    rotate: 0deg;
+    transform: rotate(0deg);
   }
 }
 
@@ -411,17 +454,16 @@
 
 @keyframes pip-blown {
   0% {
-    rotate: 0deg;
+    transform: rotate(0deg) translateX(0);
   }
 
   20%,
   70% {
-    rotate: -16deg;
-    translate: 3px 0;
+    transform: rotate(-16deg) translateX(3px);
   }
 
   100% {
-    rotate: 0deg;
+    transform: rotate(0deg) translateX(0);
   }
 }
 

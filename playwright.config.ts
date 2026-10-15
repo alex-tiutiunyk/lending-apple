@@ -18,6 +18,9 @@ export default defineConfig({
     { name: 'firefox', ...skipPerf, use: { ...devices['Desktop Firefox'] } },
     { name: 'webkit-ipad', ...skipPerf, use: { ...devices['iPad Pro 11 landscape'] } },
     { name: 'webkit-iphone', ...skipPerf, use: { ...devices['iPhone 15'] } },
-    { name: 'perf', grep: /@perf/, use: { ...devices['Desktop Chrome'] } },
+    // Headed: headless Chromium rasterises in software, which turns GPU work into frame time
+    // the page does not cause (plan 6 §1 and §13 measure headed)
+    { name: 'perf', grep: /@perf/, use: { ...devices['Desktop Chrome'], headless: false } },
+    { name: 'perf-mobile', grep: /@perf/, use: { ...devices['Pixel 7'], headless: false } },
   ],
 })

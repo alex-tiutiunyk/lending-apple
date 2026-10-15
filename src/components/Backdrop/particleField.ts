@@ -49,7 +49,7 @@ export function settleAmount(viewportCenter: number, targetCenter: number, viewp
  * footer's height on a given phone.
  */
 export function settleAtPageEnd(
-  settles: number[],
+  settles: Float32Array | number[],
   scrollY: number,
   viewportHeight: number,
   documentHeight: number,
@@ -59,13 +59,13 @@ export function settleAtPageEnd(
   return settles
 }
 
-export function blendWeights(settles: readonly number[]) {
-  const sharpened = settles.map((settle) => settle ** 6)
+export function blendWeights(settles: ArrayLike<number>) {
+  const sharpened = Array.from(settles, (settle) => settle ** 6)
   const total = sharpened.reduce((sum, weight) => sum + weight, 0)
   return total === 0 ? sharpened : sharpened.map((weight) => weight / total)
 }
 
-export function pickAnchor(pick: number, weights: readonly number[]) {
+export function pickAnchor(pick: number, weights: ArrayLike<number>) {
   let reached = 0
   for (let index = 0; index < weights.length; index += 1) {
     reached += weights[index] ?? 0

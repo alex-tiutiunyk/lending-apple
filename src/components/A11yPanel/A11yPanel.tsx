@@ -1,5 +1,7 @@
 import { lazy, Suspense, useCallback, useId, useState, useSyncExternalStore } from 'react'
 import { a11yCopy } from '@/content/copy'
+import { A11yHandleIcon } from './A11yHandleIcon'
+import { PanelSpinner } from './PanelSpinner'
 import { useA11yPanel } from './useA11yPanel'
 import styles from './A11yPanel.module.scss'
 
@@ -25,6 +27,7 @@ export function A11yPanel() {
 function PanelShell() {
   const titleId = useId()
   const [message, setMessage] = useState('')
+  const [isWaiting, setWaiting] = useState(false)
   // The same text twice would not change the live region, so a repeat gets a no-break space
   const announce = useCallback(
     (text: string) => setMessage((current) => (current === text ? `${text}\u00a0` : text)),
@@ -40,13 +43,15 @@ function PanelShell() {
         id={a11yPanelId}
         className={styles.panel}
         aria-labelledby={titleId}
+        aria-busy={isWaiting || undefined}
+        data-waiting={isWaiting ? '' : undefined}
         inert={!isUsable}
       >
         <h2 id={titleId} className={styles.title}>
           {a11yCopy.title}
         </h2>
         {isWanted && (
-          <Suspense fallback={null}>
+          <Suspense fallback={<PanelSpinner onWaiting={setWaiting} />}>
             <A11yPanelBody focusRequest={focusRequest} announce={announce} />
           </Suspense>
         )}
@@ -59,11 +64,7 @@ function PanelShell() {
         aria-controls={a11yPanelId}
         {...handleProps}
       >
-        <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <circle cx="12" cy="12" r="10.5" />
-          <circle cx="12" cy="6.6" r="1.6" className={styles.iconFill} />
-          <path d="M6.5 9.6 L12 10.6 L17.5 9.6 M12 10.6 V14 L9.4 18.6 M12 14 L14.6 18.6" />
-        </svg>
+        <A11yHandleIcon />
         <span className={styles.label}>{a11yCopy.handle}</span>
       </button>
       <p className={styles.status} role="status">

@@ -30,13 +30,28 @@ export function Hero() {
           <DecodeText text={heroCopy.eyebrow} />
         </p>
         <h1 id={titleId} className={styles.title}>
-          <SplitWords text={heroCopy.title} wordClassName={styles.word} />
+          <SplitWords
+            text={heroCopy.title}
+            wordClassName={styles.word}
+            innerClassName={styles.wordInner}
+          />
         </h1>
         <p className={styles.lede}>{heroCopy.lede}</p>
         <div className={styles.actions}>
           <PressableLink href="#reserve" label={heroCopy.primaryCta} hasSheen hasNudges hasBeam />
           <a className={styles.secondary} href="#design">
-            {heroCopy.secondaryCta}
+            {/* The ring draws itself on hover (plan 5 §3): a pill outline and a pen point */}
+            <svg className={styles.ring} aria-hidden="true" focusable="false">
+              <rect
+                className={styles.ringLine}
+                width="100%"
+                height="100%"
+                rx="999"
+                pathLength={1}
+              />
+              <rect className={styles.ringPen} width="100%" height="100%" rx="999" pathLength={1} />
+            </svg>
+            <span className={styles.secondaryLabel}>{heroCopy.secondaryCta}</span>
           </a>
         </div>
       </div>

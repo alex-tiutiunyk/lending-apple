@@ -11,7 +11,7 @@ type RevealTitleProps = {
 
 export function RevealTitle({ id, text, className }: RevealTitleProps) {
   const titleRef = useRef<HTMLHeadingElement>(null)
-  useReveal(titleRef)
+  useReveal(titleRef, { words: true })
 
   return (
     <h2 ref={titleRef} id={id} className={[styles.root, className].filter(Boolean).join(' ')}>

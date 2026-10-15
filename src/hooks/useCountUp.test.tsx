@@ -1,6 +1,6 @@
 import { act, render, renderHook, screen } from '@testing-library/react'
 import { StrictMode } from 'react'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { installManualFrames } from '@/test/animationFrames'
 import { setMediaQuery } from '@/test/mediaQuery'
 import { useCountUp } from './useCountUp'
@@ -17,16 +17,30 @@ function advance(...times: number[]) {
 
 describe('useCountUp', () => {
   it('stays at zero until it is started', () => {
-    const { result } = renderHook(() => useCountUp(187, { isRunning: false }))
+    const onFrame = vi.fn()
+    const { result } = renderHook(() => useCountUp(187, { isRunning: false, onFrame }))
     advance(0, 500)
     expect(result.current).toBe(0)
+    expect(onFrame).not.toHaveBeenCalled()
   })
 
-  it('ends exactly at the target', () => {
-    const { result } = renderHook(() => useCountUp(187, { isRunning: true, duration: 1200 }))
+  it('hands the frames to onFrame, renders nothing until the end and ends exactly at the target', () => {
+    const onFrame = vi.fn()
+    let renders = 0
+    const { result } = renderHook(() => {
+      renders += 1
+      return useCountUp(187, { isRunning: true, duration: 1200, onFrame })
+    })
+    const rendersAfterMount = renders
     advance(1000, 1300, 1700)
-    expect(result.current).toBeGreaterThan(0)
-    expect(result.current).toBeLessThan(187)
+    expect(result.current).toBe(0)
+    expect(renders).toBe(rendersAfterMount)
+    const values = onFrame.mock.calls.map(([value]) => value as number)
+    expect(values.some((value) => value > 0)).toBe(true)
+    values.forEach((value) => {
+      expect(value).toBeGreaterThanOrEqual(0)
+      expect(value).toBeLessThan(187)
+    })
     advance(2300)
     expect(result.current).toBe(187)
     expect(frames.pendingCount()).toBe(0)
@@ -36,6 +50,25 @@ describe('useCountUp', () => {
     setMediaQuery('(prefers-reduced-motion: reduce)', true)
     const { result } = renderHook(() => useCountUp(3000, { isRunning: false }))
     expect(result.current).toBe(3000)
+  })
+
+  it('runs again from zero when replay changes and ends on the target (plan 5 §12)', () => {
+    const onFrame = vi.fn()
+    const { result, rerender } = renderHook(
+      ({ replay }) => useCountUp(187, { isRunning: true, duration: 400, replay, onFrame }),
+      { initialProps: { replay: 0 } },
+    )
+    advance(0, 500)
+    expect(result.current).toBe(187)
+    rerender({ replay: 1 })
+    expect(result.current).toBe(0)
+    onFrame.mockClear()
+    advance(1000, 1200)
+    expect(onFrame).toHaveBeenCalled()
+    expect(result.current).toBe(0)
+    advance(1500)
+    expect(result.current).toBe(187)
+    expect(frames.pendingCount()).toBe(0)
   })
 
   it('rolls once under StrictMode double effects', () => {

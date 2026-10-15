@@ -9,30 +9,48 @@ const backLenses = [
   { cx: 21.5, cy: 14.25 },
 ]
 
-type MascotArtProps = {
+/** Pip's drawing space; every piece shares it, so the parts keep their coordinates. */
+const figureViewBox = '0 0 48 88'
+
+type MascotFigureProps = {
   act: MascotAct
 }
 
-export function MascotArt({ act }: MascotArtProps) {
+/**
+ * Pip as a rig (plan 6 §7): an HTML box with three `<svg>` roots stacked on the same 48 × 88
+ * viewBox, the two legs and the body, so the walk loops move whole SVG elements and run on the
+ * compositor. One-shot acts still animate the parts inside the pieces.
+ */
+export function MascotFigure({ act }: MascotFigureProps) {
   return (
-    <svg
-      className={styles.art}
-      viewBox="0 0 48 88"
-      aria-hidden="true"
-      focusable="false"
-      data-pip-part="art"
-    >
-      <g className={styles.legs} data-pip-part="legs">
-        <g className={`${styles.leg} ${styles.legLeft}`} data-pip-part="leg-left">
-          <path d="M18 66 V80" className={styles.limb} />
-          <ellipse cx={16.5} cy={81} rx={3.4} ry={1.7} className={styles.foot} />
-        </g>
-        <g className={`${styles.leg} ${styles.legRight}`} data-pip-part="leg-right">
-          <path d="M30 66 V80" className={styles.limb} />
-          <ellipse cx={31.5} cy={81} rx={3.4} ry={1.7} className={styles.foot} />
-        </g>
-      </g>
-      <g className={styles.body} data-pip-part="body">
+    <span className={styles.figure} data-pip-part="art">
+      <svg
+        className={`${styles.piece} ${styles.legLeft}`}
+        viewBox={figureViewBox}
+        aria-hidden="true"
+        focusable="false"
+        data-pip-part="leg-left"
+      >
+        <path d="M18 66 V80" className={styles.limb} />
+        <ellipse cx={16.5} cy={81} rx={3.4} ry={1.7} className={styles.foot} />
+      </svg>
+      <svg
+        className={`${styles.piece} ${styles.legRight}`}
+        viewBox={figureViewBox}
+        aria-hidden="true"
+        focusable="false"
+        data-pip-part="leg-right"
+      >
+        <path d="M30 66 V80" className={styles.limb} />
+        <ellipse cx={31.5} cy={81} rx={3.4} ry={1.7} className={styles.foot} />
+      </svg>
+      <svg
+        className={`${styles.piece} ${styles.body}`}
+        viewBox={figureViewBox}
+        aria-hidden="true"
+        focusable="false"
+        data-pip-part="body"
+      >
         <rect x={6} y={2} width={36} height={66} rx={9} className={styles.shell} />
         <g className={styles.front}>
           <rect x={8.5} y={4.5} width={31} height={61} rx={7} className={styles.screen} />
@@ -66,7 +84,7 @@ export function MascotArt({ act }: MascotArtProps) {
           />
         </g>
         <MascotProps act={act} />
-      </g>
-    </svg>
+      </svg>
+    </span>
   )
 }

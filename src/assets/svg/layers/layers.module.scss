@@ -114,9 +114,14 @@
   stop-opacity: 0.55;
 }
 
+// The glint crosses the woken screen on the exploded view's timeline (plan 6 §4): 90 – 98 % of
+// --inside, one node restyled, the base style is the crossed state
 .glint {
-  opacity: calc(var(--glint, 0) * (1 - var(--glint, 0)) * 4);
-  transform: translateX(calc(var(--glint, 0) * 240px)) skewX(-24deg);
+  opacity: 0;
+  transform: translateX(240px) skewX(-24deg);
+  animation: screen-glint linear both;
+
+  @include mixins.driven(--inside, 0.9, 0.98, 'contain');
 }
 
 .panel-off {
@@ -128,8 +133,11 @@
   opacity: 0.05;
 }
 
+// The lock screen wakes once the glass has landed: 85 – 91 % of --inside
 .screen-wake {
-  opacity: var(--wake, 1);
+  animation: screen-wake linear both;
+
+  @include mixins.driven(--inside, 0.85, 0.91, 'contain');
 }
 
 .light-top {
@@ -333,4 +341,37 @@
   fill: none;
   stroke: var(--slice-color, var(--finish-shell));
   stroke-width: 3.2;
+}
+
+@include mixins.static-scene {
+  .screen-wake,
+  .glint {
+    animation: none;
+  }
+}
+
+@keyframes screen-wake {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes screen-glint {
+  0% {
+    opacity: 0;
+    transform: translateX(0) skewX(-24deg);
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(240px) skewX(-24deg);
+  }
 }

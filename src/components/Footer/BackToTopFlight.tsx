@@ -76,7 +76,7 @@ export default function BackToTopFlight({ from, onDone }: BackToTopFlightProps) 
   }, [from, onDone])
 
   return (
-    <div className={styles.root} aria-hidden="true">
+    <div className={styles.root} aria-hidden="true" data-visible>
       {Array.from({ length: trailLength }, (_, index) => (
         <span
           key={index}

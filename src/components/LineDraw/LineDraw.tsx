@@ -28,7 +28,7 @@ export function LineDraw() {
           </RevealText>
         </div>
         <div className={styles.visual} data-particles="compass">
-          <PhoneOutline detail="blueprint" className={styles.outline} />
+          <PhoneOutline detail="blueprint" isScrollDrawn className={styles.outline} />
           <PhoneRender className={styles.render} label={lineDrawCopy.renderLabel} />
         </div>
       </div>

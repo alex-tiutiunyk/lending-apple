@@ -11,3 +11,4 @@ playwright-report
 *.log
 dist-ssr
 .playwright-mcp
+perf

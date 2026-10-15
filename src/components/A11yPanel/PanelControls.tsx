@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import { a11yCopy } from '@/content/copy'
+import { BorderPulse } from '@/components/BorderPulse/BorderPulse'
 import styles from './A11yPanel.module.scss'
 
 type SegmentedOption<T extends string> = {
@@ -32,6 +33,7 @@ export function Segmented<T extends string>({
     <fieldset className={styles.group} aria-describedby={note ? noteId : undefined}>
       <legend className={styles.legend}>{legend}</legend>
       <div className={styles.segmented}>
+        <BorderPulse seed={0.5} />
         {options.map((option) => (
           <label key={option.value} className={styles.segment}>
             <input
@@ -74,7 +76,9 @@ export function Choice({ label, isOn, onChange }: ChoiceProps) {
         checked={isOn}
         onChange={(event) => onChange(event.currentTarget.checked)}
       />
-      <span className={styles.switch} aria-hidden="true" data-calm-fade />
+      <span className={styles.switch} aria-hidden="true" data-calm-fade>
+        <BorderPulse seed={0.8} />
+      </span>
       <span>{label}</span>
     </label>
   )

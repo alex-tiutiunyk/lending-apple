@@ -1,0 +1,74 @@
+@use 'mixins';
+
+.root {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+}
+
+.legs,
+.body {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.shell,
+.head {
+  fill: currentcolor;
+}
+
+// The legs turn about where they meet the shell: (3, 5) and (7, 5) of the 10-unit box
+.legs {
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  transform-origin: 30% 50%;
+
+  @include mixins.promote-while-awake;
+
+  // At rest the legs twitch now and then while the host is awake
+  @include mixins.when-awake {
+    animation: bug-twitch 1.6s var(--ease-in-out) infinite alternate;
+  }
+
+  // Walking (plan 5 §5): a quick leg cycle, the two groups out of phase
+  .root[data-walking] & {
+    @include mixins.motion-ambient {
+      animation: bug-step 160ms var(--ease-in-out) infinite alternate;
+    }
+  }
+}
+
+.legs--right {
+  transform-origin: 70% 50%;
+
+  @include mixins.when-awake {
+    animation-direction: alternate-reverse;
+  }
+
+  .root[data-walking] & {
+    @include mixins.motion-ambient {
+      animation-direction: alternate-reverse;
+    }
+  }
+}
+
+@keyframes bug-twitch {
+  to {
+    transform: rotate(14deg);
+  }
+}
+
+@keyframes bug-step {
+  from {
+    transform: rotate(-22deg);
+  }
+
+  to {
+    transform: rotate(22deg);
+  }
+}

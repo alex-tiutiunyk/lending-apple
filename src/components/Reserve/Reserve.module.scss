@@ -5,6 +5,8 @@
   @include mixins.container;
 
   padding-block: var(--space-8) var(--space-9);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 60rem;
 }
 
 .panel {
@@ -105,6 +107,7 @@
 .field {
   position: relative;
   display: grid;
+  border-radius: var(--radius-pill);
 }
 
 .input {
@@ -184,9 +187,16 @@
   }
 }
 
-.render {
+// The render's own box, so the screen stack (plan 7 §9) can be placed in shares of it
+.render-box {
   position: relative;
   width: min(100%, 14rem);
+}
+
+.render {
+  position: relative;
+  display: block;
+  width: 100%;
   height: auto;
 }
 

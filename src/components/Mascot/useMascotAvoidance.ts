@@ -1,6 +1,21 @@
 import { useEffect, useRef, type RefObject } from 'react'
-import { subscribePointerFrame, subscribeScrollFrame, type PointerFrame } from '@/hooks/frameLoop'
-import { freeSpot, isInside, overlapsTarget, shouldStepAside, type Box } from './mascotAvoidance'
+import {
+  subscribePointerFrame,
+  subscribeScrollFrame,
+  write,
+  type PointerFrame,
+  lastScrollY,
+  viewportSize,
+} from '@/hooks/frameLoop'
+import {
+  freeSpot,
+  isInside,
+  overlapsTarget,
+  shouldStepAside,
+  toDocumentBox,
+  toViewportBoxes,
+  type Box,
+} from './mascotAvoidance'
 import type { MascotAct } from './mascotActs'
 
 const avoidZone = '[data-pip-avoid]'
@@ -14,12 +29,19 @@ function isLive(element: Element) {
   return rect.width > 0 && rect.height > 0
 }
 
-function visibleTargets(zones: ReadonlySet<Element>): Box[] {
+/** The interactive boxes in the zones in view, in document space (plan 6 §5). */
+function targetBoxes(zones: ReadonlySet<Element>, scrollY: number): Box[] {
   return [...zones]
     .flatMap((zone) => Array.from(zone.querySelectorAll(interactive)).filter(isLive))
-    .map((target) => target.getBoundingClientRect())
+    .map((target) => toDocumentBox(target.getBoundingClientRect(), scrollY))
 }
 
+/**
+ * Pip keeps off the links and fields in the avoid zones. The zones' boxes are measured once per
+ * layout and when a zone enters or leaves the view; a scroll frame compares Pip's box (one read
+ * in the read phase) against the cached boxes shifted by the scroll, and writes go through the
+ * write phase, so no frame forces a layout.
+ */
 export function useMascotAvoidance(
   pip: RefObject<HTMLElement | null>,
   act: MascotAct,
@@ -32,31 +54,39 @@ export function useMascotAvoidance(
     if (!element) return
 
     const zonesInView = new Set<Element>()
+    let targets: Box[] = []
+    let activeBox: Box | null = null
     let decidedAt = -Infinity
     let isFocusCovered = false
 
-    const lineBounds = () => ({
+    const measureTargets = () => {
+      targets = targetBoxes(zonesInView, window.scrollY)
+    }
+    const targetsNow = (scrollY: number) => toViewportBoxes(targets, scrollY)
+    const lineBounds = (pipBox: Box) => ({
       min: edgeInsetPx,
-      max: window.innerWidth - element.offsetWidth - edgeInsetPx,
+      max: viewportSize().width - (pipBox.right - pipBox.left) - edgeInsetPx,
     })
 
-    const decide = (x: number | null) => {
+    const decide = (x: number | null, pipLeft: number) => {
       decidedAt = performance.now()
-      element.toggleAttribute('data-behind', x === null)
-      if (x !== null && Math.abs(x - element.getBoundingClientRect().left) > 1) stepAside(x)
+      write(() => {
+        element.toggleAttribute('data-behind', x === null)
+        if (x !== null && Math.abs(x - pipLeft) > 1) stepAside(x)
+      })
     }
 
-    const checkStanding = () => {
+    const checkStanding = (scrollY = window.scrollY) => {
       if (performance.now() - decidedAt < decisionHoldMs || element.hasAttribute('data-held')) {
         return
       }
       const pipBox = element.getBoundingClientRect()
-      const targets = zonesInView.size > 0 ? visibleTargets(zonesInView) : []
-      if (!overlapsTarget(pipBox, targets)) {
-        element.removeAttribute('data-behind')
+      const boxes = zonesInView.size > 0 ? targetsNow(scrollY) : []
+      if (!overlapsTarget(pipBox, boxes)) {
+        write(() => element.removeAttribute('data-behind'))
         return
       }
-      decide(freeSpot(pipBox, targets, lineBounds()))
+      decide(freeSpot(pipBox, boxes, lineBounds(pipBox)), pipBox.left)
     }
 
     const onPointer = ({ x, y, target }: PointerFrame) => {
@@ -66,38 +96,44 @@ export function useMascotAvoidance(
       const reached = target?.closest(interactive)
       if (!reached?.closest(avoidZone) || element.contains(reached)) return
       if (!shouldStepAside(pipBox, { x, y }, reached.getBoundingClientRect())) return
-      decide(freeSpot(pipBox, visibleTargets(zonesInView), lineBounds()))
+      decide(freeSpot(pipBox, targetsNow(lastScrollY()), lineBounds(pipBox)), pipBox.left)
     }
 
+    const syncFocusCover = (scrollY: number) => {
+      const isCovered =
+        activeBox !== null &&
+        overlapsTarget(element.getBoundingClientRect(), toViewportBoxes([activeBox], scrollY))
+      if (isCovered === isFocusCovered) return
+      isFocusCovered = isCovered
+      write(() => element.toggleAttribute('data-hiding', isCovered))
+    }
+    // Focus events measure the focused element once; scroll frames shift that box
     const onFocus = () => {
       const active = document.activeElement
-      const isCovered =
-        !!active?.closest(avoidZone) &&
-        !element.contains(active) &&
-        overlapsTarget(element.getBoundingClientRect(), [active.getBoundingClientRect()])
-      if (isCovered !== isFocusCovered) {
-        isFocusCovered = isCovered
-        element.toggleAttribute('data-hiding', isCovered)
-      }
+      const isInZone = !!active?.closest(avoidZone) && !element.contains(active)
+      activeBox =
+        isInZone && active ? toDocumentBox(active.getBoundingClientRect(), window.scrollY) : null
+      syncFocusCover(window.scrollY)
     }
 
-    checkSpot.current = checkStanding
+    checkSpot.current = () => checkStanding()
     const zoneObserver = new IntersectionObserver((entries) => {
       entries.forEach(({ target, isIntersecting }) => {
         if (isIntersecting) zonesInView.add(target)
         else zonesInView.delete(target)
       })
+      measureTargets()
       checkStanding()
     })
     document.querySelectorAll(avoidZone).forEach((zone) => zoneObserver.observe(zone))
 
-    const onScroll = () => {
-      onFocus()
-      if (zonesInView.size > 0) checkStanding()
+    const onScroll = ({ scrollY }: { scrollY: number }) => {
+      syncFocusCover(scrollY)
+      if (zonesInView.size > 0) checkStanding(scrollY)
     }
 
     const stopPointer = subscribePointerFrame(onPointer)
-    const stopScroll = subscribeScrollFrame(onScroll)
+    const stopScroll = subscribeScrollFrame(onScroll, measureTargets)
     document.addEventListener('focusin', onFocus)
     document.addEventListener('focusout', onFocus)
     return () => {

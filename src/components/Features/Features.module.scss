@@ -116,8 +116,16 @@
     }
   }
 
+  // Full width with the sample left and the text right, both centred (plan 5 §8): the card that
+  // started two columns in looked unfinished
   @include bp.up(lg) {
-    grid-column: 3 / 13;
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+    .sample {
+      justify-self: center;
+      width: min(100%, 32rem);
+    }
   }
 }
 
@@ -128,6 +136,8 @@
 }
 
 .lens {
+  @include mixins.ring-pulse;
+
   display: grid;
   gap: var(--space-1);
   padding: var(--space-3);
@@ -135,6 +145,16 @@
   color: var(--color-text-muted);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-s);
+  transition: border-color var(--dur-tint) var(--ease-out);
+
+  // The box the bug is on brightens its border (plan 5 §5); not in high contrast
+  &[data-bug] {
+    border-color: var(--color-line-strong);
+
+    @include mixins.high-contrast {
+      border-color: var(--color-line);
+    }
+  }
 }
 
 .focal {
@@ -143,18 +163,243 @@
   color: var(--color-text);
 }
 
+// The brightness pill (plan 7 §12). The base state is the end of the run: the sun at "3,000
+// nits" and the whole gradient lit, which is what `calm`, `off` and no JS show. The ambient run
+// is a 13 s cycle (1.5 s pause, 5 s up, 1.5 s pause, 5 s down) shared by every moving part.
+$sun: 1rem;
+$brightness-cycle: 13s;
+
 .brightness {
+  position: relative;
   display: flex;
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
+  overflow: clip;
   font-family: var(--font-mono);
   font-size: var(--step-down-1);
   color: var(--color-on-accent);
-  background: linear-gradient(90deg, var(--color-bg), var(--color-accent));
+  background: linear-gradient(
+    90deg,
+    var(--color-bg),
+    color-mix(in oklab, var(--color-accent) 35%, var(--color-bg))
+  );
   border-radius: var(--radius-pill);
+  isolation: isolate;
 
-  span:first-child {
-    color: var(--color-text-muted);
+  @include mixins.high-contrast {
+    color: var(--color-text);
+    background: none;
+    border: 1px solid var(--color-text);
+  }
+}
+
+.brightness-fill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, transparent, var(--color-accent));
+  transform-origin: 0 50%;
+
+  @include mixins.promote-while-awake;
+
+  @include mixins.when-awake {
+    animation: brightness-fill $brightness-cycle var(--ease-in-out) infinite;
+  }
+
+  @include mixins.high-contrast {
+    display: none;
+  }
+}
+
+// The sun rides a wrapper one sun narrower than the gap between the labels (mono, so their widths
+// are 5ch and 10ch): at translateX(-100%) the sun sits right after "1 nit", at none right
+// before "3,000 nits", with no layout read and no per-frame property
+.brightness-track {
+  position: absolute;
+  inset: 0 calc(var(--space-4) + 10ch + #{$sun} + var(--space-2)) 0
+    calc(var(--space-4) + 5ch + var(--space-2));
+  z-index: -1;
+  pointer-events: none;
+
+  @include mixins.promote-while-awake;
+
+  @include mixins.when-awake {
+    animation: brightness-run $brightness-cycle var(--ease-in-out) infinite;
+  }
+}
+
+.brightness-sun {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: $sun;
+  height: $sun;
+  margin-top: calc(#{$sun} * -0.5);
+}
+
+.brightness-disc {
+  position: absolute;
+  inset: 3px;
+  background: var(--color-on-accent);
+  border-radius: 50%;
+
+  @include mixins.high-contrast {
+    background: var(--color-text);
+  }
+}
+
+.brightness-rays {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  stroke: var(--color-on-accent);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+
+  @include mixins.promote-while-awake;
+
+  @include mixins.when-awake {
+    animation: brightness-rays 9s linear infinite;
+  }
+
+  @include mixins.high-contrast {
+    stroke: var(--color-text);
+  }
+}
+
+// Brighter near the right end: a gradient glow whose opacity follows the run, no filter
+.brightness-glow {
+  position: absolute;
+  inset: -0.6rem;
+  background: radial-gradient(closest-side, rgb(255 255 255 / 55%), transparent);
+  border-radius: 50%;
+
+  @include mixins.when-awake {
+    animation: brightness-glow $brightness-cycle var(--ease-in-out) infinite;
+  }
+
+  @include mixins.high-contrast {
+    display: none;
+  }
+}
+
+.brightness-low {
+  color: var(--color-text-muted);
+}
+
+.brightness-high {
+  position: relative;
+}
+
+.brightness-flash {
+  position: absolute;
+  inset: 0;
+  color: #fff;
+  opacity: 0;
+
+  @include mixins.high-contrast {
+    display: none;
+  }
+
+  @include mixins.when-awake {
+    animation: brightness-flash $brightness-cycle linear infinite;
+  }
+}
+
+// A hover runs the sun straight to the end and keeps it there
+@include mixins.hover-motion {
+  .card:hover {
+    .brightness-track {
+      animation: brightness-to-end 600ms var(--ease-out) backwards;
+    }
+
+    .brightness-fill {
+      animation: brightness-fill-to-end 600ms var(--ease-out) backwards;
+    }
+
+    .brightness-glow,
+    .brightness-flash {
+      animation: none;
+    }
+  }
+}
+
+@keyframes brightness-run {
+  0%,
+  11.5% {
+    transform: translateX(-100%);
+  }
+
+  50%,
+  61.5% {
+    transform: none;
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes brightness-fill {
+  0%,
+  11.5% {
+    transform: scaleX(0.06);
+  }
+
+  50%,
+  61.5% {
+    transform: none;
+  }
+
+  100% {
+    transform: scaleX(0.06);
+  }
+}
+
+@keyframes brightness-glow {
+  0%,
+  11.5%,
+  100% {
+    opacity: 0;
+  }
+
+  50%,
+  61.5% {
+    opacity: 1;
+  }
+}
+
+@keyframes brightness-flash {
+  0%,
+  49.5%,
+  54%,
+  100% {
+    opacity: 0;
+  }
+
+  50.5%,
+  52% {
+    opacity: 1;
+  }
+}
+
+@keyframes brightness-rays {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes brightness-to-end {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes brightness-fill-to-end {
+  from {
+    transform: scaleX(0.06);
   }
 }
 
@@ -227,4 +472,11 @@ $core-rows: 3;
   @include mixins.sheen-host;
 
   border-radius: var(--radius-l);
+
+  // The leaders draw first (plan 5 §11), the sheen follows them
+  @include mixins.motion-safe {
+    &[data-sheen='run']::after {
+      animation-delay: 600ms;
+    }
+  }
 }

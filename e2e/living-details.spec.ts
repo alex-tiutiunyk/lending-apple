@@ -56,9 +56,16 @@ test.describe('line draw reveal (plan 4 §6)', () => {
 test.describe('header (plan 4 §2)', () => {
   test('the progress line follows the page position', async ({ page }) => {
     await page.goto('/')
+    // The line is a scroll timeline since plan 6 §3.1: nothing is written on <body> any more
     await expect
-      .poll(() => page.evaluate(() => document.body.style.getPropertyValue('--doc-p')))
-      .toBe('0.000')
+      .poll(() =>
+        page.evaluate(() => {
+          const line = document.querySelector('.header__progress-line')
+          return line ? Math.round(line.getBoundingClientRect().width) : -1
+        }),
+      )
+      .toBe(0)
+    expect(await page.evaluate(() => document.body.style.getPropertyValue('--doc-p'))).toBe('')
     await page.evaluate(() => window.scrollTo({ top: 1500, behavior: 'instant' }))
     await expect
       .poll(() =>
@@ -92,9 +99,10 @@ test.describe('header (plan 4 §2)', () => {
       ['finishes', 'Finishes'],
     ]) {
       await scrollToShare(page, String(id), 0.3)
+      // The link text carries hidden letter copies since plan 5 §2: check the accessible name
       await expect(
         page.getByRole('navigation', { name: 'Sections' }).locator('[aria-current]'),
-      ).toHaveText(String(label))
+      ).toHaveAccessibleName(String(label))
       await expect.poll(activeLabel).toBe(`/ ${label}`)
     }
     await page.locator('#reserve').scrollIntoViewIfNeeded()
@@ -105,7 +113,7 @@ test.describe('header (plan 4 §2)', () => {
   test('the living mark is filled without motion', async ({ page }) => {
     await storeSettings(page, { motion: 'off' })
     await page.goto('/')
-    const fill = page.locator('header .living-mark__fill')
+    const fill = page.locator('header .living-mark__fill').first()
     expect(await fill.evaluate((group) => getComputedStyle(group).opacity)).toBe('1')
     const stroke = page.locator('header .living-mark__stroke path').first()
     expect(await stroke.evaluate((path) => getComputedStyle(path).opacity)).toBe('0')
@@ -117,7 +125,7 @@ test.describe('header (plan 4 §2)', () => {
     const context = await browser.newContext({ javaScriptEnabled: false })
     const page = await context.newPage()
     await page.goto('/')
-    const fill = page.locator('header .living-mark__fill')
+    const fill = page.locator('header .living-mark__fill').first()
     await expect.poll(() => fill.evaluate((group) => getComputedStyle(group).opacity)).toBe('1')
     const stroke = page.locator('header .living-mark__stroke path').first()
     await expect.poll(() => stroke.evaluate((path) => getComputedStyle(path).opacity)).toBe('0')
@@ -235,15 +243,19 @@ test.describe('runaway letters (plan 4 §1)', () => {
       ),
     ).toBeGreaterThan(0)
     expect(await snapshot()).toEqual(before)
-    await page.clock.runFor(5000)
-    await expect(page.locator('.runaway-letters__letter')).toHaveCount(0)
-    expect(
-      await page.evaluate(
+    // Headings run on their own clock now (plan 5 §9), so the page is sampled for a moment
+    // with every letter home rather than checked at one fixed time
+    let hidden = -1
+    for (let sample = 0; sample < 60 && hidden !== 0; sample += 1) {
+      await page.clock.runFor(250)
+      hidden = await page.evaluate(
         () =>
           (CSS.highlights as unknown as Map<string, { size: number }>).get('runaway-letters')
             ?.size ?? 0,
-      ),
-    ).toBe(0)
+      )
+    }
+    expect(hidden).toBe(0)
+    await expect(page.locator('.runaway-letters__letter')).toHaveCount(0)
     expect(await snapshot()).toEqual(before)
   })
 
@@ -254,5 +266,99 @@ test.describe('runaway letters (plan 4 §1)', () => {
       await page.waitForTimeout(300)
       await expect(page.locator('.runaway-letters')).toHaveCount(0)
     }
+  })
+})
+
+test.describe('heading letters (plan 5 §9, one at a time since plan 6 §11.1)', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'timer driven, one engine is enough')
+
+  const headingSelector = 'main h1, main h2, main h3'
+
+  /** Counts, from inside the page, which headings have letters out and how many at once. */
+  const watchHeadings = (page: Page) =>
+    page.evaluate(() => {
+      const seen = new Set<string>()
+      let most = 0
+      window.setInterval(() => {
+        const ranges = Array.from(
+          (CSS.highlights as unknown as Map<string, Iterable<Range>>).get('runaway-letters') ?? [],
+        )
+        const headings = new Set(
+          ranges.flatMap((range) => {
+            const heading = range.startContainer.parentElement?.closest('h1, h2, h3')
+            return heading ? [heading.textContent ?? ''] : []
+          }),
+        )
+        headings.forEach((text) => seen.add(text))
+        most = Math.max(most, headings.size)
+        Object.assign(window, { headingsSeen: [...seen], headingsAtOnce: most })
+      }, 100)
+    })
+  const seen = (page: Page) =>
+    page.evaluate(() => (window as unknown as { headingsSeen?: string[] }).headingsSeen ?? [])
+  const atOnce = (page: Page) =>
+    page.evaluate(() => (window as unknown as { headingsAtOnce?: number }).headingsAtOnce ?? 0)
+  const snapshot = (page: Page) =>
+    page.evaluate(
+      (selector) =>
+        Array.from(document.querySelectorAll<HTMLElement>(selector), (block) =>
+          [
+            block.textContent,
+            block.offsetTop,
+            block.offsetLeft,
+            block.offsetWidth,
+            block.offsetHeight,
+          ].join('|'),
+        ),
+      headingSelector,
+    )
+  const inView = (page: Page) =>
+    page.evaluate(
+      (selector) =>
+        Array.from(document.querySelectorAll<HTMLElement>(selector), (block) => {
+          const rect = block.getBoundingClientRect()
+          return rect.top >= 0 && rect.bottom <= window.innerHeight ? (block.textContent ?? '') : ''
+        }).filter(Boolean),
+      headingSelector,
+    )
+
+  test('every heading in view runs within 30 s, its text and box unchanged', async ({ page }) => {
+    test.slow()
+    await page.clock.install()
+    await page.goto('/')
+    await expect(page.locator('.runaway-letters')).toBeAttached()
+    await page.evaluate(() => document.fonts.ready)
+    await page.clock.runFor(1000)
+    await expect(page.locator('[data-decoding]')).toHaveCount(0)
+    const before = await snapshot(page)
+    const headings = await inView(page)
+    expect(headings.length).toBeGreaterThan(0)
+    await watchHeadings(page)
+    // The headings take turns now, so the window is the sum of their first delays and runs
+    for (let step = 0; step < 60; step += 1) await page.clock.runFor(500)
+    const ran = await seen(page)
+    headings.forEach((heading) => expect(ran).toContain(heading))
+    expect(await atOnce(page)).toBe(1)
+    expect(await snapshot(page)).toEqual(before)
+  })
+
+  test('never more than one heading runs at once', async ({ page }) => {
+    test.slow()
+    await page.clock.install()
+    await page.goto('/')
+    await expect(page.locator('.runaway-letters')).toBeAttached()
+    await page.evaluate(() => document.fonts.ready)
+    await page.clock.runFor(1000)
+    // The feature cards: an h2 and four h3 in one screen
+    await page.getByRole('heading', { name: 'Four decisions behind it' }).evaluate((title) => {
+      const top = title.getBoundingClientRect().top + window.scrollY
+      window.scrollTo({ top: top - 80, behavior: 'instant' })
+    })
+    await page.clock.runFor(1500)
+    expect((await inView(page)).length).toBeGreaterThanOrEqual(3)
+    await watchHeadings(page)
+    for (let step = 0; step < 60; step += 1) await page.clock.runFor(500)
+    expect((await seen(page)).length).toBeGreaterThanOrEqual(3)
+    expect(await atOnce(page)).toBe(1)
   })
 })

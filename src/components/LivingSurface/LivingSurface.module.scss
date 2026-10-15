@@ -1,12 +1,8 @@
 @use 'mixins';
 
-.defs {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
-
+// The lens (plan 6 §8): a glow that fades in on hover and three rings that scale out once per
+// enter, all gradients and composited transforms. The pointer moves it through `translate`,
+// written directly by usePointerHover; the surface's own wave shows through the glow.
 .lens {
   position: absolute;
   top: calc(var(--lens-size) / -2);
@@ -18,9 +14,6 @@
   pointer-events: none;
   background: radial-gradient(closest-side, var(--color-accent-glow), transparent 75%);
   opacity: 0;
-  filter: url('#surface-ripple');
-  mask-image: radial-gradient(closest-side, black 55%, transparent);
-  translate: var(--mx, 0) var(--my, 0);
   transition: opacity var(--dur-hover) var(--ease-out);
 
   @include mixins.hover-motion {
@@ -38,13 +31,32 @@
   }
 }
 
-.lens-waves {
+.lens-rings {
   position: absolute;
   inset: 0;
-  background: var(--color-accent);
-  opacity: 0.55;
-  mask-position: calc(var(--lens-size) / 2 - var(--mx, var(--lens-size) / 2))
-    calc(var(--lens-size) / 2 - var(--my, var(--lens-size) / 2));
+  background:
+    radial-gradient(closest-side, transparent 28%, var(--color-accent-wash) 30%, transparent 33%),
+    radial-gradient(closest-side, transparent 44%, var(--color-accent-wash) 46%, transparent 49%),
+    radial-gradient(closest-side, transparent 60%, var(--color-accent-wash) 62%, transparent 65%);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.4);
 
-  @include mixins.wave-mask;
+  [data-surface]:hover > .lens & {
+    @include mixins.hover-motion {
+      animation: lens-rings 700ms var(--ease-out) both;
+    }
+  }
+}
+
+@keyframes lens-rings {
+  from {
+    opacity: 0.9;
+    transform: scale(0.4);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.3);
+  }
 }

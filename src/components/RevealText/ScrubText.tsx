@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { SplitWords } from '@/components/RevealTitle/SplitWords'
 import { useViewProgress } from '@/hooks/useViewProgress'
-import styles from './RevealText.module.scss'
+import styles from './ScrubText.module.scss'
 
 type ScrubTextProps = {
   text: string
@@ -18,7 +18,11 @@ export function ScrubText({ text, className }: ScrubTextProps) {
   }, [text])
 
   return (
-    <p ref={textRef} className={className} data-letters="still">
+    <p
+      ref={textRef}
+      className={className ? `${styles.root} ${className}` : styles.root}
+      data-letters="still"
+    >
       <SplitWords text={text} wordClassName={styles.scrubWord} />
     </p>
   )

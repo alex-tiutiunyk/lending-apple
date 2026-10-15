@@ -19,6 +19,21 @@ function gapToPoint(box: Box, { x, y }: Point) {
   return Math.hypot(horizontal, vertical)
 }
 
+/** A viewport box as a document-space box, so it can be cached across scroll frames (plan 6 §5). */
+export function toDocumentBox({ left, top, right, bottom }: Box, scrollY: number): Box {
+  return { left, right, top: top + scrollY, bottom: bottom + scrollY }
+}
+
+/** Cached document-space boxes back in the viewport of the current scroll position. */
+export function toViewportBoxes(boxes: readonly Box[], scrollY: number): Box[] {
+  return boxes.map(({ left, top, right, bottom }) => ({
+    left,
+    right,
+    top: top - scrollY,
+    bottom: bottom - scrollY,
+  }))
+}
+
 export function isInside(box: Box, point: Point, margin = standingMarginPx) {
   return gapToPoint(grow(box, margin), point) === 0
 }

@@ -197,7 +197,9 @@ test.describe('motion levels', () => {
     const stage = page.locator('#inside [data-stage]')
     expect(await stage.evaluate((element) => getComputedStyle(element).position)).toBe('static')
     expect(
-      await page.locator('#inside').evaluate((section) => section.style.getPropertyValue('--p')),
+      await page
+        .locator('#inside')
+        .evaluate((section) => getComputedStyle(section).getPropertyValue('--section-p')),
     ).toBe('1')
     expect(
       await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior),
@@ -237,10 +239,16 @@ test.describe('motion levels', () => {
       })
     })
     await expect
-      .poll(() => design.evaluate((section) => Number(section.style.getPropertyValue('--p'))))
+      .poll(() =>
+        design.evaluate((section) =>
+          Number(getComputedStyle(section).getPropertyValue('--section-p')),
+        ),
+      )
       .toBeGreaterThan(0.2)
     expect(
-      await design.evaluate((section) => Number(section.style.getPropertyValue('--p'))),
+      await design.evaluate((section) =>
+        Number(getComputedStyle(section).getPropertyValue('--section-p')),
+      ),
     ).toBeLessThan(1)
   })
 

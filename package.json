@@ -16,7 +16,8 @@
     "points": "node scripts/generate-apple-points.mjs",
     "check:cycles": "madge --circular --extensions ts,tsx --ts-config tsconfig.app.json src",
     "check:unused": "knip",
-    "test:perf": "playwright test --project=perf --workers=1"
+    "test:perf": "playwright test --project=perf --project=perf-mobile --workers=1",
+    "perf": "node scripts/perf-probe.mjs"
   },
   "dependencies": {
     "react": "^19.3.0",

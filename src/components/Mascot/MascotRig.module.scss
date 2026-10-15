@@ -1,0 +1,252 @@
+// The seven rigs Pip comes down on (plan 5 §6). Mounted only while a rig is active; the phase
+// comes from the descent as data-rig-phase on Pip's root. Transform and opacity only.
+
+.root {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.canopy,
+.cloth,
+.rotor,
+.balloon,
+.wings path,
+.leaf,
+.bubble {
+  transform-box: fill-box;
+}
+
+.cloth {
+  fill: var(--color-accent);
+  fill-opacity: 0.85;
+  stroke: var(--finish-shell-light);
+  stroke-width: 1;
+  transform-origin: 50% 100%;
+}
+
+.line {
+  fill: none;
+  stroke: var(--color-text-muted);
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.canopy {
+  transform-origin: 50% 100%;
+  animation:
+    canopy-open 240ms var(--ease-out) both,
+    canopy-sway 1.4s var(--ease-in-out) 240ms infinite alternate;
+}
+
+.beanie {
+  fill: var(--finish-shell-light);
+}
+
+.rotor {
+  fill: var(--color-text);
+  transform-origin: center;
+  animation: rotor-spin 140ms linear infinite alternate;
+}
+
+.balloon {
+  transform-origin: 50% 100%;
+  animation: balloon-bob 1.6s var(--ease-in-out) infinite alternate;
+
+  &:nth-child(2) {
+    animation-delay: -500ms;
+  }
+
+  &:nth-child(3) {
+    animation-delay: -1000ms;
+  }
+}
+
+.balloon--a ellipse {
+  fill: var(--color-accent);
+}
+
+.balloon--b ellipse {
+  fill: var(--finish-shell-light);
+}
+
+.balloon--c ellipse {
+  fill: var(--color-text);
+}
+
+.wings path {
+  fill: var(--finish-shell-light);
+  transform-origin: 50% 0;
+  animation: wings-out 300ms var(--ease-out) both;
+}
+
+.leaf {
+  transform-origin: 50% 100%;
+  animation: leaf-wave 1.3s var(--ease-in-out) infinite alternate;
+}
+
+.film {
+  fill: var(--color-accent);
+  fill-opacity: 0.08;
+  stroke: var(--color-accent-bright);
+  stroke-width: 1;
+}
+
+.shine {
+  fill: none;
+  stroke: var(--color-text);
+  stroke-opacity: 0.6;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.bubble {
+  transform-origin: center;
+  animation: bubble-wobble 1.8s var(--ease-in-out) infinite alternate;
+}
+
+// Phases from the descent: the umbrella turns inside out, one balloon pops, and on the ground
+// the canopies fold, the blades droop, the wings fold and the bubble bursts
+[data-rig-phase='flip'] .cloth {
+  animation: umbrella-flip 200ms var(--ease-out) both;
+}
+
+[data-rig-phase='pop'] .balloon--b {
+  animation: balloon-pop 260ms var(--ease-out) both;
+}
+
+[data-rig-phase='landed'] {
+  .canopy {
+    animation: canopy-fold 500ms var(--ease-out) both;
+  }
+
+  .rotor {
+    animation: rotor-droop 600ms var(--ease-out) both;
+  }
+
+  .wings path {
+    animation: wings-fold 400ms var(--ease-out) both;
+  }
+
+  .bubble {
+    animation: bubble-pop 300ms var(--ease-out) both;
+  }
+
+  .balloon {
+    animation: balloon-sag 700ms var(--ease-out) both;
+  }
+}
+
+@keyframes canopy-open {
+  from {
+    transform: scale(0.2);
+  }
+}
+
+@keyframes canopy-sway {
+  from {
+    transform: rotate(-6deg);
+  }
+
+  to {
+    transform: rotate(6deg);
+  }
+}
+
+@keyframes canopy-fold {
+  to {
+    transform: scale(1, 0.06);
+  }
+}
+
+@keyframes rotor-spin {
+  from {
+    transform: scaleX(0.1);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes rotor-droop {
+  to {
+    transform: translateY(3px) scaleX(0.9);
+  }
+}
+
+@keyframes balloon-bob {
+  from {
+    transform: rotate(-4deg);
+  }
+
+  to {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes balloon-pop {
+  40% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes balloon-sag {
+  to {
+    transform: translateY(8px) rotate(12deg);
+  }
+}
+
+@keyframes wings-out {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes wings-fold {
+  to {
+    transform: scaleX(0.2);
+  }
+}
+
+@keyframes leaf-wave {
+  from {
+    transform: rotate(-10deg);
+  }
+
+  to {
+    transform: rotate(10deg);
+  }
+}
+
+@keyframes umbrella-flip {
+  to {
+    transform: scale(1, -1);
+  }
+}
+
+@keyframes bubble-wobble {
+  from {
+    transform: scale(1.03, 0.97);
+  }
+
+  to {
+    transform: scale(0.97, 1.03);
+  }
+}
+
+@keyframes bubble-pop {
+  to {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}

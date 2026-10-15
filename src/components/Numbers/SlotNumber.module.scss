@@ -15,8 +15,61 @@
   @include mixins.visually-hidden;
 }
 
+// The digits lean with the scroll speed (plan 5 §12): `--scroll-v` on <body> eases back to
+// zero within half a second, so idle frames stay upright; scroll-driven, so `full` and `calm`
 .reels {
+  position: relative;
   display: inline-flex;
+
+  @include mixins.motion-safe {
+    transform: skewX(clamp(-6deg, calc(var(--scroll-v, 0) * -4deg), 6deg));
+  }
+
+  // The glint that crosses the digits on an ambient tick, in the accent so it reads on the
+  // light theme too
+  &::after {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    content: '';
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      color-mix(in srgb, var(--color-accent-bright) 35%, transparent) 50%,
+      transparent 70%
+    );
+    opacity: 0;
+  }
+}
+
+// Ambient tick (plan 5 §12): one stat's last column slips a notch down and back with a glint,
+// like a flip clock catching up; `--reel` itself is untouched, so the stat stays rolled
+@include mixins.motion-ambient {
+  [data-tick] .reel:last-child .strip {
+    animation: reel-tick 400ms var(--ease-in-out);
+  }
+
+  [data-tick] .reels::after {
+    animation: reel-glint 400ms var(--ease-out);
+  }
+}
+
+@keyframes reel-tick {
+  50% {
+    transform: translateY(calc((var(--reel, 0) + 1) * -1em));
+  }
+}
+
+@keyframes reel-glint {
+  from {
+    opacity: 1;
+    transform: translateX(-100%);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
 }
 
 .reel {
@@ -46,9 +99,23 @@
 }
 
 .unit {
+  display: inline-block;
   margin-left: 0.1em;
   font-size: 0.32em;
   font-weight: 520;
   color: var(--color-text-muted);
   letter-spacing: 0;
+
+  // A hover replay flips the unit once (plan 5 §12); the span is keyed on the replay count
+  .root[data-replayed] & {
+    @include mixins.hover-motion {
+      animation: unit-flip 700ms var(--ease-in-out);
+    }
+  }
+}
+
+@keyframes unit-flip {
+  to {
+    transform: rotateX(360deg);
+  }
 }

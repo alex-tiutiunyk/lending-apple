@@ -13,7 +13,7 @@ export function PressableInner({ label, hasBeam = false }: PressableInnerProps) 
       <span className={styles.ring} aria-hidden="true" />
       <span className={styles.hoverRing} aria-hidden="true" />
       {hasBeam && <span className={styles.beam} aria-hidden="true" />}
-      <span className={styles.body}>
+      <span className={styles.body} data-magnetic-body>
         <span className={styles.surface} aria-hidden="true">
           <span className={styles.fill} />
           <span className={styles.sheen} />

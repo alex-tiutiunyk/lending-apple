@@ -2,6 +2,10 @@
 @use 'mixins';
 @use 'breakpoints' as bp;
 
+// The assembly runs on the section's view timeline (plan 6 §4): every window that used to be a
+// clamp() of --p is an animation-range in `contain` percentages of `--inside`, and the same
+// keyframes are driven through currentTime where the browser has no animation-timeline (the
+// `driven` mixin). Base styles are the landed state, so a static scene only drops the animation.
 $layer-count: 7;
 $compact-count: 5;
 $step: 0.09;
@@ -11,28 +15,48 @@ $compact-window: 0.28;
 $rest-step: 0.22rem;
 $slice-step: 0.26rem;
 
-// The last layer lands at about 0.85; the rest of the scroll is the payoff
+// The last layer lands at about 0.85; the rest of the scroll is the payoff. The screen wake
+// (0.85 – 0.91) and the glint (0.9 – 0.98) live in layers.module.scss on the same timeline.
 $turn-start: 0.8;
-$wake-start: 0.85;
-$glint-start: 0.9;
+$land-share: 0.85;
+$land-window: math.div(1, 30);
+$parts-per-layer: 3;
+$part-share: 0.78;
+$part-window: 0.07;
+$part-delay: 0.025;
+$part-travel: 110px;
+$ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
 .root {
   position: relative;
   height: 220svh;
+  view-timeline: --inside block;
+
+  // `auto` would take the page's scroll-padding-top (the header), shifting the range by 76 px
+  view-timeline-inset: 0;
+
+  // Skipped while far from the viewport (plan 6 §9): its scroll-driven animations never end, so
+  // without this every animated part keeps a compositor layer from the first paint
+  content-visibility: auto;
+  contain-intrinsic-size: auto 100svh;
+  animation: section-progress linear both;
+
+  @include mixins.driven(--inside, 0, 1, 'contain');
 
   @include bp.up(md) {
     height: 350svh;
   }
 
   @include mixins.static-scene {
+    --section-p: 1;
+
     height: auto;
+    animation: none;
   }
 }
 
 .stage {
   @include mixins.container;
-
-  --progress: var(--p, 0);
 
   position: sticky;
   top: 0;
@@ -43,6 +67,11 @@ $glint-start: 0.9;
   padding-top: calc(var(--header-height) + var(--space-5));
   padding-bottom: var(--space-5);
 
+  // A sticky box may clip its own content (only an ancestor with hidden overflow breaks the
+  // pin), so on a short window nothing paints over Numbers (plan 5 §13); the content below is
+  // made to fit so the clip never cuts anything
+  overflow: clip;
+
   @include bp.up(md) {
     grid-template-rows: none;
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
@@ -51,8 +80,6 @@ $glint-start: 0.9;
   }
 
   @include mixins.static-scene {
-    --progress: 1;
-
     position: static;
     height: auto;
     padding-block: var(--space-8);
@@ -64,18 +91,29 @@ $glint-start: 0.9;
   gap: var(--space-3);
   align-content: start;
 
+  // Top-aligned, so when something still does not fit it is the bottom that goes, never the
+  // title under the header
   @include bp.up(md) {
     gap: var(--space-4);
+    align-self: start;
   }
 }
 
 .title {
   font-size: var(--step-3);
+
+  @media (height < 46rem) {
+    font-size: var(--step-2);
+  }
 }
 
 .intro {
   max-width: 30rem;
   color: var(--color-text-muted);
+
+  @media (height < 40rem) {
+    display: none;
+  }
 }
 
 .labels {
@@ -89,16 +127,19 @@ $glint-start: 0.9;
     gap: var(--space-2);
     margin-top: var(--space-3);
   }
+
+  @media (height < 46rem) {
+    gap: var(--space-1) var(--space-4);
+  }
 }
 
+// A label lands with its layer: a short slide in, the text brightening and a dot popping
 .label {
-  --landed: clamp(0, (var(--progress) - var(--start) - var(--length) * 0.85) * 30, 1);
-
   position: relative;
   display: grid;
   padding-left: var(--space-4);
-  color: color-mix(in hsl, var(--color-text-muted), var(--color-text) calc(var(--landed) * 100%));
-  transform: translateX(calc((1 - var(--landed)) * 0.4rem));
+  color: var(--color-text);
+  animation: label-land linear both;
 
   &::before {
     position: absolute;
@@ -109,7 +150,7 @@ $glint-start: 0.9;
     content: '';
     background: var(--color-accent);
     border-radius: 50%;
-    transform: scale(var(--landed));
+    animation: label-dot linear both;
   }
 }
 
@@ -136,6 +177,11 @@ $glint-start: 0.9;
     color: var(--color-text-muted);
     white-space: normal;
   }
+
+  // Short windows (plan 5 §13): the details go back to being read-only, as below `md`
+  @media (height < 46rem) {
+    @include mixins.visually-hidden;
+  }
 }
 
 .scene {
@@ -151,16 +197,14 @@ $glint-start: 0.9;
 }
 
 .stack {
-  --turn-linear: clamp(0, (var(--progress) - #{$turn-start}) / #{1 - $turn-start}, 1);
-  --turn: calc(var(--turn-linear) * (2 - var(--turn-linear)));
-  --wake: clamp(0, (var(--progress) - #{$wake-start}) / 0.06, 1);
-  --glint: clamp(0, (var(--progress) - #{$glint-start}) / 0.08, 1);
-
   position: relative;
   height: min(46svh, 28rem);
   aspect-ratio: 180 / 360;
-  transform: rotateX(calc(56deg - 32deg * var(--turn))) rotateZ(calc(-34deg + 20deg * var(--turn)));
+  transform: rotateX(24deg) rotateZ(-14deg);
   transform-style: preserve-3d;
+  animation: stack-turn $ease-out-quad both;
+
+  @include mixins.driven(--inside, $turn-start, 1, 'contain');
 }
 
 .shadow {
@@ -168,35 +212,86 @@ $glint-start: 0.9;
   inset: 4% 2%;
   background: radial-gradient(closest-side, hsl(0deg 0% 0% / 70%), hsl(0deg 0% 0% / 0%));
   border-radius: 30%;
-  opacity: calc(0.25 + 0.6 * var(--progress));
-  transform: translateZ(-1.2rem) scale(calc(1.35 - 0.3 * var(--progress)));
+  opacity: 0.85;
+  transform: translateZ(-1.2rem) scale(1.05);
+  animation: shadow-settle linear both;
+
+  @include mixins.driven(--inside, 0, 1, 'contain');
 }
 
 .layer {
-  --local: clamp(0, (var(--progress) - var(--start)) / var(--length), 1);
-  --eased: calc(var(--local) * (2 - var(--local)));
-
   position: absolute;
   inset: 0;
-  opacity: calc(0.55 + 0.45 * var(--eased));
-  transform: translateZ(calc(var(--rest-z) + (1 - var(--eased)) * var(--spread)))
-    scale(calc(0.94 + 0.06 * var(--eased)));
+  transform: translateZ(calc(var(--rest-z) + var(--slice-z, 0rem)));
+  animation: layer-settle $ease-out-quad both;
 
   .root[data-near] & {
     will-change: transform;
   }
 }
 
-@for $i from 0 to $layer-count {
-  .layer[data-order='#{$i}'],
-  .label[data-order='#{$i}'] {
-    --start: #{0.04 + $i * $step};
-    --length: #{$window};
+// The three parts of a layer fly in from a distance after the layer has landed, each on its
+// own window: the transform eases out, and the part appears at the start of its window through
+// a visibility step rather than an opacity ramp, which would give each part a layer (plan 6 §9)
+.layer [data-part-slot] {
+  animation:
+    part-settle $ease-out-quad both,
+    part-fade linear both;
+}
+
+// The windows per layer: `$start` is the layer's own, the label lands over 1/30 at 85 % of it
+// and the parts follow at 78 % of it, a `$part-delay` apart
+@mixin windows($attribute, $i, $start, $length) {
+  .layer[#{$attribute}='#{$i}'] {
+    @include mixins.driven(--inside, $start, $start + $length, 'contain');
   }
 
+  .label[#{$attribute}='#{$i}'] {
+    @include mixins.driven(
+      --inside,
+      $start + $land-share * $length,
+      $start + $land-share * $length + $land-window,
+      'contain'
+    );
+
+    &::before {
+      @include mixins.driven(
+        --inside,
+        $start + $land-share * $length,
+        $start + $land-share * $length + $land-window,
+        'contain'
+      );
+    }
+  }
+
+  @for $slot from 0 to $parts-per-layer {
+    $part-start: $start + $part-share * $length + $slot * $part-delay;
+
+    .layer[#{$attribute}='#{$i}'] [data-part-slot='#{$slot}'] {
+      @include mixins.driven(--inside, $part-start, $part-start + $part-window, 'contain');
+    }
+  }
+}
+
+@for $i from 0 to $layer-count {
   .layer[data-order='#{$i}'] {
     --spread: #{($i - math.div($layer-count - 1, 2)) * 4.4}rem;
     --rest-z: #{$i * $rest-step};
+  }
+
+  @include windows('data-order', $i, 0.04 + $i * $step, $window);
+
+  @for $slot from 0 to $parts-per-layer {
+    $spin-direction: 1;
+
+    @if $slot % 2 != 0 {
+      $spin-direction: -1;
+    }
+
+    .layer[data-order='#{$i}'] [data-part-slot='#{$slot}'] {
+      --part-angle: #{($i * 67 + $slot * 137) % 360}deg;
+      --part-spin: #{$spin-direction * (200 + $slot * 90)}deg;
+    }
   }
 }
 
@@ -207,62 +302,120 @@ $glint-start: 0.9;
   }
 
   @for $i from 0 to $compact-count {
-    .layer[data-compact-order='#{$i}'],
-    .label[data-compact-order='#{$i}'] {
-      --start: #{0.04 + $i * $compact-step};
-      --length: #{$compact-window};
-    }
-
     .layer[data-compact-order='#{$i}'] {
       --spread: #{($i - math.div($compact-count - 1, 2)) * 3.2}rem;
     }
+
+    @include windows('data-compact-order', $i, 0.04 + $i * $compact-step, $compact-window);
   }
 }
 
 // Band slices sit in front of the frame and get lighter toward the glass
-.layer.slice {
-  transform: translateZ(
-      calc(var(--rest-z) + var(--slice) * #{$slice-step} + (1 - var(--eased)) * var(--spread))
-    )
-    scale(calc(0.94 + 0.06 * var(--eased)));
-}
-
 @for $slice from 1 through 4 {
   .slice[data-slice='#{$slice}'] {
-    --slice: #{$slice};
+    --slice-z: #{$slice * $slice-step};
     --slice-color: hsl(var(--accent-h) calc(var(--accent-s) * 0.4) #{20% + $slice * 7%});
   }
 }
 
-$parts-per-layer: 3;
-$part-window: 0.07;
-$part-travel: 110px;
-
-.layer [data-part-slot] {
-  --part-start: calc(var(--start) + var(--length) * 0.78 + var(--slot-delay));
-  --part-local: clamp(0, (var(--progress) - var(--part-start)) / #{$part-window}, 1);
-  --part-away: calc((1 - var(--part-local)) * (1 - var(--part-local)));
-
-  opacity: clamp(0, var(--part-local) * 5, 1);
-  transform: translate(
-      calc(cos(var(--part-angle)) * var(--part-away) * #{$part-travel}),
-      calc(sin(var(--part-angle)) * var(--part-away) * #{$part-travel})
-    )
-    rotate(calc(var(--part-away) * var(--part-spin))) scale(calc(1 + var(--part-away) * 1.6));
+@include mixins.static-scene {
+  .layer,
+  .stack,
+  .shadow,
+  .label,
+  .label::before,
+  .layer [data-part-slot] {
+    animation: none;
+  }
 }
 
-@for $order from 0 to $layer-count {
-  @for $slot from 0 to $parts-per-layer {
-    $spin-direction: 1;
+@keyframes section-progress {
+  from {
+    --section-p: 0;
+  }
 
-    @if $slot % 2 != 0 {
-      $spin-direction: -1;
-    }
+  to {
+    --section-p: 1;
+  }
+}
 
-    .layer[data-order='#{$order}'] [data-part-slot='#{$slot}'] {
-      --part-angle: #{($order * 67 + $slot * 137) % 360}deg;
-      --part-spin: #{$spin-direction * (200 + $slot * 90)}deg;
-      --slot-delay: #{$slot * 0.025};
-    }
+@keyframes layer-settle {
+  from {
+    opacity: 0.55;
+    transform: translateZ(calc(var(--rest-z) + var(--slice-z, 0rem) + var(--spread))) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateZ(calc(var(--rest-z) + var(--slice-z, 0rem))) scale(1);
+  }
+}
+
+@keyframes stack-turn {
+  from {
+    transform: rotateX(56deg) rotateZ(-34deg);
+  }
+
+  to {
+    transform: rotateX(24deg) rotateZ(-14deg);
+  }
+}
+
+@keyframes shadow-settle {
+  from {
+    opacity: 0.25;
+    transform: translateZ(-1.2rem) scale(1.35);
+  }
+
+  to {
+    opacity: 0.85;
+    transform: translateZ(-1.2rem) scale(1.05);
+  }
+}
+
+@keyframes part-settle {
+  from {
+    transform: translate(
+        calc(cos(var(--part-angle)) * #{$part-travel}),
+        calc(sin(var(--part-angle)) * #{$part-travel})
+      )
+      rotate(var(--part-spin)) scale(2.6);
+  }
+
+  to {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes part-fade {
+  0% {
+    visibility: hidden;
+  }
+
+  1%,
+  100% {
+    visibility: visible;
+  }
+}
+
+@keyframes label-land {
+  from {
+    color: var(--color-text-muted);
+    transform: translateX(0.4rem);
+  }
+
+  to {
+    color: var(--color-text);
+    transform: translateX(0);
+  }
+}
+
+@keyframes label-dot {
+  from {
+    transform: scale(0);
+  }
+
+  to {
+    transform: scale(1);
   }
 }

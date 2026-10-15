@@ -39,6 +39,8 @@ Fallback if the exploded-view timeline gets painful: GSAP core + ScrollTrigger o
 
 ## 4. Animation engine (own, small)
 
+> **Performance rules (plan 6).** Every later feature that moves follows the nine rules in `6-plan-animation-performance.md` §2, kept current in README "Animation performance rules". Where this section differs, plan 6 wins: scroll progress is a CSS scroll timeline rather than a `--p` write, the frame loop has a read and a write phase, loops are `transform` / `opacity` on HTML elements, and the runtime budgets are checked by `npm run test:perf`.
+
 - `useScrollProgress(ref, { start, end })` returns 0..1 for a sticky section. One passive scroll listener + rAF, writes to a ref, re-renders nothing.
 - `useInView(ref, { once, rootMargin })` wraps IntersectionObserver.
 - `useCountUp(target, { duration, format })` rAF based; under reduced motion it jumps to the final value.

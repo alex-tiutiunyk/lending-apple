@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createLetterRunner, planRun } from './letterRun'
+import { createLetterRunner, headingRun, hitRun, planRun } from './letterRun'
 
 const room = { left: 200, right: 200, up: 200, down: 200 }
 
@@ -19,6 +19,15 @@ describe('planRun', () => {
     expect(Math.hypot(long.dx, long.dy)).toBeCloseTo(160, 0)
     expect(short.runMs).toBe(700)
     expect(long.runMs).toBeLessThan(1100)
+  })
+
+  it('keeps heading letters near their title: 20 to 80 px, 0.35 to 0.8 s each way', () => {
+    const short = planRun(() => 0, room, headingRun)
+    const long = planRun(() => 0.999, room, headingRun)
+    expect(Math.hypot(short.dx, short.dy)).toBeCloseTo(20)
+    expect(Math.hypot(long.dx, long.dy)).toBeCloseTo(80, 0)
+    expect(short.runMs).toBe(350)
+    expect(long.runMs).toBeLessThan(800)
   })
 })
 
@@ -49,5 +58,24 @@ describe('createLetterRunner', () => {
     expect(first.phase).toBe('back')
     expect(Math.abs(first.x - midway.x)).toBeLessThan(2)
     expect(runner.step(601 + 800 + 250).phase).toBe('done')
+  })
+})
+
+describe('hitRun (plan 7 §2)', () => {
+  it('jumps 24–40 px with a full turn before it runs', () => {
+    const room = { left: 500, right: 500, up: 500, down: 500 }
+    const plan = planRun(() => 0.5, room, hitRun)
+    expect(plan.lift?.px).toBe(32)
+    const runner = createLetterRunner(plan, 0)
+    const top = runner.step(320)
+    expect(top.phase).toBe('run')
+    const lifting = createLetterRunner(plan, 0).step(160)
+    expect(lifting.y).toBeLessThan(-20)
+    expect(lifting.tilt).toBeGreaterThan(200)
+  })
+
+  it('stays inside the room above the letter', () => {
+    const plan = planRun(() => 0.5, { left: 500, right: 500, up: 10, down: 500 }, hitRun)
+    expect(plan.lift?.px).toBe(10)
   })
 })

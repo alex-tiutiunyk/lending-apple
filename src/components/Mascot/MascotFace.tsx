@@ -11,8 +11,8 @@ export function MascotFace({ expression }: MascotFaceProps) {
       return (
         <g>
           <rect x={14} y={6} width={20} height={8.5} rx={4.25} className={styles.cutout} />
-          <circle cx={20} cy={10.25} r={1.7} className={styles.eye} />
-          <circle cx={28} cy={10.25} r={1.7} className={styles.eye} />
+          <circle cx={20} cy={10.25} r={1.7} className={styles.eye} data-pip-eye />
+          <circle cx={28} cy={10.25} r={1.7} className={styles.eye} data-pip-eye />
         </g>
       )
     case 'squint':
@@ -25,8 +25,8 @@ export function MascotFace({ expression }: MascotFaceProps) {
     case 'talk':
       return (
         <g>
-          <circle cx={20.5} cy={8} r={1.1} className={styles.eyeOnScreen} />
-          <circle cx={27.5} cy={8} r={1.1} className={styles.eyeOnScreen} />
+          <circle cx={20.5} cy={8} r={1.1} className={styles.eyeOnScreen} data-pip-eye />
+          <circle cx={27.5} cy={8} r={1.1} className={styles.eyeOnScreen} data-pip-eye />
           <path
             d="M18 11 h12 q0 6 -6 6 q-6 0 -6 -6 z"
             className={`${styles.cutout} ${styles.mouth}`}
@@ -47,8 +47,8 @@ export function MascotFace({ expression }: MascotFaceProps) {
       return (
         <g>
           <rect x={17} y={7} width={14} height={6} rx={3} className={styles.cutout} />
-          <circle cx={21.5} cy={10} r={1.1} className={styles.eye} />
-          <circle cx={26.5} cy={10} r={1.1} className={styles.eye} />
+          <circle cx={21.5} cy={10} r={1.1} className={styles.eye} data-pip-eye />
+          <circle cx={26.5} cy={10} r={1.1} className={styles.eye} data-pip-eye />
         </g>
       )
   }

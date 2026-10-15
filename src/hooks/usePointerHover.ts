@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { subscribePointerFrame, type PointerFrame } from './frameLoop'
+import { lastScrollY, subscribePointerFrame, write, type PointerFrame } from './frameLoop'
 
 const hoverQuery = '(hover: hover)'
 const maxPullPx = 6
@@ -8,55 +8,84 @@ function clampUnit(value: number) {
   return Math.min(1, Math.max(-1, value))
 }
 
-function enterMagnetic(element: HTMLElement, { x, y }: PointerFrame) {
-  const rect = element.getBoundingClientRect()
-  element.style.setProperty('--fill-x', `${(x - rect.left).toFixed(1)}px`)
-  element.style.setProperty('--fill-y', `${(y - rect.top).toFixed(1)}px`)
+/** The last box of an element, read in the read phase and kept until the page scrolls. */
+function createBoxCache() {
+  let element: Element | null = null
+  let rect: DOMRect | null = null
+  let scrollY = -1
+  return (next: Element) => {
+    if (next !== element || !rect || scrollY !== lastScrollY()) {
+      element = next
+      scrollY = lastScrollY()
+      rect = next.getBoundingClientRect()
+    }
+    return rect
+  }
 }
 
-function pullMagnetic(element: HTMLElement, { x, y }: PointerFrame) {
-  const rect = element.getBoundingClientRect()
+function enterMagnetic(element: HTMLElement, rect: DOMRect, { x, y }: PointerFrame) {
+  const fillX = `${(x - rect.left).toFixed(1)}px`
+  const fillY = `${(y - rect.top).toFixed(1)}px`
+  write(() => {
+    element.style.setProperty('--fill-x', fillX)
+    element.style.setProperty('--fill-y', fillY)
+  })
+}
+
+function pullMagnetic(body: HTMLElement, rect: DOMRect, { x, y }: PointerFrame) {
   const pullX = clampUnit((x - rect.left - rect.width / 2) / (rect.width / 2)) * maxPullPx
   const pullY = clampUnit((y - rect.top - rect.height / 2) / (rect.height / 2)) * maxPullPx
-  element.style.setProperty('--pull-x', `${pullX.toFixed(2)}px`)
-  element.style.setProperty('--pull-y', `${pullY.toFixed(2)}px`)
+  const translate = `${pullX.toFixed(2)}px ${pullY.toFixed(2)}px`
+  write(() => {
+    body.style.translate = translate
+  })
 }
 
-function trackSurface(element: HTMLElement, { x, y }: PointerFrame) {
+function trackSurface(surface: HTMLElement, lens: HTMLElement, { x, y }: PointerFrame) {
   // The lens is absolutely positioned, so it is offset from the padding box, inside the border
-  const rect = element.getBoundingClientRect()
-  element.style.setProperty('--mx', `${(x - rect.left - element.clientLeft).toFixed(1)}px`)
-  element.style.setProperty('--my', `${(y - rect.top - element.clientTop).toFixed(1)}px`)
+  const rect = surface.getBoundingClientRect()
+  const translate = `${(x - rect.left - surface.clientLeft).toFixed(1)}px ${(y - rect.top - surface.clientTop).toFixed(1)}px`
+  write(() => {
+    lens.style.translate = translate
+  })
 }
 
-function releaseMagnetic(element: HTMLElement) {
-  element.style.removeProperty('--pull-x')
-  element.style.removeProperty('--pull-y')
+function releaseMagnetic(body: HTMLElement) {
+  write(() => body.style.removeProperty('translate'))
 }
 
+/**
+ * Magnetic buttons and the surface lens (plan 1 §7, plan 6 §5, §11): the pointer listener runs
+ * in the read phase, so its measurements are free, and every write is a direct `translate` on
+ * the element that moves, queued for the write phase. The fill origin is written once per enter.
+ */
 export function usePointerHover() {
   useEffect(() => {
     if (!window.matchMedia(hoverQuery).matches) return
 
     let magnetic: HTMLElement | null = null
+    let magneticBody: HTMLElement | null = null
+    const magneticBox = createBoxCache()
 
     const onPointer = (pointer: PointerFrame) => {
       const next = pointer.target?.closest<HTMLElement>('[data-magnetic]') ?? null
       if (next !== magnetic) {
-        if (magnetic) releaseMagnetic(magnetic)
+        if (magneticBody) releaseMagnetic(magneticBody)
         magnetic = next
-        if (magnetic) enterMagnetic(magnetic, pointer)
+        magneticBody = next?.querySelector<HTMLElement>('[data-magnetic-body]') ?? next
+        if (magnetic) enterMagnetic(magnetic, magneticBox(magnetic), pointer)
       }
-      if (magnetic) pullMagnetic(magnetic, pointer)
+      if (magnetic && magneticBody) pullMagnetic(magneticBody, magneticBox(magnetic), pointer)
 
       const surface = pointer.target?.closest<HTMLElement>('[data-surface]')
-      if (surface) trackSurface(surface, pointer)
+      const lens = surface?.querySelector<HTMLElement>('[data-lens]')
+      if (surface && lens) trackSurface(surface, lens, pointer)
     }
 
     const unsubscribe = subscribePointerFrame(onPointer)
     return () => {
       unsubscribe()
-      if (magnetic) releaseMagnetic(magnetic)
+      if (magneticBody) releaseMagnetic(magneticBody)
     }
   }, [])
 }

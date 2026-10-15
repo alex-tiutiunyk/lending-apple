@@ -1,0 +1,32 @@
+@use 'mixins';
+
+// The bug's layer covers the card; positions are measured against it (plan 5 §5)
+.root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+// Centred on its route point by the negative offsets; moved with translate and rotate only
+.bug {
+  position: absolute;
+  top: -0.3rem;
+  left: -0.3rem;
+  width: 0.6rem;
+  height: 0.6rem;
+  color: var(--color-text-muted);
+  transition: rotate 240ms var(--ease-out);
+
+  @include mixins.promote-while-awake(translate);
+
+  @include mixins.high-contrast {
+    color: var(--color-text);
+  }
+
+  // Over a gap the legs tuck in; the attribute selector outranks the walk cycle's
+  // `.root[data-walking] .legs` instead of relying on stylesheet order
+  &[data-hop] [data-bug-part='legs'] {
+    animation: none;
+    transform: scaleX(0.4);
+  }
+}

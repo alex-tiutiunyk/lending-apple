@@ -1,6 +1,12 @@
-const blockSelector = 'h1, h2, h3, p'
+// Paragraphs and headings run on separate schedules (plan 5 §9), so each picker gets its own
+// selector and never books a block of the other kind
+export const paragraphSelector = 'p'
+export const headingSelector = 'h1, h2, h3'
+// `[data-pip-avoid]` no longer stops letters (plan 7 §7): the footer runs now, the form is
+// skipped as a form, and the panel and the sticky bar are never searched. A new avoid zone
+// inside `main` must add `data-letters="still"`.
 const skipBlocksInside =
-  'a, button, form, nav, dl, [data-pip-avoid], [role="status"], [data-letters="still"], [aria-hidden="true"]'
+  'a, button, form, nav, dl, [role="status"], [data-letters="still"], [aria-hidden="true"]'
 const skipTextInside = 'a, button, sup, [aria-hidden="true"], [data-decoding]'
 const notSettled = '[data-decoding], [data-reveal="hidden"]'
 const letter = /\p{L}/u
@@ -9,11 +15,11 @@ const sameWordReach = 4
 export type LetterSpot = { node: Text; offset: number }
 
 /**
- * Headings and paragraphs whose letters may run (plan 4 §1): outside links, forms, the nav, the
- * stats and blocks that opt out, and only once nothing in them is still revealing or decoding.
+ * Blocks whose letters may run (plan 4 §1): outside links, forms, the nav, the stats and blocks
+ * that opt out, and only once nothing in them is still revealing or decoding.
  */
-export function candidateBlocks(root: ParentNode): HTMLElement[] {
-  return Array.from(root.querySelectorAll<HTMLElement>(blockSelector)).filter(
+export function candidateBlocks(root: ParentNode, selector: string): HTMLElement[] {
+  return Array.from(root.querySelectorAll<HTMLElement>(selector)).filter(
     (block) =>
       !block.closest(skipBlocksInside) &&
       block.dataset.reveal !== 'hidden' &&
@@ -35,10 +41,28 @@ export function letterSpots(block: HTMLElement): LetterSpot[] {
   return spots
 }
 
-/**
- * `count` spots at random, never two neighbours, in document order with later offsets first
- * within one text node, so wrapping one spot does not move the offsets of the next.
- */
+/** One key per word, so a heading escape never takes two letters from the same word (plan 5 §9). */
+export function wordKeys(spots: readonly LetterSpot[]): string[] {
+  const nodes = new Map<Text, number>()
+  return spots.map(({ node, offset }) => {
+    if (!nodes.has(node)) nodes.set(node, nodes.size)
+    const wordsBefore = node.data.slice(0, offset).split(/\s+/).length
+    return `${nodes.get(node)}:${wordsBefore}`
+  })
+}
+
+/** Document order, later offsets first within one text node. */
+export function inDocumentOrder(spots: readonly LetterSpot[]) {
+  return [...spots].sort((a, b) =>
+    a.node === b.node
+      ? b.offset - a.offset
+      : a.node.compareDocumentPosition(b.node) & Node.DOCUMENT_POSITION_FOLLOWING
+        ? -1
+        : 1,
+  )
+}
+
+/** `count` spots at random, never two neighbours, in document order. */
 export function pickSpots(spots: readonly LetterSpot[], count: number, random: () => number) {
   const pool = [...spots]
   const picked: LetterSpot[] = []
@@ -57,11 +81,5 @@ export function pickSpots(spots: readonly LetterSpot[], count: number, random: (
       }
     }
   }
-  return picked.sort((a, b) =>
-    a.node === b.node
-      ? b.offset - a.offset
-      : a.node.compareDocumentPosition(b.node) & Node.DOCUMENT_POSITION_FOLLOWING
-        ? -1
-        : 1,
-  )
+  return inDocumentOrder(picked)
 }

@@ -1,28 +1,87 @@
 @use 'mixins';
 
-// Breathing and the leaf swing are ambient (awake only); the scroll turn and the hover spin
-// are responses, so they run at "calm" too. Without JS or at "off" the mark is simply filled.
+// A rig (plan 6 §7): the box carries the scroll lean, the grow box the hover growth, and the two
+// `<svg>` roots inside carry the loops as `transform` keyframes, which the compositor runs.
+// Breathing and the leaf swing are ambient (awake only); the scroll turn and the hover bite
+// (plan 7 §4, `apple-bite.module.scss`) are responses, so they run at "calm" too. Without JS or
+// at "off" the mark is simply filled, and a hover snaps to the grown, bitten apple.
+$host-active: ':where([data-mark-host]:hover, [data-mark-host]:focus-visible)';
+
 .root {
-  overflow: visible;
+  position: relative;
+  display: inline-block;
+  aspect-ratio: 1;
+  vertical-align: middle;
 
   @include mixins.motion-safe {
     rotate: clamp(-8deg, calc(var(--scroll-v, 0) * 3deg), 8deg);
     transition: rotate 160ms var(--ease-out);
   }
+}
 
-  // --breath-delay pins the loop to a shared clock, so both marks breathe in step (§7.2)
+.grow {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+
+  // Leave: back to size with a small overshoot (1.35 → 0.97 → 1)
+  @include mixins.hover-motion {
+    transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  // The host sets how much its mark grows: --mark-grow (1.35 header, 1.45 footer)
+  @media (hover: hover) {
+    #{$host-active} & {
+      transform: scale(var(--mark-grow, 1.35));
+    }
+  }
+
+  // Enter: it grows, then jolts a pixel on each of the worm's three chomps
+  @include mixins.hover-motion {
+    #{$host-active} & {
+      transition: transform 200ms var(--ease-out);
+      animation: chomp-jolt 240ms steps(6, jump-end) 420ms;
+    }
+  }
+}
+
+.body,
+.leaf {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+
+  @include mixins.promote-while-awake;
+}
+
+// --breath-delay pins the loop to a shared clock, so both marks breathe in step (§7.2)
+.body {
+  transform-origin: 50% 50%;
+
   @include mixins.when-awake {
     animation: breathe 4s ease-in-out var(--breath-delay, 0s) infinite;
   }
 }
 
-.spin {
-  transform-box: fill-box;
-  transform-origin: 50% 50%;
+// The leaf turns about its base: 10 % along and the bottom of its own box, which sits at
+// (12.7, 6.1) of the 24-unit viewBox
+.leaf {
+  transform-origin: 53% 25.5%;
 
-  :where([data-mark-host]:hover, [data-mark-host]:focus-visible) & {
-    @include mixins.hover-motion {
-      animation: spin 600ms var(--ease-out);
+  @include mixins.when-awake {
+    animation: leaf-swing 4s ease-in-out var(--breath-delay, 0s) infinite;
+  }
+}
+
+// The leaf swings once as the worm pulls back in: a one-shot on an SVG child, not a loop
+.leaf-swing {
+  transform-origin: 12.7px 6.1px;
+
+  @include mixins.hover-motion {
+    #{$host-active} & {
+      animation: leaf-flick 420ms var(--ease-out) 820ms;
     }
   }
 }
@@ -30,17 +89,8 @@
 .fill {
   .root[data-drawing] & {
     @include mixins.motion-safe {
-      animation: fill-in 400ms var(--ease-out) 700ms both;
+      animation: fill-in 400ms var(--ease-out) 700ms backwards;
     }
-  }
-}
-
-.leaf {
-  transform-box: fill-box;
-  transform-origin: 10% 100%;
-
-  @include mixins.when-awake {
-    animation: leaf-swing 4s ease-in-out var(--breath-delay, 0s) infinite;
   }
 }
 
@@ -58,26 +108,44 @@
 
   .root[data-drawing] & path {
     @include mixins.motion-safe {
-      animation: draw-line 900ms var(--ease-out) both;
+      animation: draw-line 900ms var(--ease-out) backwards;
     }
   }
 }
 
 @keyframes breathe {
   50% {
-    scale: 1.04;
+    transform: scale(1.04);
   }
 }
 
 @keyframes leaf-swing {
   50% {
-    rotate: 5deg;
+    transform: rotate(5deg);
   }
 }
 
-@keyframes spin {
-  to {
-    rotate: 360deg;
+@keyframes chomp-jolt {
+  16.7%,
+  50%,
+  83.3% {
+    transform: scale(var(--mark-grow, 1.35)) translateX(-1px);
+  }
+
+  33.3%,
+  66.7%,
+  100% {
+    transform: scale(var(--mark-grow, 1.35));
+  }
+}
+
+@keyframes leaf-flick {
+  40% {
+    transform: rotate(-12deg);
+  }
+
+  75% {
+    transform: rotate(6deg);
   }
 }
 

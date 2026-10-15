@@ -12,7 +12,7 @@ import styles from './HeroExtras.module.scss'
 
 type PartArt = ComponentType<{ slot: number; x: number; y: number }>
 
-// Order matters: spots, sizes and parallax depth per order live in HeroExtras.module.scss
+// Order matters: spots and sizes per order live in HeroExtras.module.scss
 const floatingParts: { Art: PartArt; box: number }[] = [
   { Art: LensPart, box: 16 },
   { Art: PentalobeScrew, box: 7 },

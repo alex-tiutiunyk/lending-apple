@@ -1,23 +1,18 @@
 import { useId } from 'react'
 import { front, phoneViewBoxes, roundedRectPath } from '@/assets/svg/phone-geometry'
 import { heroCopy } from '@/content/copy'
-import { useMinuteClock } from '@/hooks/useMinuteClock'
+import { useLocalClock } from '@/hooks/useLocalClock'
 import styles from './HeroExtras.module.scss'
 
 const portX = front.body.x + front.body.width / 2
 const portY = front.body.y + front.body.height
 const notificationTop = 128
 const notificationStep = 36
-const timeFormat = new Intl.DateTimeFormat(undefined, {
-  hour: 'numeric',
-  minute: '2-digit',
-  hourCycle: 'h23',
-})
 
 /** The hero phone's screen wakes up, shows the time and three notifications; a cable plugs in. */
 export function HeroBoot() {
   const glowId = useId()
-  const minute = useMinuteClock()
+  const clock = useLocalClock()
 
   return (
     <svg
@@ -36,7 +31,7 @@ export function HeroBoot() {
         <path d={roundedRectPath(front.screen)} fill={`url(#${glowId})`} />
         <path d={roundedRectPath(front.island)} className={styles.island} />
         <text x={portX} y={92} className={styles.time}>
-          {minute === null ? '' : timeFormat.format(minute)}
+          {clock?.time ?? ''}
         </text>
       </g>
       {heroCopy.notifications.map((message, order) => {

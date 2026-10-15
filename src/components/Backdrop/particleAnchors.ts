@@ -80,11 +80,3 @@ export function anchorPointX(anchor: ShapeAnchor, slot: number) {
 export function anchorPointY(anchor: ShapeAnchor, slot: number, centerY: number) {
   return centerY + ((anchor.points[slot * 2 + 1] ?? 0.5) - 0.5) * anchor.size
 }
-
-export function readAccent() {
-  const root = document.documentElement
-  const computed = getComputedStyle(root)
-  const read = (name: string) =>
-    root.style.getPropertyValue(name) || computed.getPropertyValue(name)
-  return `${read('--accent-h')} ${read('--accent-s')} ${read('--accent-l')}`
-}

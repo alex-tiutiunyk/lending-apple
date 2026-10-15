@@ -1,16 +1,21 @@
 @use 'sass:list';
 @use 'mixins';
 
-// Per bug: rest spot, run-off spot and error spot as (x y rotation), relative to the field's right edge
+// Per bug: rest spot, run-off spot and error spot as (x y rotation), relative to the field's right
+// edge, then its wander (plan 7 §8): how far it walks along its heading, the loop length and the
+// start offset. Nine bugs, all visible at rest, around the field's edge: three at the right end,
+// the others on the top and bottom edges, turned to walk along them.
 $spots: (
-  ((-0.9rem -0.15rem 8deg), (2.4rem -2.2rem -40deg), (-1rem 1.7rem 90deg)),
-  ((-1.6rem 0.2rem -12deg), (1.6rem 2.6rem 150deg), (-1.8rem 1.75rem 80deg)),
-  ((-2.3rem -0.2rem 20deg), (-3rem -2.4rem -20deg), (-2.6rem 1.7rem 100deg)),
-  ((-5rem 0.9rem 0deg), (-8rem 2.4rem -150deg), (-3.4rem 1.75rem 85deg)),
-  ((-8rem 0.9rem 0deg), (-12rem -2.2rem -60deg), (-4.2rem 1.7rem 95deg)),
-  ((-11rem 0.9rem 0deg), (-15rem 1.6rem -120deg), (-5rem 1.75rem 90deg))
+  ((-0.9rem -0.15rem 8deg), (2.4rem -2.2rem -40deg), (-1rem 1.7rem 90deg), (20px 9s 0s)),
+  ((-1.6rem 0.2rem -12deg), (1.6rem 2.6rem 150deg), (-1.8rem 1.75rem 80deg), (24px 11s -3s)),
+  ((-2.3rem -0.2rem 20deg), (-3rem -2.4rem -20deg), (-2.6rem 1.7rem 100deg), (22px 13s -7s)),
+  ((-5rem -1.35rem 90deg), (-8rem -3.4rem -150deg), (-3.4rem 1.75rem 85deg), (48px 12s -2s)),
+  ((-8rem -1.35rem -90deg), (-12rem -3.2rem -60deg), (-4.2rem 1.7rem 95deg), (40px 14s -9s)),
+  ((-11rem 1.35rem 90deg), (-15rem 3.6rem -120deg), (-5rem 1.75rem 90deg), (60px 15s -5s)),
+  ((-6.5rem 1.35rem -90deg), (-9rem 3.4rem 160deg), (-5.8rem 1.7rem 85deg), (36px 10s -6s)),
+  ((0.1rem -0.8rem 0deg), (3rem 0.4rem 60deg), (-6.6rem 1.75rem 95deg), (20px 9.5s -4s)),
+  ((-3.6rem 1.35rem 90deg), (-1rem 3.8rem 130deg), (-7.4rem 1.7rem 90deg), (30px 12.5s -10s))
 );
-$under-the-field: 4;
 
 .root {
   position: absolute;
@@ -50,7 +55,6 @@ $under-the-field: 4;
   width: 0.5rem;
   height: 0.5rem;
   margin-top: -0.25rem;
-  opacity: var(--rest-opacity);
   transform: var(--rest);
   transition:
     transform 500ms var(--ease-out),
@@ -75,56 +79,72 @@ $under-the-field: 4;
   $rest: list.nth($bug, 1);
   $away: list.nth($bug, 2);
   $error: list.nth($bug, 3);
-  $rest-opacity: 1;
-
-  @if $i >= $under-the-field {
-    $rest-opacity: 0;
-  }
+  $wander: list.nth($bug, 4);
+  $walk: list.nth($wander, 1);
 
   .spot:nth-child(#{$i + 1}) {
     --rest: translate(#{list.nth($rest, 1)}, #{list.nth($rest, 2)}) rotate(#{list.nth($rest, 3)});
     --away: translate(#{list.nth($away, 1)}, #{list.nth($away, 2)}) rotate(#{list.nth($away, 3)});
     --error: translate(#{list.nth($error, 1)}, #{list.nth($error, 2)})
       rotate(#{list.nth($error, 3)});
-    --rest-opacity: #{$rest-opacity};
+    --walk: -#{$walk};
+    --wander: #{list.nth($wander, 2)};
+    --wander-delay: #{list.nth($wander, 3)};
   }
 }
 
+// Walk forward along its heading, stop, turn round, clean the antennae (the leg twitch goes on),
+// walk back and turn again; one keyframes for all, each bug's distance and timing from its spot
+@keyframes bug-wander {
+  0%,
+  6% {
+    transform: none;
+  }
+
+  36% {
+    transform: translateY(var(--walk));
+  }
+
+  44%,
+  56% {
+    transform: translateY(var(--walk)) rotate(180deg);
+  }
+
+  86% {
+    transform: rotate(180deg);
+  }
+
+  94%,
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// The wander sits between the place and the rig, so a flee composes with wherever the bug is on
+// its route: in the away and error states the loop pauses instead of snapping back (plan 7 §8)
+.walk {
+  position: absolute;
+  inset: 0;
+
+  @include mixins.promote-while-awake;
+
+  @include mixins.when-awake {
+    animation: bug-wander var(--wander) var(--ease-in-out) var(--wander-delay) infinite;
+  }
+
+  .root:is([data-state='away'], [data-state='error']) & {
+    animation-play-state: paused;
+  }
+}
+
+// The bug art itself is shared with the lens-list bug (plan 5 §5): `assets/svg/bug.tsx`
 .bug {
-  display: block;
   width: 100%;
   height: 100%;
-  overflow: visible;
   color: var(--color-text-muted);
 
   .root[data-state='error'] & {
     color: var(--color-danger);
-  }
-}
-
-.shell,
-.head {
-  fill: currentcolor;
-}
-
-.legs {
-  fill: none;
-  stroke: currentcolor;
-  stroke-width: 0.8;
-  stroke-linecap: round;
-  transform-box: fill-box;
-  transform-origin: 100% 50%;
-
-  @include mixins.when-awake {
-    animation: bug-twitch 1.6s var(--ease-in-out) infinite alternate;
-  }
-}
-
-.legs--right {
-  transform-origin: 0% 50%;
-
-  @include mixins.when-awake {
-    animation-direction: alternate-reverse;
   }
 }
 
@@ -142,12 +162,7 @@ $under-the-field: 4;
 
 @keyframes bug-flee {
   0% {
-    opacity: var(--rest-opacity);
     transform: var(--rest);
-  }
-
-  25% {
-    opacity: 1;
   }
 
   100% {
@@ -163,13 +178,7 @@ $under-the-field: 4;
   }
 
   to {
-    opacity: var(--rest-opacity);
+    opacity: 1;
     transform: var(--rest);
-  }
-}
-
-@keyframes bug-twitch {
-  to {
-    transform: rotate(14deg);
   }
 }

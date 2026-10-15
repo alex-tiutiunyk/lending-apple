@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react'
+import { prefersSavedData } from '@/hooks/saveData'
 
 /** closed: only the handle shows. open: a click or Enter on the handle opened it (plan 4 §0). */
 export type PanelState = 'closed' | 'open'
@@ -38,7 +39,22 @@ export function useA11yPanel() {
     }
   }, [state, close])
 
-  // Hover and focus on the handle only fetch the controls chunk, so a click opens a ready panel
+  // The controls mount on idle after load, while the panel is still closed and inert (plan 7
+  // §14): fetching the chunk early is not enough, a lazy component suspends on its first render
+  // even when its chunk is in. A tap has no hover, so without this the first open showed only the
+  // heading. With Save-Data on, only the gestures below fetch it.
+  useEffect(() => {
+    if (prefersSavedData()) return
+    const want = () => setWanted(true)
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(want, { timeout: 2000 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const timer = window.setTimeout(want, 2000)
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  // Hover, focus and a press on the handle fetch the controls too, so a click opens a ready panel
   const rootProps = {
     onPointerEnter: (event: PointerEvent) => {
       if (event.pointerType === 'mouse') setWanted(true)
@@ -47,6 +63,7 @@ export function useA11yPanel() {
 
   const handleProps = {
     onFocus: () => setWanted(true),
+    onPointerDown: () => setWanted(true),
     onClick: () => {
       setWanted(true)
       if (state === 'open') {

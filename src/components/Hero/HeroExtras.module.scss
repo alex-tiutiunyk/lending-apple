@@ -5,7 +5,7 @@
 
 $boot-start: 1.3s;
 
-// Per floating part, by data-order: left, top, width, parallax depth (1 to 3)
+// Per floating part, by data-order: left, top, width (the parallax depth is partDepths in FloatingParts.tsx)
 $part-spots: (
   (2%, 18%, 2.6rem, 3),
   (86%, 8%, 1.1rem, 1),
@@ -98,15 +98,15 @@ $phone-parts: 3;
 
 @include mixins.motion-safe {
   .screen {
-    animation: boot-fade 600ms var(--ease-out) $boot-start both;
+    animation: boot-fade 600ms var(--ease-out) $boot-start backwards;
   }
 
   .time {
-    animation: boot-fade 400ms var(--ease-out) calc($boot-start + 0.5s) both;
+    animation: boot-fade 400ms var(--ease-out) calc($boot-start + 0.5s) backwards;
   }
 
   .notification {
-    animation: boot-notify 450ms var(--ease-out) both;
+    animation: boot-notify 450ms var(--ease-out) backwards;
 
     @for $i from 1 through 3 {
       &:nth-of-type(#{$i}) {
@@ -116,34 +116,44 @@ $phone-parts: 3;
   }
 
   .cable {
-    animation: boot-draw 900ms var(--ease-out) 0.9s both;
+    animation: boot-draw 900ms var(--ease-out) 0.9s backwards;
   }
 
   .plug {
-    animation: boot-fade 200ms var(--ease-out) 1.7s both;
+    animation: boot-fade 200ms var(--ease-out) 1.7s backwards;
   }
 
   .charge-ring {
-    animation: boot-charge 900ms var(--ease-in-out) 1.8s both;
+    animation: boot-charge 900ms var(--ease-in-out) 1.8s backwards;
   }
 }
 
+// The parts and the line fade out over the first 60 % of the hero's height on a scroll timeline
+// (plan 6 §3.3); without timelines HeroExtras drives the same keyframes
 .parts {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  animation: hero-out linear both;
+
+  @supports (animation-timeline: scroll()) {
+    animation-timeline: scroll(root);
+    animation-range: 0 calc(60svh - var(--header-height) * 0.6);
+  }
+
+  @supports not (animation-timeline: scroll()) {
+    animation-duration: 1000ms;
+    animation-play-state: paused;
+  }
 }
 
+// The pointer parallax is a direct translate on each part (HeroExtras), eased by a transition;
+// the drift keyframes live on the inner span, so no element carries both
 .part {
   position: absolute;
-  opacity: calc(1 - var(--hero-out, 0));
 
   @include mixins.motion-safe {
-    transform: translate(
-      calc(var(--px, 0) * var(--depth) * 4px),
-      calc(var(--py, 0) * var(--depth) * 4px)
-    );
-    transition: transform 400ms var(--ease-out);
+    transition: translate 400ms var(--ease-out);
   }
 }
 
@@ -155,7 +165,6 @@ $phone-parts: 3;
     left: list.nth($spot, 1);
     width: list.nth($spot, 3);
 
-    --depth: #{list.nth($spot, 4)};
     --drift-delay: #{(1 - $i) * 1.3s};
 
     @if $i > $phone-parts {
@@ -170,12 +179,12 @@ $phone-parts: 3;
   display: block;
 
   @include mixins.motion-safe {
-    animation: boot-fade 700ms var(--ease-out) calc(1s + var(--drift-delay) * -0.1) both;
+    animation: boot-fade 700ms var(--ease-out) calc(1s + var(--drift-delay) * -0.1) backwards;
   }
 
   @include mixins.when-awake {
     animation:
-      boot-fade 700ms var(--ease-out) calc(1s + var(--drift-delay) * -0.1) both,
+      boot-fade 700ms var(--ease-out) calc(1s + var(--drift-delay) * -0.1) backwards,
       part-drift 9s var(--ease-in-out) var(--drift-delay) infinite alternate;
   }
 }
@@ -185,6 +194,88 @@ $phone-parts: 3;
   width: 100%;
   height: auto;
   overflow: visible;
+}
+
+// The single line (plan 5 §14): drawn once after the outline, then a faint guide that fades out
+// with the hero like the parts; a light runs along it every 8 s while the hero is awake
+.line {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.line-stroke,
+.line-light {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0;
+  vector-effect: non-scaling-stroke;
+
+  @include mixins.high-contrast {
+    stroke: var(--color-text);
+  }
+
+  @media (forced-colors: active) {
+    stroke: CanvasText;
+  }
+}
+
+.line-stroke {
+  opacity: 0.25;
+
+  @include mixins.motion-safe {
+    animation: line-draw 1.1s var(--ease-out) var(--line-delay, 0ms) backwards;
+  }
+}
+
+// The light is a short dash whose gap runs past both ends of the path, so it hides by moving
+// off the path rather than by an opacity keyframe, which would give the path a layer (plan 6 §9)
+.line-light {
+  stroke: var(--color-accent-bright);
+  stroke-width: 2;
+  stroke-dasharray: 0.06 2;
+  stroke-dashoffset: -1.07;
+
+  @include mixins.when-awake {
+    animation: line-light 8s linear calc(var(--line-delay, 0ms) + 1.1s) infinite;
+  }
+}
+
+@keyframes hero-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes line-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes line-light {
+  0% {
+    stroke-dashoffset: 0.07;
+  }
+
+  11.25% {
+    stroke-dashoffset: -0.94;
+  }
+
+  11.26%,
+  100% {
+    stroke-dashoffset: -1.07;
+  }
 }
 
 @keyframes boot-fade {

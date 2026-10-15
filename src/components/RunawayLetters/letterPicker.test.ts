@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { candidateBlocks, letterSpots, pickSpots } from './letterPicker'
+import {
+  candidateBlocks,
+  headingSelector,
+  letterSpots,
+  paragraphSelector,
+  pickSpots,
+  wordKeys,
+} from './letterPicker'
 
 function page(html: string) {
   const root = document.createElement('main')
@@ -8,7 +15,7 @@ function page(html: string) {
 }
 
 describe('candidateBlocks', () => {
-  it('takes headings and paragraphs, not links, forms, the nav, stats or opted-out blocks', () => {
+  it('offers paragraphs and headings separately, not links, forms, the nav, stats or opted-out blocks', () => {
     const root = page(`
       <h2>It starts as one stroke</h2>
       <p>Body copy here.</p>
@@ -21,10 +28,27 @@ describe('candidateBlocks', () => {
       <p data-reveal="hidden">Not yet shown</p>
       <p><span data-decoding="">Unofficial</span></p>
     `)
-    expect(candidateBlocks(root).map((block) => block.textContent?.trim())).toEqual([
-      'It starts as one stroke',
-      'Body copy here.',
-    ])
+    const texts = (selector: string) =>
+      candidateBlocks(root, selector).map((block) => block.textContent?.trim())
+    expect(texts(headingSelector)).toEqual(['It starts as one stroke'])
+    expect(texts(paragraphSelector)).toEqual(['Body copy here.'])
+  })
+})
+
+describe('wordKeys', () => {
+  it('gives every letter of one word the same key and other words and nodes their own', () => {
+    const block = page('<h2>Four <em>decisions</em> behind it</h2>')
+      .firstElementChild as HTMLElement
+    const spots = letterSpots(block)
+    const keys = wordKeys(spots)
+    const glyphs = spots.map(({ node, offset }) => node.data[offset])
+    const keyOf = (glyph: string, nth = 0) =>
+      keys[glyphs.flatMap((g, index) => (g === glyph ? [index] : []))[nth] ?? -1]
+    expect(keyOf('F')).toBe(keyOf('r'))
+    expect(keyOf('d')).not.toBe(keyOf('F'))
+    expect(keyOf('b')).not.toBe(keyOf('d'))
+    expect(keyOf('i', 3)).toBe(keyOf('t'))
+    expect(new Set(keys).size).toBe(4)
   })
 })
 

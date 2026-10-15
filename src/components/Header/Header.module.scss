@@ -1,3 +1,4 @@
+@use 'sass:map';
 @use 'tokens';
 @use 'mixins';
 @use 'breakpoints' as bp;
@@ -6,8 +7,102 @@
   position: sticky;
   top: 0;
   z-index: tokens.z(header);
-  background: var(--color-bar);
+
+  // A slow aurora across the bar (plan 7 §6): three stops around the accent hue, flat in high
+  // contrast (the tokens collapse to the bar colour there)
+  background: linear-gradient(
+    90deg,
+    var(--bar-stop-a) 0%,
+    var(--bar-stop-b) 55%,
+    var(--bar-stop-c) 100%
+  );
   border-bottom: 1px solid var(--color-line);
+  isolation: isolate;
+
+  @media (forced-colors: active) {
+    background: Canvas;
+  }
+}
+
+// Three crest strips over the gradient, each a tile wider than the bar and translated by one
+// tile per loop (seamless, like the footer edge), in different directions and speeds so the
+// crests cross. Compositor transforms on HTML strips, awake at `full` only (plan 6 rules 4, 7).
+.waves {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: clip;
+  pointer-events: none;
+  contain: paint;
+
+  @include mixins.high-contrast {
+    display: none;
+  }
+
+  @media (forced-colors: active) {
+    display: none;
+  }
+}
+
+$crests: (
+  1: (
+    width: 240,
+    duration: 18s,
+    direction: -1,
+    color: var(--bar-wave-a),
+  ),
+  2: (
+    width: 360,
+    duration: 26s,
+    direction: 1,
+    color: var(--bar-wave-b),
+  ),
+  3: (
+    width: 520,
+    duration: 34s,
+    direction: -1,
+    color: var(--bar-wave-c),
+  ),
+);
+
+.wave {
+  @include mixins.crest-mask(240, 60);
+
+  position: absolute;
+  top: 0;
+  bottom: 0;
+
+  @include mixins.promote-while-awake;
+}
+
+@each $index, $crest in $crests {
+  $width: map.get($crest, width);
+  $direction: map.get($crest, direction);
+  $start: 0;
+
+  @if $direction > 0 {
+    $start: -#{$width}px;
+  }
+
+  // One tile for all three, stretched to each wavelength (the tile ignores its aspect ratio)
+  .wave:nth-child(#{$index}) {
+    left: $start;
+    width: calc(100% + #{$width}px);
+    background: map.get($crest, color);
+    mask-size:
+      #{$width}px 100%,
+      100% 100%;
+
+    @include mixins.when-awake {
+      animation: crest-travel-#{$index} map.get($crest, duration) linear infinite;
+    }
+  }
+
+  @keyframes crest-travel-#{$index} {
+    to {
+      transform: translateX(#{$direction * $width}px);
+    }
+  }
 }
 
 .bar {
@@ -31,17 +126,27 @@
 }
 
 .mark {
+  // How much the hover grows the mark before the worm bites (plan 7 §4)
+  --mark-grow: 1.35;
+
   width: 1.4rem;
   height: 1.4rem;
   color: var(--color-accent);
+
+  // A finish pick eases the mark's colour locally, instead of a root transition (plan 6 §6)
+  @include mixins.motion-safe {
+    transition: color var(--dur-tint) var(--ease-out);
+  }
 }
 
-// Page progress along the bottom edge (plan 4 §2.1): the accent line grows over the border
-// with --doc-p from useDocumentProgress. It follows the scroll at every motion level like a
-// scrollbar would; only the glow on its tip is motion, so it goes with reduced motion.
+// Page progress along the bottom edge (plan 4 §2.1, plan 6 §3.1): the accent line grows over
+// the border on a scroll timeline, like a scrollbar, at every motion level; without timelines
+// useDocumentProgress drives the same keyframes. Only the glow on the tip is motion: its
+// opacity follows the scroll speed from the scroll bus and it goes with reduced motion.
 .progress {
   position: absolute;
   inset: auto 0 -1px;
+  z-index: 1;
   height: 1px;
   pointer-events: none;
 
@@ -54,8 +159,11 @@
   position: absolute;
   inset: 0;
   background: var(--color-accent);
-  transform: scaleX(var(--doc-p, 0));
+  transform: scaleX(0);
   transform-origin: left;
+  animation: progress-grow linear both;
+
+  @include mixins.driven(scroll(root));
 
   @media (forced-colors: active) {
     background: Highlight;
@@ -65,7 +173,11 @@
 .progress-tip {
   position: absolute;
   inset: 0;
-  transform: translateX(calc((var(--doc-p, 0) - 1) * 100%));
+  opacity: calc(0.4 + min(1, max(var(--scroll-v, 0), -1 * var(--scroll-v, 0))) * 0.6);
+  transform: translateX(-100%);
+  animation: progress-slide linear both;
+
+  @include mixins.driven(scroll(root));
 
   &::after {
     position: absolute;
@@ -77,7 +189,6 @@
     background: radial-gradient(circle, var(--color-accent-bright), transparent 70%);
     border-radius: 50%;
     box-shadow: 0 0 8px 2px var(--color-accent-glow);
-    opacity: calc(0.4 + min(1, max(var(--scroll-v, 0), -1 * var(--scroll-v, 0))) * 0.6);
     translate: 50% -50%;
   }
 
@@ -87,6 +198,26 @@
 
   @include mixins.high-contrast {
     display: none;
+  }
+}
+
+@keyframes progress-grow {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes progress-slide {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
   }
 }
 

@@ -1,0 +1,213 @@
+@use 'mixins';
+
+// The Reserve phone's screen stack (plan 7 §9), placed over the render's screen as shares of the
+// front viewBox (10 8 180 344): the screen is 146 × 316 at (27, 22) with a 22-unit radius, so no
+// measuring. Five wallpapers cross-fade on a 20 s cycle, 4 s each, with a slow zoom; the cycle is
+// pure CSS, ambient and awake only; asleep, the first one stands still. At `calm` and `off`
+// the chunk is not loaded and the render's plain lock screen shows, as in high contrast.
+$cycle: 20s;
+$slot: 4s;
+
+.root {
+  position: absolute;
+  top: 4.07%;
+  left: 9.444%;
+  width: 81.111%;
+  height: 91.86%;
+  overflow: clip;
+  clip-path: inset(0 round 15.07% / 6.96%);
+  pointer-events: none;
+
+  // The phone is an object: its lock screen is white on the picture in every theme
+  --color-text: hsl(0deg 0% 98%);
+
+  @include mixins.high-contrast {
+    display: none;
+  }
+
+  @media (forced-colors: active) {
+    display: none;
+  }
+}
+
+.walls {
+  position: absolute;
+  inset: 0;
+}
+
+.wall {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+
+  &:first-child {
+    opacity: 1;
+  }
+
+  @include mixins.promote-while-awake;
+
+  @include mixins.when-awake {
+    animation: screen-cycle $cycle linear infinite;
+  }
+
+  @for $i from 2 through 5 {
+    &:nth-child(#{$i}) {
+      animation-delay: ($i - 1) * $slot;
+    }
+  }
+
+  // After a reservation the cycle stops on the sixth picture
+  [data-reserved] & {
+    opacity: 0;
+    animation: none;
+  }
+}
+
+.reserved {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-top: 40%;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-on-accent);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(160deg, var(--color-accent-bright), var(--color-accent));
+  opacity: 0;
+
+  [data-reserved] & {
+    opacity: 1;
+
+    @include mixins.motion-safe {
+      transition: opacity 600ms var(--ease-out);
+    }
+  }
+}
+
+.top {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.island {
+  fill: hsl(0deg 0% 2%);
+}
+
+.glare-on {
+  stop-color: hsl(0deg 0% 100%);
+  stop-opacity: 0.16;
+}
+
+.glare-off {
+  stop-color: hsl(0deg 0% 100%);
+  stop-opacity: 0;
+}
+
+// Cross-fade in 600 ms, show for 4 s while zooming 1 → 1.06, fade out, wait for the others
+@keyframes screen-cycle {
+  0% {
+    opacity: 0;
+    transform: none;
+  }
+
+  3%,
+  20% {
+    opacity: 1;
+  }
+
+  23% {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+}
+
+// The pictures: hues from the page's finish, lightness kept low so the white clock reads
+.aurora-a {
+  stop-color: hsl(var(--accent-h) 60% 22%);
+}
+
+.aurora-b {
+  stop-color: hsl(calc(var(--accent-h) + 40) 55% 16%);
+}
+
+.aurora-c {
+  stop-color: hsl(calc(var(--accent-h) - 50) 50% 10%);
+}
+
+.aurora-veil {
+  fill: hsl(calc(var(--accent-h) + 20) 80% 60% / 22%);
+}
+
+.dawn-high {
+  stop-color: hsl(calc(var(--accent-h) + 200) 40% 18%);
+}
+
+.dawn-low {
+  stop-color: hsl(24deg 70% 46%);
+}
+
+.sun {
+  fill: hsl(38deg 90% 66%);
+}
+
+.hill-far {
+  fill: hsl(var(--accent-h) 30% 18%);
+}
+
+.hill-near {
+  fill: hsl(var(--accent-h) 34% 10%);
+}
+
+.night {
+  fill: hsl(var(--accent-h) 40% 7%);
+}
+
+.star {
+  fill: hsl(0deg 0% 100% / 70%);
+}
+
+.moon {
+  fill: hsl(48deg 40% 88%);
+}
+
+.glass-apple {
+  fill: hsl(var(--accent-h) var(--accent-s) 40%);
+}
+
+.glass-on {
+  stop-color: hsl(0deg 0% 100%);
+  stop-opacity: 0.3;
+}
+
+.glass-off {
+  stop-color: hsl(0deg 0% 100%);
+  stop-opacity: 0;
+}
+
+.metal-light {
+  stop-color: hsl(var(--accent-h) 10% 46%);
+}
+
+.metal-mid {
+  stop-color: hsl(var(--accent-h) 8% 28%);
+}
+
+.metal-dark {
+  stop-color: hsl(var(--accent-h) 10% 14%);
+}
+
+.brush {
+  stroke: hsl(0deg 0% 100% / 18%);
+  stroke-width: 0.6;
+}

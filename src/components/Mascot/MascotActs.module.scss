@@ -1,10 +1,7 @@
 // Art and motion for the acts added in plan 2. Pip's own parts are reached through
-// data-pip-part, because their classes belong to Mascot.module.scss.
+// data-pip-part, because their classes belong to Mascot.module.scss. The art is an HTML box and
+// the body and legs are SVG roots (plan 6 §7): keyframes on the roots use `transform`.
 
-[data-pip-part='art'],
-[data-pip-part='body'],
-[data-pip-part='leg-left'],
-[data-pip-part='leg-right'],
 .arm,
 .screw,
 .wings path,
@@ -87,6 +84,29 @@
 
 .polaroid-photo {
   fill: var(--color-accent);
+}
+
+// Pip's slingshot (plan 7 §2): held up on the right, the band pulled back while aiming
+.sling-frame {
+  fill: none;
+  stroke: var(--part-steel);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.sling-band {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1;
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: sling-pull 400ms var(--ease-out) backwards;
+}
+
+@keyframes sling-pull {
+  from {
+    transform: scaleY(0.3);
+  }
 }
 
 [data-act='wave'] .arm--right {
@@ -283,17 +303,17 @@
 @keyframes body-stretch {
   25%,
   75% {
-    scale: 1 1.1;
+    transform: scale(1, 1.1);
   }
 }
 
 @keyframes body-ring {
   from {
-    translate: -0.8px 0;
+    transform: translateX(-0.8px);
   }
 
   to {
-    translate: 0.8px 0;
+    transform: translateX(0.8px);
   }
 }
 
@@ -305,11 +325,11 @@
 
 @keyframes leg-step {
   from {
-    rotate: 18deg;
+    transform: rotate(18deg);
   }
 
   to {
-    rotate: -18deg;
+    transform: rotate(-18deg);
   }
 }
 
@@ -341,12 +361,12 @@
 @keyframes dizzy-sit {
   0%,
   60% {
-    translate: 0 0;
+    transform: translateY(0);
   }
 
   72%,
   95% {
-    translate: 0 9px;
+    transform: translateY(9px);
   }
 }
 
@@ -390,7 +410,7 @@
 // Plan 4: the chase after a runaway letter, the miss, a glance at the header and a cheer
 [data-act='chase'] {
   [data-pip-part='body'] {
-    rotate: 14deg;
+    transform: rotate(14deg);
   }
 
   [data-pip-part='leg-left'] {
@@ -404,15 +424,89 @@
 
 [data-act='missed'],
 [data-act='glance'] {
-  --look-y: -1.5px;
-
   [data-pip-part='body'] {
-    rotate: -8deg;
+    transform: rotate(-8deg);
+  }
+
+  [data-pip-eye] {
+    translate: 0 -1.5px;
   }
 }
 
 [data-act='cheer'] [data-pip-part='art'] {
   animation: cheer-jump 600ms var(--ease-out) 2 both;
+}
+
+// Plan 5 §6: carried by the pointer (the body leans the way it is pulled, the legs dangle),
+// and the landing squash. The rig art above Pip leans with it (data-rig-art, MascotRig).
+[data-act='carried'] {
+  // The lean is written as rotate on both by writePipPosition
+  [data-pip-part='art'],
+  [data-rig-art] {
+    transform-origin: 50% 20%;
+  }
+
+  [data-pip-part='leg-left'] {
+    animation: leg-dangle 700ms var(--ease-in-out) infinite alternate;
+  }
+
+  [data-pip-part='leg-right'] {
+    animation: leg-dangle 700ms var(--ease-in-out) -350ms infinite alternate-reverse;
+  }
+}
+
+[data-act='land'] {
+  [data-pip-part='body'] {
+    animation: body-land 900ms var(--ease-out) both;
+  }
+
+  // Joy on landing (plan 7 §1): arms up and a small hop on the figure box, never on the root,
+  // which writePipPosition owns
+  [data-pip-part='art'] {
+    animation: land-hop 220ms var(--ease-out) 260ms;
+  }
+
+  .arm--left {
+    rotate: 125deg;
+  }
+
+  .arm--right {
+    rotate: -125deg;
+  }
+}
+
+@keyframes land-hop {
+  50% {
+    translate: 0 -6px;
+  }
+}
+
+@keyframes leg-dangle {
+  from {
+    transform: rotate(-14deg);
+  }
+
+  to {
+    transform: rotate(14deg);
+  }
+}
+
+@keyframes body-land {
+  0% {
+    transform: scale(1, 1);
+  }
+
+  25% {
+    transform: scale(1.18, 0.78);
+  }
+
+  55% {
+    transform: scale(0.95, 1.06);
+  }
+
+  100% {
+    transform: scale(1, 1);
+  }
 }
 
 @keyframes cheer-jump {

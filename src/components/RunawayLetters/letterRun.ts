@@ -1,4 +1,6 @@
-export type RunPlan = { dx: number; dy: number; runMs: number }
+export type RunPlan = { dx: number; dy: number; runMs: number; lift?: Lift }
+/** A knocked-out letter (plan 7 §2) jumps higher and spins before it runs. */
+type Lift = { px: number; ms: number; spinDeg: number }
 type RunPhase = 'lift' | 'run' | 'look' | 'back' | 'settle' | 'done'
 export type RunFrame = { x: number; y: number; phase: RunPhase; tilt: number }
 
@@ -8,10 +10,34 @@ export type Room = { left: number; right: number; up: number; down: number }
 const liftMs = 200
 const lookMs = 400
 const settleMs = 250
-const shortestRunMs = 700
-const longestRunMs = 1100
-const shortestDistancePx = 40
-const longestDistancePx = 160
+/** How far and how long one leg of the trip is; headings keep their letters close (plan 5 §9). */
+export type RunRange = {
+  shortestPx: number
+  longestPx: number
+  shortestMs: number
+  longestMs: number
+  lift?: { shortestPx: number; longestPx: number; ms: number; spinDeg: number }
+}
+export const paragraphRun: RunRange = {
+  shortestPx: 40,
+  longestPx: 160,
+  shortestMs: 700,
+  longestMs: 1100,
+}
+export const headingRun: RunRange = {
+  shortestPx: 20,
+  longestPx: 80,
+  shortestMs: 350,
+  longestMs: 800,
+}
+/** Hit by Pip's throw (plan 7 §2): a 24–40 px jump with a turn, then the usual run. */
+export const hitRun: RunRange = {
+  shortestPx: 40,
+  longestPx: 140,
+  shortestMs: 500,
+  longestMs: 900,
+  lift: { shortestPx: 24, longestPx: 40, ms: 320, spinDeg: 360 },
+}
 const liftPx = 2
 const bobPx = 1.5
 const bouncePx = 3
@@ -31,14 +57,20 @@ function easeOut(share: number) {
 }
 
 /** A direction and distance of its own, kept inside the viewport. */
-export function planRun(random: () => number, room: Room): RunPlan {
+export function planRun(random: () => number, room: Room, range: RunRange = paragraphRun): RunPlan {
   const angle = random() * Math.PI * 2
-  const distance = shortestDistancePx + random() * (longestDistancePx - shortestDistancePx)
-  return {
+  const distance = range.shortestPx + random() * (range.longestPx - range.shortestPx)
+  const plan: RunPlan = {
     dx: Math.max(-room.left, Math.min(room.right, Math.cos(angle) * distance)),
     dy: Math.max(-room.up, Math.min(room.down, Math.sin(angle) * distance)),
-    runMs: shortestRunMs + random() * (longestRunMs - shortestRunMs),
+    runMs: range.shortestMs + random() * (range.longestMs - range.shortestMs),
   }
+  const { lift } = range
+  if (lift) {
+    const px = Math.min(room.up, lift.shortestPx + random() * (lift.longestPx - lift.shortestPx))
+    plan.lift = { px, ms: lift.ms, spinDeg: lift.spinDeg }
+  }
+  return plan
 }
 
 /**
@@ -46,8 +78,10 @@ export function planRun(random: () => number, room: Room): RunPlan {
  * Positions are offsets from the letter's place in its line. `hurryHome` cuts the trip short.
  */
 export function createLetterRunner(plan: RunPlan, startedAt: number) {
+  const lift = plan.lift?.px ?? liftPx
+  const spin = plan.lift?.spinDeg ?? 0
   const durations: Record<RunPhase, number> = {
-    lift: liftMs,
+    lift: plan.lift?.ms ?? liftMs,
     run: plan.runMs,
     look: lookMs,
     back: plan.runMs,
@@ -56,7 +90,7 @@ export function createLetterRunner(plan: RunPlan, startedAt: number) {
   }
   let phase: RunPhase = 'lift'
   let phaseStart = startedAt
-  let from = { x: plan.dx, y: plan.dy - liftPx }
+  let from = { x: plan.dx, y: plan.dy - lift }
   let x = 0
   let y = 0
 
@@ -80,15 +114,16 @@ export function createLetterRunner(plan: RunPlan, startedAt: number) {
       switch (phase) {
         case 'lift':
           x = 0
-          y = -liftPx * eased
+          y = -lift * eased
+          tilt = spin * eased
           break
         case 'run':
           x = plan.dx * eased
-          y = -liftPx + plan.dy * eased + bob
+          y = -lift + plan.dy * eased + bob
           break
         case 'look':
           x = plan.dx
-          y = plan.dy - liftPx
+          y = plan.dy - lift
           tilt = Math.sin(share * Math.PI * 2) * lookTiltDeg
           break
         case 'back':

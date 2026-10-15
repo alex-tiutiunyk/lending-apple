@@ -1,5 +1,6 @@
 import { mascotCopy } from '@/content/copy'
 import type { ComboAct } from './mascotCombos'
+import { fallingLine } from './mascotLines'
 
 export const randomActs = [
   'selfie',
@@ -14,12 +15,16 @@ export const randomActs = [
   'moonwalk',
   'stretch',
   'juggle',
+  // Plan 7 §2: drawn only while the letters listen (useMascotThrow)
+  'throw',
 ] as const
 
 export type RandomAct = (typeof randomActs)[number]
 /** Acts asked for from outside through mascotRequests (plan 4 §1, §2.4). */
 type RequestAct = 'chase' | 'missed' | 'glance' | 'cheer'
-export type MascotAct = 'walk' | 'hurry' | RandomAct | 'blown' | ComboAct | RequestAct
+/** Picked up by the pointer and set down again (plan 5 §6, plan 7 §1); only the drag starts them. */
+type DragAct = 'carried' | 'fall' | 'land'
+export type MascotAct = 'walk' | 'hurry' | RandomAct | 'blown' | ComboAct | RequestAct | DragAct
 export type MascotExpression = 'calm' | 'wide' | 'squint' | 'talk' | 'dizzy'
 export type PokedSection = keyof typeof mascotCopy.sectionComplaints
 
@@ -36,6 +41,8 @@ export const actDurationMs: Record<Exclude<MascotAct, 'walk' | 'hurry'>, number>
   moonwalk: 3600,
   stretch: 2600,
   juggle: 3800,
+  // The throw ends itself on the hit or the miss; this is the fallback
+  throw: 3200,
   blown: 1400,
   poked: 1600,
   screenshot: 2400,
@@ -45,6 +52,11 @@ export const actDurationMs: Record<Exclude<MascotAct, 'walk' | 'hurry'>, number>
   missed: 2200,
   glance: 1400,
   cheer: 2200,
+  // Carried Pip never runs out: the drag hook ends the act when it lands
+  carried: Infinity,
+  // The way down after a drag (plan 7 §1): the descent ends it
+  fall: Infinity,
+  land: 900,
 }
 
 export const walkDurationMs = { shortest: 4000, longest: 9000 }
@@ -64,6 +76,7 @@ export const actExpression: Record<MascotAct, MascotExpression> = {
   moonwalk: 'calm',
   stretch: 'squint',
   juggle: 'wide',
+  throw: 'squint',
   blown: 'wide',
   poked: 'wide',
   screenshot: 'wide',
@@ -73,10 +86,13 @@ export const actExpression: Record<MascotAct, MascotExpression> = {
   missed: 'squint',
   glance: 'wide',
   cheer: 'talk',
+  carried: 'wide',
+  fall: 'wide',
+  land: 'talk',
 }
 
 /** Acts that draw Pip's arms; the art for them is mounted only while they run. */
-export const armActs: readonly MascotAct[] = ['wave', 'stretch', 'juggle', 'airplane']
+export const armActs: readonly MascotAct[] = ['wave', 'stretch', 'juggle', 'airplane', 'land']
 
 function pick<Item>(items: readonly Item[], random: () => number) {
   return items[Math.floor(random() * items.length) % items.length]
@@ -86,8 +102,12 @@ export function isRandomAct(act: MascotAct): act is RandomAct {
   return (randomActs as readonly MascotAct[]).includes(act)
 }
 
-export function nextRandomAct(random: () => number): RandomAct {
-  return pick(randomActs, random) ?? 'quip'
+/** One of the acts allowed right now (plan 7 §2: `throw` only when it can happen). */
+export function nextRandomAct(
+  random: () => number,
+  allowed: readonly RandomAct[] = randomActs,
+): RandomAct {
+  return pick(allowed, random) ?? 'quip'
 }
 
 export function walkDuration(random: () => number) {
@@ -103,10 +123,16 @@ export function lineFor(
   section: PokedSection | null = null,
 ): string | null {
   switch (act) {
+    // No line while walking or dancing; the falling and landing lines come from the drag
     case 'walk':
     case 'dance':
     case 'glance':
+    case 'fall':
+    case 'land':
       return null
+    // The trip starts with a falling line; the joy line follows (mascotTripLines.ts)
+    case 'trip':
+      return fallingLine(random)
     case 'quip':
       return pick(mascotCopy.quips, random) ?? null
     case 'poked':

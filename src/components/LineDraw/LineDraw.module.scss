@@ -1,61 +1,45 @@
 @use 'mixins';
 @use 'breakpoints' as bp;
 
-// Timeline (plan 4 §6, §8): guides 0 – 0.1, the drawing 0.1 – 0.6, the color reveal 0.6 – 0.95,
-// the last 5 % holds the finished phone. The section is long enough that the drawing keeps
-// its old speed and the reveal takes about 70svh on desktop, 42svh on phones.
+// Timeline (plan 4 §6, §8, plan 6 §4): guides 0 – 0.1, the drawing 0.1 – 0.6, the colour reveal
+// 0.6 – 0.95, the last 5 % holds the finished phone, all as ranges of the section's `--design`
+// view timeline (the drawing windows sit in phone-outline.module.scss). The section is long
+// enough that the drawing keeps its old speed and the reveal takes about 70svh on desktop,
+// 42svh on phones. Base styles are the finished scene, so a static scene drops the animations.
+$reveal-from: 0.6;
+$reveal-to: 0.95;
+$smoothstep: cubic-bezier(0.4, 0, 0.6, 1);
+
 .root {
   position: relative;
   height: 220svh;
+  view-timeline: --design block;
+
+  // `auto` would take the page's scroll-padding-top (the header), shifting the range by 76 px
+  view-timeline-inset: 0;
+
+  // Skipped while far from the viewport (plan 6 §9): its scroll-driven animations never end, so
+  // without this every animated part keeps a compositor layer from the first paint
+  content-visibility: auto;
+  contain-intrinsic-size: auto 100svh;
+  animation: section-progress linear both;
+
+  @include mixins.driven(--design, 0, 1, 'contain');
 
   @include bp.up(md) {
     height: 300svh;
   }
 
   @include mixins.static-scene {
+    --section-p: 1;
+
     height: auto;
+    animation: none;
   }
 }
 
 .stage {
   @include mixins.container;
-
-  --progress: var(--p, 0);
-  --draw-from: 0.1;
-  --draw-span: 0.5;
-  --reveal-from: 0.6;
-  --reveal-span: 0.35;
-  --draw-guides: clamp(0, var(--progress) / var(--draw-from), 1);
-  --draw-body: clamp(0, (var(--progress) - var(--draw-from)) / (0.4 * var(--draw-span)), 1);
-  --draw-screen: clamp(
-    0,
-    (var(--progress) - (var(--draw-from) + 0.3 * var(--draw-span))) / (0.3 * var(--draw-span)),
-    1
-  );
-  --draw-island: clamp(
-    0,
-    (var(--progress) - (var(--draw-from) + 0.5 * var(--draw-span))) / (0.2 * var(--draw-span)),
-    1
-  );
-  --draw-camera: clamp(
-    0,
-    (var(--progress) - (var(--draw-from) + 0.6 * var(--draw-span))) / (0.25 * var(--draw-span)),
-    1
-  );
-  --draw-buttons: clamp(
-    0,
-    (var(--progress) - (var(--draw-from) + 0.8 * var(--draw-span))) / (0.2 * var(--draw-span)),
-    1
-  );
-  --draw-details: clamp(
-    0,
-    (var(--progress) - (var(--draw-from) + 0.7 * var(--draw-span))) / (0.18 * var(--draw-span)),
-    1
-  );
-  --reveal-linear: clamp(0, (var(--progress) - var(--reveal-from)) / var(--reveal-span), 1);
-
-  // smoothstep: the circle starts slowly, opens in the middle and settles at the end
-  --reveal: calc(var(--reveal-linear) * var(--reveal-linear) * (3 - 2 * var(--reveal-linear)));
 
   position: sticky;
   top: 0;
@@ -74,8 +58,6 @@
   }
 
   @include mixins.static-scene {
-    --progress: 1;
-
     position: static;
     height: auto;
     min-height: 0;
@@ -120,14 +102,58 @@
   height: 100%;
 }
 
+// The reveal: the circle starts slowly, opens in the middle and settles at the end (smoothstep)
 .outline {
-  opacity: calc(1 - var(--reveal) * 0.9);
+  opacity: 0.1;
+  animation: outline-fade $smoothstep both;
+
+  @include mixins.driven(--design, $reveal-from, $reveal-to, 'contain');
 }
 
 .render {
-  clip-path: circle(calc(var(--reveal) * 72%) at 50% 55%);
+  clip-path: circle(72% at 50% 55%);
+  animation: render-reveal $smoothstep both;
+
+  @include mixins.driven(--design, $reveal-from, $reveal-to, 'contain');
 
   .root[data-near] & {
     will-change: clip-path;
+  }
+}
+
+@include mixins.static-scene {
+  .outline,
+  .render {
+    animation: none;
+  }
+}
+
+@keyframes section-progress {
+  from {
+    --section-p: 0;
+  }
+
+  to {
+    --section-p: 1;
+  }
+}
+
+@keyframes outline-fade {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.1;
+  }
+}
+
+@keyframes render-reveal {
+  from {
+    clip-path: circle(0% at 50% 55%);
+  }
+
+  to {
+    clip-path: circle(72% at 50% 55%);
   }
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { RollingText } from '@/components/RollingText/RollingText'
 import { headerCopy, navigation } from '@/content/copy'
 import styles from './SectionNav.module.scss'
 
@@ -90,8 +91,12 @@ export function SectionNav({ active, hold }: SectionNavProps) {
               href={href}
               aria-current={index === active ? 'location' : undefined}
               onClick={() => hold(index)}
+              data-roll-host
             >
-              <span data-nav-text>{label}</span>
+              {/* The letters hop on hover (plan 5 §2); the measured box is still this span */}
+              <span data-nav-text>
+                <RollingText label={label} effect="hop" />
+              </span>
             </a>
           </li>
         ))}

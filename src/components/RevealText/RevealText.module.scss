@@ -26,19 +26,3 @@
   inset: 0;
   white-space: pre;
 }
-
-$max-scrub-words: 32;
-
-.scrub-word {
-  // Without JS --p is unset and the fallback lights every word
-  --lit: clamp(0, var(--p, 99) * (var(--words, 1) + 1) - var(--i), 1);
-
-  // 0.5 keeps the dim words above 4.5:1 against the page background
-  opacity: calc(0.5 + 0.5 * var(--lit));
-}
-
-@for $i from 1 through $max-scrub-words {
-  .scrub-word:nth-of-type(#{$i}) {
-    --i: #{$i - 1};
-  }
-}

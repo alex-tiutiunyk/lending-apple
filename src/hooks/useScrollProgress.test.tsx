@@ -27,11 +27,21 @@ describe('pinnedProgress', () => {
   })
 })
 
+class FakeCssAnimation {
+  currentTime: number | null = 0
+  playState = 'paused'
+}
+
 describe('useScrollProgress', () => {
   let frames: ReturnType<typeof installManualFrames>
+  const animations: FakeCssAnimation[] = []
 
   beforeEach(() => {
     frames = installManualFrames()
+    animations.length = 0
+    animations.push(new FakeCssAnimation(), new FakeCssAnimation())
+    // jsdom has no scroll timelines, no CSS animations and no `CSS.supports`: the fallback runs
+    vi.stubGlobal('CSSAnimation', FakeCssAnimation)
     vi.stubGlobal(
       'ResizeObserver',
       class {
@@ -39,6 +49,7 @@ describe('useScrollProgress', () => {
         disconnect = vi.fn()
       },
     )
+    Element.prototype.getAnimations = vi.fn(() => animations as unknown as Animation[])
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (
       this: HTMLElement,
     ) {
@@ -51,7 +62,7 @@ describe('useScrollProgress', () => {
     })
   })
 
-  it('writes progress into --p without re-rendering', () => {
+  it('drives every paused animation of the section from the pinned progress without re-rendering', () => {
     let renders = 0
     function Pinned() {
       renders += 1
@@ -74,7 +85,9 @@ describe('useScrollProgress', () => {
       frames.runFrame(16)
     })
 
-    expect(section.style.getPropertyValue('--p')).toBe('0.5')
+    expect(animations.map((animation) => animation.currentTime)).toEqual([500, 500])
+    expect(section.hasAttribute('data-near')).toBe(true)
+    expect(section.style.getPropertyValue('--p')).toBe('')
     expect(renders).toBe(rendersAfterMount)
   })
 })

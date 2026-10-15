@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { PressableButton } from '@/components/Pressable/PressableButton'
 import { reserveCopy } from '@/content/copy'
+import { BorderPulse } from '@/components/BorderPulse/BorderPulse'
 import { EmailBugs, type BugState } from './EmailBugs'
 import styles from './Reserve.module.scss'
 
@@ -107,6 +108,7 @@ export function ReserveForm({ onReserved }: ReserveFormProps) {
             onBlur={() => setField((current) => ({ ...current, isFocused: false }))}
           />
           <EmailBugs state={bugState} />
+          <BorderPulse seed={0.7} />
         </span>
         <PressableButton
           className={styles.submit}

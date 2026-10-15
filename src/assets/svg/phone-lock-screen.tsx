@@ -1,4 +1,5 @@
 import { lockScreenCopy } from '@/content/copy'
+import { useLocalClock } from '@/hooks/useLocalClock'
 import { circlePath, front, roundedRectPath } from './phone-geometry'
 import styles from './phone-render.module.scss'
 
@@ -12,7 +13,9 @@ const signalBars = [0, 1, 2, 3].map((step) => ({
   height: 1.6 + step * 1.1,
 }))
 
+/** The lock screen; date and time are the visitor's own once hydrated (plan 7 §10). */
 export function PhoneLockScreen() {
+  const clock = useLocalClock() ?? lockScreenCopy
   return (
     <g>
       {signalBars.map(({ x, height }) => (
@@ -46,10 +49,10 @@ export function PhoneLockScreen() {
       />
 
       <text x={left} y={screen.y + 44} className={styles.lockDate}>
-        {lockScreenCopy.date}
+        {clock.date}
       </text>
       <text x={left - 1.5} y={screen.y + 82} className={styles.lockTime}>
-        {lockScreenCopy.time}
+        {clock.time}
       </text>
 
       <circle cx={left + 10} cy={actionY} r={10.5} className={styles.quickAction} />

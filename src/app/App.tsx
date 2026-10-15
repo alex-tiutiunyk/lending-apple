@@ -8,7 +8,6 @@ import { Footer } from '@/components/Footer/Footer'
 import { Header } from '@/components/Header/Header'
 import { Hero } from '@/components/Hero/Hero'
 import { LineDraw } from '@/components/LineDraw/LineDraw'
-import { SurfaceRipple } from '@/components/LivingSurface/SurfaceRipple'
 import { MascotSlot } from '@/components/Mascot/MascotSlot'
 import { RunawayLettersSlot } from '@/components/RunawayLetters/RunawayLettersSlot'
 import { Numbers } from '@/components/Numbers/Numbers'
@@ -50,7 +49,6 @@ export function App() {
       </main>
       <Footer />
       <StickyCta />
-      <SurfaceRipple />
       <MascotSlot />
       <RunawayLettersSlot />
     </>

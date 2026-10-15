@@ -25,12 +25,14 @@ function sharedHighlight() {
   return highlight
 }
 
-/** The block and its words have finished revealing: nothing in it is still fading or moving. */
+/**
+ * The block has finished revealing: `useReveal` marks a block `done` once its reveal is over and
+ * leaves no attribute on one that never reveals (the hero title, a block visible at load), so
+ * this is an attribute read, never a computed style (plan 6 §5).
+ */
 export function isSettled(block: HTMLElement) {
-  const style = getComputedStyle(block)
-  if (style.opacity !== '1') return false
-  const firstWord = block.querySelector('span')
-  return !firstWord || getComputedStyle(firstWord).opacity === '1'
+  const reveal = block.dataset.reveal
+  return reveal === undefined || reveal === 'done'
 }
 
 /** Hides one glyph and reports where it was drawn. */
@@ -48,12 +50,18 @@ export function showGlyph(range: Range) {
   highlight?.delete(range)
 }
 
-/** A copy of the glyph in the overlay with the same font, size and color, plus two legs. */
-export function copyGlyph({ range, rect }: Hidden, layer: HTMLElement) {
+const headingBlocks = 'h1, h2, h3'
+
+/**
+ * A copy of the glyph in the overlay with the same font, size and color, plus two legs. A letter
+ * from a heading gets legs 1.5 times smaller (plan 7 §7.1): by its block, whatever the escape.
+ */
+export function copyGlyph({ range, rect }: Hidden, layer: HTMLElement, block: HTMLElement) {
   const source = range.startContainer.parentElement
   const copy = layer.ownerDocument.createElement('span')
   copy.className = styles.letter ?? ''
   copy.textContent = range.toString()
+  if (block.matches(headingBlocks)) copy.dataset.source = 'heading'
   if (source) {
     const computed = getComputedStyle(source)
     copiedStyles.forEach((property) => {

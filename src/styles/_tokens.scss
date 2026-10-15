@@ -14,6 +14,17 @@ $z-layers: (
   @return map.get($z-layers, $layer);
 }
 
+// The finish colours, derived from the accent. Declared on `:root` and again on every device
+// drawing (plan 5 §10): a custom property resolves its `var()`s where it is declared, so an
+// `--accent-*` set on one render reaches that render's gradients only through a local copy.
+@mixin finish-tokens {
+  --finish-shell: hsl(var(--accent-h) calc(var(--accent-s) * 0.45) 36%);
+  --finish-shell-light: hsl(var(--accent-h) calc(var(--accent-s) * 0.5) 62%);
+  --finish-shell-dark: hsl(var(--accent-h) calc(var(--accent-s) * 0.4) 16%);
+  --finish-screen-a: hsl(calc(var(--accent-h) + 40) 70% 46%);
+  --finish-screen-b: hsl(calc(var(--accent-h) - 30) 76% 22%);
+}
+
 @mixin root-tokens {
   --accent-h: 192;
   --accent-s: 62%;
@@ -25,6 +36,14 @@ $z-layers: (
   --color-bg-panel: hsl(var(--ink-h) 22% 8%);
   --color-bar: hsl(var(--ink-h) 26% 4% / 88%);
   --color-bar-strong: hsl(var(--ink-h) 22% 8% / 94%);
+
+  // The header's aurora (plan 7 §6): three stops around the accent hue and three wave crests
+  --bar-stop-a: hsl(var(--accent-h) 45% 9% / 88%);
+  --bar-stop-b: hsl(calc(var(--accent-h) + 40) 50% 11% / 88%);
+  --bar-stop-c: hsl(calc(var(--accent-h) - 50) 45% 10% / 88%);
+  --bar-wave-a: hsl(var(--accent-h) 70% 42% / 16%);
+  --bar-wave-b: hsl(calc(var(--accent-h) + 40) 70% 42% / 12%);
+  --bar-wave-c: hsl(calc(var(--accent-h) - 50) 70% 42% / 10%);
   --color-field: hsl(var(--ink-h) 20% 3% / 70%);
   --color-line: hsl(var(--ink-h) 12% 60% / 22%);
   --color-line-strong: hsl(var(--ink-h) 14% 78% / 46%);
@@ -38,11 +57,8 @@ $z-layers: (
   --color-on-accent: hsl(var(--accent-h) 40% 7%);
   --color-stroke: hsl(var(--ink-h) 30% 92%);
 
-  --finish-shell: hsl(var(--accent-h) calc(var(--accent-s) * 0.45) 36%);
-  --finish-shell-light: hsl(var(--accent-h) calc(var(--accent-s) * 0.5) 62%);
-  --finish-shell-dark: hsl(var(--accent-h) calc(var(--accent-s) * 0.4) 16%);
-  --finish-screen-a: hsl(calc(var(--accent-h) + 40) 70% 46%);
-  --finish-screen-b: hsl(calc(var(--accent-h) - 30) 76% 22%);
+  @include finish-tokens;
+
   --part-copper: hsl(28deg 62% 52%);
   --part-board: hsl(152deg 34% 12%);
   --part-chip: hsl(var(--ink-h) 10% 14%);
@@ -128,6 +144,12 @@ $z-layers: (
   --color-bg-panel: hsl(var(--ink-h) 22% 9%);
   --color-bar: hsl(var(--ink-h) 30% 3%);
   --color-bar-strong: hsl(var(--ink-h) 22% 9%);
+  --bar-stop-a: hsl(var(--ink-h) 30% 3%);
+  --bar-stop-b: hsl(var(--ink-h) 30% 3%);
+  --bar-stop-c: hsl(var(--ink-h) 30% 3%);
+  --bar-wave-a: hsl(0deg 0% 0% / 0%);
+  --bar-wave-b: hsl(0deg 0% 0% / 0%);
+  --bar-wave-c: hsl(0deg 0% 0% / 0%);
   --color-field: hsl(var(--ink-h) 30% 3%);
   --color-line: hsl(var(--ink-h) 10% 62%);
   --color-line-strong: hsl(var(--ink-h) 10% 82%);
@@ -155,6 +177,12 @@ $z-layers: (
   --color-bg-panel: hsl(var(--ink-h) 25% 99%);
   --color-bar: hsl(var(--ink-h) 30% 97% / 90%);
   --color-bar-strong: hsl(var(--ink-h) 25% 99% / 96%);
+  --bar-stop-a: hsl(var(--accent-h) 45% 95% / 90%);
+  --bar-stop-b: hsl(calc(var(--accent-h) + 40) 50% 96% / 90%);
+  --bar-stop-c: hsl(calc(var(--accent-h) - 50) 45% 94% / 90%);
+  --bar-wave-a: hsl(var(--accent-h) 70% 78% / 16%);
+  --bar-wave-b: hsl(calc(var(--accent-h) + 40) 70% 78% / 12%);
+  --bar-wave-c: hsl(calc(var(--accent-h) - 50) 70% 78% / 10%);
   --color-field: hsl(var(--ink-h) 25% 99%);
   --color-line: hsl(var(--ink-h) 12% 55%);
   --color-line-strong: hsl(var(--ink-h) 12% 42%);
@@ -183,6 +211,12 @@ $z-layers: (
   --color-bg-panel: hsl(0deg 0% 100%);
   --color-bar: hsl(0deg 0% 100%);
   --color-bar-strong: hsl(0deg 0% 100%);
+  --bar-stop-a: hsl(0deg 0% 100%);
+  --bar-stop-b: hsl(0deg 0% 100%);
+  --bar-stop-c: hsl(0deg 0% 100%);
+  --bar-wave-a: hsl(0deg 0% 0% / 0%);
+  --bar-wave-b: hsl(0deg 0% 0% / 0%);
+  --bar-wave-c: hsl(0deg 0% 0% / 0%);
   --color-field: hsl(0deg 0% 100%);
   --color-line: hsl(var(--ink-h) 10% 45%);
   --color-line-strong: hsl(var(--ink-h) 10% 20%);
@@ -205,6 +239,8 @@ $z-layers: (
 // Device drawings (phone render, exploded layers, the hero screen): black glass and white
 // highlights are colors of the object, not of the page, so they stay put in the light theme
 @mixin device-tokens {
+  @include finish-tokens;
+
   --color-bg: hsl(var(--ink-h) 26% 4%);
   --color-text: hsl(var(--ink-h) 24% 96%);
   --color-text-muted: hsl(var(--ink-h) 10% 74%);

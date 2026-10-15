@@ -1,3 +1,5 @@
+@use 'mixins';
+
 .root {
   width: 100%;
   height: auto;
@@ -42,6 +44,75 @@
   stroke-width: 1.2;
 }
 
+// Light sweep on the band (plan 5 §11, plan 6 §7): ambient, only while the card is awake at
+// `full`. An HTML strip over the SVG, clipped to the band through the sample's own clip path
+// and faded to the right and down like the drawing, so the loop is a composited transform.
+.band-light {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  mask-image:
+    linear-gradient(90deg, black 70%, transparent 100%),
+    linear-gradient(180deg, black 75%, transparent 100%);
+  mask-composite: intersect;
+}
+
+// 90 of the 320 view units wide, starting 130 off the left edge like the SVG rect it replaces
+.band-light-sweep {
+  position: absolute;
+  top: -10%;
+  left: -40.625%;
+  width: 28.125%;
+  height: 120%;
+  background: linear-gradient(90deg, transparent, hsl(0deg 0% 100% / 40%), transparent);
+  opacity: 0;
+
+  @include mixins.promote-while-awake;
+
+  @include mixins.when-awake {
+    animation: band-sweep 7s linear infinite;
+  }
+}
+
+// Scratches as patina (plan 5 §11): six hairlines, one more drawn per hover through the
+// `data-scratches` count on the sample; once all six are there they fade out together
+.scratch {
+  stroke: var(--finish-shell-light);
+  stroke-opacity: 0.7;
+  stroke-width: 0.6;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+
+  // When the count resets after the fade the lines un-draw while still transparent: opacity
+  // comes back only once the dashoffset has run, so the six never flash in
+  @include mixins.hover-motion {
+    transition:
+      stroke-dashoffset 420ms var(--ease-out),
+      opacity 0s 420ms;
+  }
+
+  @include mixins.high-contrast {
+    stroke: var(--color-text);
+    stroke-opacity: 0.5;
+  }
+}
+
+[data-scratches='fading'] .scratch {
+  stroke-dashoffset: 0;
+  opacity: 0;
+
+  @include mixins.hover-motion {
+    transition: opacity 30s linear;
+  }
+}
+
+@for $i from 1 through 6 {
+  [data-scratches='#{$i}'] .scratch:nth-child(-n + #{$i}) {
+    stroke-dashoffset: 0;
+  }
+}
+
 .dot {
   fill: var(--color-accent);
 }
@@ -57,4 +128,86 @@
   font-size: 13px;
   dominant-baseline: middle;
   fill: var(--color-text-muted);
+}
+
+// Leaders draw on view (plan 5 §11): when the sample is seen the dots pop, the leaders grow
+// out of them and the callouts fade in, staggered by `--callout-delay`. At `off` they are
+// simply there.
+@include mixins.motion-safe {
+  .dot {
+    transform: scale(0);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .leader {
+    transform: scaleX(0);
+    transform-box: fill-box;
+    transform-origin: left center;
+  }
+
+  .callout {
+    opacity: 0;
+  }
+
+  // Seen: the end state is the style and the draw fills backwards, so nothing stays animated
+  // (a forwards fill kept a compositor layer per callout for the life of the page, plan 6 §9)
+  [data-sheen='run'] {
+    .dot {
+      transform: none;
+      animation: callout-pop 320ms var(--ease-out) var(--callout-delay, 0ms) backwards;
+    }
+
+    .leader {
+      transform: none;
+      animation: leader-grow 360ms var(--ease-out) calc(var(--callout-delay, 0ms) + 120ms) backwards;
+    }
+
+    .callout {
+      opacity: 1;
+      animation: callout-fade 300ms var(--ease-out) calc(var(--callout-delay, 0ms) + 300ms)
+        backwards;
+    }
+  }
+}
+
+// 450 view units of travel is five times the strip's own width
+@keyframes band-sweep {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+
+  4% {
+    opacity: 1;
+  }
+
+  20% {
+    opacity: 1;
+    transform: translateX(500%);
+  }
+
+  22%,
+  100% {
+    opacity: 0;
+    transform: translateX(500%);
+  }
+}
+
+@keyframes callout-pop {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes leader-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes callout-fade {
+  from {
+    opacity: 0;
+  }
 }

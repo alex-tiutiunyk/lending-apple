@@ -11,6 +11,18 @@
   }
 }
 
+// A finish preview on the render (plan 5 §10) eases the gradient stops to the new colour
+.shell-light,
+.shell-mid,
+.shell-dark,
+.screen-a,
+.screen-b,
+.lens-highlight {
+  @include mixins.motion-safe {
+    transition: stop-color var(--dur-tint) var(--ease-out);
+  }
+}
+
 .shell-light {
   stop-color: var(--finish-shell-light);
 }
@@ -94,6 +106,14 @@
 .mark {
   fill: var(--finish-shell-light);
   fill-opacity: 0.7;
+
+  // The logo is out as the ball (plan 7 §5): only a faint outline stays, the "goal"
+  [data-ball-out] & {
+    fill: none;
+    stroke: var(--finish-shell-light);
+    stroke-width: 0.8;
+    opacity: 0.25;
+  }
 }
 
 .depth-sensor {
@@ -119,6 +139,7 @@
 
 .lock-date {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 6.4px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -132,6 +153,7 @@
 
 .lock-time {
   font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
   font-size: 40px;
   font-weight: 300;
   letter-spacing: -0.03em;

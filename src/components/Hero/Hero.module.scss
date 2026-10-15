@@ -38,7 +38,24 @@
   display: inline-block;
 
   @include mixins.motion-safe {
-    animation: word-rise var(--dur-word-rise) var(--ease-out) both;
+    animation: word-rise var(--dur-word-rise) var(--ease-out) backwards;
+  }
+}
+
+// A hovered word lifts a little and sweeps to the accent (plan 5 §14). The lift sits on an inner
+// span so the rise keyframes and the lift transition never share an element (plan 6 §7).
+.word-inner {
+  display: inline-block;
+
+  @include mixins.hover-motion {
+    transition:
+      translate 200ms var(--ease-out),
+      color 200ms var(--ease-out);
+
+    .word:hover & {
+      color: var(--color-accent);
+      translate: 0 -0.06em;
+    }
   }
 }
 
@@ -62,8 +79,119 @@
   margin-top: var(--space-2);
 }
 
+// The quiet link draws its own outline on hover (plan 5 §3): the plain border fades while an
+// accent line runs once around the pill, clockwise from the top-left, with a pen point at its
+// head; when the line closes the wash fades in and the label shifts. Leaving un-draws it.
+// An SVG rect with `pathLength` keeps the line and the pen in step on every browser.
 .secondary {
   @include mixins.button-quiet;
+
+  position: relative;
+  transition:
+    border-color var(--dur-hover) var(--ease-out),
+    background-color var(--dur-hover) var(--ease-out);
+
+  // The wash (from button-quiet on hover) waits for the line to close
+  @include mixins.hover-motion {
+    &:hover,
+    &:focus-visible {
+      background-color: var(--color-accent-wash);
+      border-color: transparent;
+      transition:
+        border-color 160ms var(--ease-out),
+        background-color var(--dur-hover) var(--ease-out) 480ms;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .ring {
+      display: none;
+    }
+  }
+}
+
+.secondary-label {
+  @include mixins.hover-motion {
+    transition: translate var(--dur-hover) var(--ease-out);
+  }
+
+  .secondary:hover &,
+  .secondary:focus-visible & {
+    @include mixins.hover-motion {
+      translate: 2px 0;
+      transition-delay: 480ms;
+    }
+  }
+}
+
+.ring {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+  stroke: var(--color-accent);
+  opacity: 0;
+
+  @include mixins.hover-motion {
+    transition: opacity 0s 300ms;
+  }
+
+  .secondary:hover &,
+  .secondary:focus-visible & {
+    @include mixins.hover-motion {
+      opacity: 1;
+      transition-delay: 0s;
+    }
+  }
+
+  @include mixins.high-contrast {
+    stroke: var(--color-text);
+  }
+}
+
+.ring-line {
+  stroke-width: 1;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+
+  @include mixins.hover-motion {
+    transition: stroke-dashoffset 300ms var(--ease-in-out);
+  }
+
+  .secondary:hover &,
+  .secondary:focus-visible & {
+    @include mixins.hover-motion {
+      stroke-dashoffset: 0;
+      transition-duration: 480ms;
+    }
+  }
+}
+
+.ring-pen {
+  stroke: var(--color-accent-bright);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 0.03 1;
+  stroke-dashoffset: 0.03;
+
+  @include mixins.hover-motion {
+    transition: stroke-dashoffset 300ms var(--ease-in-out);
+  }
+
+  .secondary:hover &,
+  .secondary:focus-visible & {
+    @include mixins.hover-motion {
+      stroke-dashoffset: -0.97;
+      transition-duration: 480ms;
+    }
+  }
+
+  @include mixins.high-contrast {
+    stroke: var(--color-text);
+  }
 }
 
 .visual {
@@ -92,7 +220,7 @@
 
   @include mixins.motion-safe {
     path {
-      animation: draw-once 1.6s var(--ease-out) both;
+      animation: draw-once 1.6s var(--ease-out) backwards;
     }
 
     [data-part='screen'] path {

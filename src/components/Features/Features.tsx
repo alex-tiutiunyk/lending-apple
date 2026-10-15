@@ -1,16 +1,33 @@
-import { useId, useRef } from 'react'
+import { lazy, Suspense, useId, useRef, useSyncExternalStore } from 'react'
 import { RevealTitle } from '@/components/RevealTitle/RevealTitle'
 import { featuresCopy } from '@/content/copy'
 import { chipCores, lenses } from '@/content/specs'
+import { useAmbientMotion } from '@/hooks/useAmbientMotion'
 import { useInView } from '@/hooks/useInView'
+import { BorderPulse } from '@/components/BorderPulse/BorderPulse'
+import { BrightnessBar } from './BrightnessBar'
 import { FeatureCard } from './FeatureCard'
 import { TitaniumSample } from './TitaniumSample'
 import styles from './Features.module.scss'
 
+// The lens bug and the scratch counter (plan 5 §5, §11): a chunk most visits at `calm` never see
+const FeaturesLife = lazy(() => import('./features-life'))
+
+function subscribeToNothing() {
+  return () => undefined
+}
+
 export function Features() {
   const titleId = useId()
   const sampleRef = useRef<HTMLDivElement>(null)
+  const lensesRef = useRef<HTMLUListElement>(null)
   const isSampleSeen = useInView(sampleRef, { once: true, threshold: 0.6 })
+  const isMounted = useSyncExternalStore(
+    subscribeToNothing,
+    () => true,
+    () => false,
+  )
+  const isAmbient = useAmbientMotion()
   const { camera, display, chip, titanium } = featuresCopy
 
   return (
@@ -19,22 +36,25 @@ export function Features() {
       <div className={styles.grid}>
         <FeatureCard area="camera" title={camera.title} particles="lens">
           <p className={styles.body}>{camera.body}</p>
-          <ul className={styles.lenses} aria-label={camera.lensesLabel}>
-            {lenses.map((lens) => (
+          <ul ref={lensesRef} className={styles.lenses} aria-label={camera.lensesLabel}>
+            {lenses.map((lens, index) => (
               <li key={lens.focalLength} className={styles.lens}>
+                <BorderPulse seed={0.25 + index * 0.3} />
                 <span className={styles.focal}>{lens.focalLength}</span>
                 <span>{lens.role}</span>
               </li>
             ))}
           </ul>
+          {isMounted && isAmbient && (
+            <Suspense fallback={null}>
+              <FeaturesLife lenses={lensesRef} sample={sampleRef} />
+            </Suspense>
+          )}
         </FeatureCard>
 
         <FeatureCard area="display" title={display.title} particles="sun">
           <p className={styles.body}>{display.body}</p>
-          <div className={styles.brightness} aria-hidden="true">
-            <span>1 nit</span>
-            <span>3,000 nits</span>
-          </div>
+          <BrightnessBar />
         </FeatureCard>
 
         <FeatureCard area="chip" title={chip.title} particles="chip">

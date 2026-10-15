@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { freeSpot, overlapsTarget, shouldStepAside, type Box } from './mascotAvoidance'
+import {
+  freeSpot,
+  overlapsTarget,
+  shouldStepAside,
+  toDocumentBox,
+  toViewportBoxes,
+  type Box,
+} from './mascotAvoidance'
 
 function box(left: number, top: number, width: number, height: number): Box {
   return { left, top, right: left + width, bottom: top + height }
@@ -62,5 +69,17 @@ describe('shouldStepAside', () => {
   it('stays for a pointer that is only near Pip', () => {
     expect(shouldStepAside(pip, { x: 260, y: 580 }, link)).toBe(false)
     expect(shouldStepAside(pip, { x: 200, y: 580 }, box(300, 560, 80, 44))).toBe(false)
+  })
+})
+
+describe('document-space boxes (plan 6 §5)', () => {
+  it('caches a box with the scroll position and shifts it back for any later scroll', () => {
+    const cached = toDocumentBox(box(100, 500, 80, 44), 1000)
+    expect(cached).toEqual({ left: 100, right: 180, top: 1500, bottom: 1544 })
+    expect(toViewportBoxes([cached], 1200)).toEqual([
+      { left: 100, right: 180, top: 300, bottom: 344 },
+    ])
+    expect(overlapsTarget(pip, toViewportBoxes([cached], 1000))).toBe(true)
+    expect(overlapsTarget(pip, toViewportBoxes([cached], 1200))).toBe(false)
   })
 })

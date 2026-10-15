@@ -2,23 +2,16 @@
 @use 'mixins';
 @use 'breakpoints' as bp;
 
-$grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E";
+// The grain carries its own 5 % opacity, so it can sit in the root's background and cost no layer
+$grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E";
 
-// The page position comes from useDocumentProgress on <body> (plan 4 §2.1); the drift reads
-// it only with motion on, so the backdrop stands still at "off" as before
+// The page position is a scroll timeline (plan 6 §3.1): the blobs drift and the tints cross-fade
+// on the compositor, driven by `scroll(root)`; without timelines `useDocumentProgress` sets their
+// currentTime. The root is one layer: the sky, the grain and, below `md`, the blobs folded into
+// the gradient as two radial layers (§12: no drift, no extra layers on phones).
 .root {
-  --backdrop-p: 0;
-
-  @include mixins.motion-safe {
-    --backdrop-p: var(--doc-p, 0);
-  }
-
-  position: fixed;
-  inset: 0;
-  z-index: tokens.z(backdrop);
-  overflow: hidden;
-  pointer-events: none;
-  background: conic-gradient(
+  --grain: url('#{$grain}');
+  --sky: conic-gradient(
     from 210deg at 72% 18%,
     hsl(var(--ink-h) 30% 5%),
     hsl(var(--accent-h) 45% 13%) 18%,
@@ -27,9 +20,46 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
     hsl(var(--ink-h) 30% 5%)
   );
 
+  position: fixed;
+  inset: 0;
+  z-index: tokens.z(backdrop);
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+  background-image: var(--grain), var(--sky);
+  background-size:
+    180px 180px,
+    auto;
+
+  @include bp.down(md) {
+    background-image:
+      var(--grain),
+      radial-gradient(
+        60vmax 60vmax at 90% 10%,
+        hsl(var(--accent-h) var(--accent-s) 42% / 32%),
+        hsl(var(--accent-h) var(--accent-s) 30% / 0%)
+      ),
+      radial-gradient(
+        70vmax 70vmax at 5% 95%,
+        hsl(calc(var(--accent-h) + 28) 55% 34% / 26%),
+        hsl(calc(var(--accent-h) + 28) 55% 20% / 0%)
+      ),
+      var(--sky);
+    background-size:
+      180px 180px,
+      auto,
+      auto,
+      auto;
+  }
+
+  // A 2× screen rasters four times the pixels: the grain goes, the gradient alone is smooth enough
+  @media (resolution >= 2dppx) {
+    --grain: none;
+  }
+
   // Light theme: the same sweep, as tinted paper
   @include mixins.light-theme {
-    background: conic-gradient(
+    --sky: conic-gradient(
       from 210deg at 72% 18%,
       hsl(var(--ink-h) 30% 97%),
       hsl(var(--accent-h) 45% 90%) 18%,
@@ -49,19 +79,36 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
   }
 }
 
+// The old sky during a finish change (plan 6 §6): its own copy of the previous accent, faded
+// out by `useSkyCrossFade`, so the conic gradient is never repainted per frame
+.sky-old {
+  position: absolute;
+  inset: 0;
+  background-image: var(--sky);
+  opacity: 0;
+}
+
 .blob,
 .tint {
   position: absolute;
   border-radius: 50%;
+
+  @include bp.down(md) {
+    display: none;
+  }
 }
 
 .blob {
-  transform: translate3d(var(--shift-x, 0), var(--shift-y, 0), 0);
+  @include mixins.motion-safe {
+    animation: blob-drift linear both;
+
+    @include mixins.driven(scroll(root));
+  }
 }
 
 .blob--high {
-  --shift-x: calc(var(--backdrop-p) * -18vw);
-  --shift-y: calc(var(--backdrop-p) * 22vh);
+  --drift-x: -18svw;
+  --drift-y: 22svh;
 
   top: -30vmax;
   right: -20vmax;
@@ -75,8 +122,8 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
 }
 
 .blob--low {
-  --shift-x: calc(var(--backdrop-p) * 26vw);
-  --shift-y: calc(var(--backdrop-p) * -30vh);
+  --drift-x: 26svw;
+  --drift-y: -30svh;
 
   bottom: -45vmax;
   left: -30vmax;
@@ -89,36 +136,34 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
   );
 }
 
+// The tints are the viewport plus a fifth, clipped by the root, instead of 110 vmax squares
 .tint {
-  display: none;
-  width: 110vmax;
-  height: 110vmax;
+  width: 120vw;
+  height: 120vh;
+  animation: tint-fade linear both;
 
-  @include bp.up(md) {
-    display: block;
-  }
+  @include mixins.driven(scroll(root));
 }
 
 .tint--cool {
-  top: -20vmax;
-  left: -30vmax;
+  top: -10vh;
+  left: -40vw;
   background: radial-gradient(
     closest-side,
     hsl(calc(var(--accent-h) - 18) 60% 40% / 30%),
     hsl(calc(var(--accent-h) - 18) 60% 20% / 0%)
   );
-  opacity: calc(1 - var(--backdrop-p));
+  animation-direction: reverse;
 }
 
 .tint--warm {
-  right: -40vmax;
-  bottom: -30vmax;
+  right: -40vw;
+  bottom: -10vh;
   background: radial-gradient(
     closest-side,
     hsl(calc(var(--accent-h) + 18) 60% 40% / 30%),
     hsl(calc(var(--accent-h) + 18) 60% 20% / 0%)
   );
-  opacity: var(--backdrop-p);
 }
 
 .waves {
@@ -128,21 +173,15 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
   opacity: 0.05;
 
   @include mixins.wave-mask;
+  @include mixins.promote-while-awake;
 
-  .root[data-awake] & {
-    @include mixins.motion-ambient {
-      will-change: transform;
-      animation: wave-drift calc(var(--dur-wave) * 1.6) linear infinite;
-    }
+  @include mixins.when-awake {
+    animation: wave-drift calc(var(--dur-wave) * 1.6) linear infinite;
   }
-}
 
-.grain {
-  position: absolute;
-  inset: 0;
-  background-image: url($grain);
-  background-size: 180px 180px;
-  opacity: 0.05;
+  @include bp.down(md) {
+    display: none;
+  }
 }
 
 .particles {
@@ -150,6 +189,26 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+@keyframes blob-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(var(--drift-x), var(--drift-y), 0);
+  }
+}
+
+@keyframes tint-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @media (forced-colors: active) {

@@ -25,15 +25,27 @@ type PhoneOutlineProps = {
   view?: PhoneView
   /** `blueprint` (plan 4 §8): hairlines in two weights, more paths, a gradient and drawing heads. */
   detail?: 'plain' | 'blueprint'
+  /** The paths draw on the --design view timeline of the pinned section around them (plan 6 §4). */
+  isScrollDrawn?: boolean
   className?: string | undefined
 }
 
-export function PhoneOutline({ view = 'both', detail = 'plain', className }: PhoneOutlineProps) {
+export function PhoneOutline({
+  view = 'both',
+  detail = 'plain',
+  isScrollDrawn = false,
+  className,
+}: PhoneOutlineProps) {
   const gradientId = useId()
   const isBlueprint = detail === 'blueprint'
   const parts = isBlueprint ? blueprintParts : plainParts
   const heads = isBlueprint ? blueprintHeads : { front: {}, back: {} }
-  const classes = [styles.root, isBlueprint && styles.rootBlueprint, className]
+  const classes = [
+    styles.root,
+    isBlueprint && styles.rootBlueprint,
+    isScrollDrawn && styles.rootScrolled,
+    className,
+  ]
 
   return (
     <svg

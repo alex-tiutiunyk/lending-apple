@@ -1,4 +1,41 @@
+@use 'sass:list';
 @use 'mixins';
+
+// Scroll-driven windows of the line draw (plan 6 §4), in the `#design` section's `--design`
+// view timeline: guides 0 – 0.1, then the drawing 0.1 – 0.6 part by part, the colour reveal
+// 0.6 – 0.95 fading the guides. Base styles are the finished drawing; the hero's outline keeps
+// its own one-shot `draw-once` and the scroll keyframes apply only with `root--scrolled`.
+$draw-from: 0.1;
+$draw-span: 0.5;
+$reveal-from: 0.6;
+$reveal-to: 0.95;
+$smoothstep: cubic-bezier(0.4, 0, 0.6, 1);
+$part-windows: (
+  body: (
+    0,
+    0.4,
+  ),
+  screen: (
+    0.3,
+    0.3,
+  ),
+  island: (
+    0.5,
+    0.2,
+  ),
+  camera: (
+    0.6,
+    0.25,
+  ),
+  buttons: (
+    0.8,
+    0.2,
+  ),
+  details: (
+    0.7,
+    0.18,
+  ),
+);
 
 .root {
   overflow: visible;
@@ -10,38 +47,13 @@
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-dasharray: 1 1;
-    stroke-dashoffset: calc(1 - var(--draw, 1));
-    opacity: calc(clamp(0, var(--draw, 1) * 40, 1) * var(--part-alpha, 1));
+    stroke-dashoffset: 0;
+    opacity: var(--part-alpha, 1);
   }
 
-  // Drawn first and quietest; they step back further as the color render opens (--reveal)
+  // Drawn first and quietest; they step back further as the colour render opens
   [data-part='guides'] {
-    --draw: var(--draw-guides, 1);
-    --part-alpha: calc(0.4 * (1 - var(--reveal, 0)));
-  }
-
-  [data-part='body'] {
-    --draw: var(--draw-body, 1);
-  }
-
-  [data-part='screen'] {
-    --draw: var(--draw-screen, 1);
-  }
-
-  [data-part='island'] {
-    --draw: var(--draw-island, 1);
-  }
-
-  [data-part='camera'] {
-    --draw: var(--draw-camera, 1);
-  }
-
-  [data-part='buttons'] {
-    --draw: var(--draw-buttons, 1);
-  }
-
-  [data-part='details'] {
-    --draw: var(--draw-details, 1);
+    --part-alpha: 0;
   }
 }
 
@@ -83,8 +95,8 @@
     stroke: var(--color-accent-bright);
     stroke-width: 1.4;
     stroke-dasharray: 0.05 1;
-    stroke-dashoffset: calc(1.1 - var(--draw, 1));
-    opacity: calc(clamp(0, var(--draw, 1) * 40, 1) * clamp(0, (1 - var(--draw, 1)) * 20, 1));
+    stroke-dashoffset: 0.1;
+    opacity: 0;
   }
 
   @include mixins.high-contrast {
@@ -108,6 +120,62 @@
   }
 }
 
+// The scroll-driven draw: each part's paths on their own window, the heads on the same window,
+// the guides drawn over the first tenth and faded with the reveal. Only `stroke-dashoffset`
+// moves on a path: Chromium gives every SVG path with a scroll-driven opacity animation its own
+// compositor layer, more than a hundred here (plan 6 §9). The gap of the dash pattern runs past
+// the end of the path, so an undrawn round cap paints no dot and needs no opacity ramp; the
+// guides fade as one group.
+.root--scrolled {
+  [data-part] path {
+    stroke-dasharray: 1 1.1;
+  }
+
+  [data-part='guides'] {
+    --part-alpha: 1;
+
+    opacity: 0;
+    animation: guides-show linear both;
+
+    @include mixins.driven(--design, 0, $reveal-to, 'contain');
+  }
+
+  [data-part='guides'] path {
+    animation: outline-draw linear both;
+
+    @include mixins.driven(--design, 0, $draw-from, 'contain');
+  }
+
+  @each $part, $window in $part-windows {
+    $from: $draw-from + list.nth($window, 1) * $draw-span;
+    $to: $from + list.nth($window, 2) * $draw-span;
+
+    [data-part='#{$part}'] path {
+      animation: outline-draw linear both;
+
+      @include mixins.driven(--design, $from, $to, 'contain');
+    }
+
+    [data-part='#{$part}'] .head {
+      animation-name: outline-head;
+    }
+  }
+
+  // The head is a short dash that rides the drawing tip and runs off the end of the path
+  .head {
+    stroke-dasharray: 0.05 2;
+    stroke-dashoffset: -1.01;
+    opacity: 1;
+  }
+
+  @include mixins.static-scene {
+    path,
+    [data-part='guides'] {
+      animation: none;
+    }
+  }
+}
+
 .stop-accent {
   stop-color: var(--color-accent);
 }
@@ -118,4 +186,39 @@
 
 .stop-cool {
   stop-color: var(--stroke-cool);
+}
+
+// Drawn from just past its start (no dot at a zero length) to the whole path
+@keyframes outline-draw {
+  from {
+    stroke-dashoffset: 1.02;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes outline-head {
+  from {
+    stroke-dashoffset: 0.06;
+  }
+
+  to {
+    stroke-dashoffset: -1.01;
+  }
+}
+
+// Shown at 40 % while the guides draw and through the drawing, then faded over the reveal
+// (0.6 – 0.95 of the section, the last 36.8 % of this 0 – 0.95 window)
+@keyframes guides-show {
+  0%,
+  63.16% {
+    opacity: 0.4;
+    animation-timing-function: $smoothstep;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }

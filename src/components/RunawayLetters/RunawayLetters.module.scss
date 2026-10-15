@@ -14,8 +14,12 @@
   color: transparent;
 }
 
-// Moved by translate only; font, size and color are copied from the source glyph
+// Moved by translate and rotate written directly (plan 6 rule 1); font, size and color are
+// copied from the source glyph. Heading letters get legs 1.5 times smaller (plan 7 §7.1): on
+// display type they looked heavy. --leg-scale is set once here, never per frame.
 .letter {
+  --leg-scale: 1;
+
   position: absolute;
   top: 0;
   left: 0;
@@ -23,16 +27,24 @@
   white-space: pre;
   text-align: center;
   transform-origin: 50% 100%;
-  rotate: var(--tilt, 0deg);
-  will-change: translate;
+  rotate: 0deg;
+
+  // Promoted only while it moves (plan 6 rule 6): a copy at rest is about to be removed
+  &[data-phase]:not([data-phase='done']) {
+    will-change: translate;
+  }
+
+  &[data-source='heading'] {
+    --leg-scale: 0.667;
+  }
 }
 
 // Two tiny legs that grow out under the letter and walk while it runs
 .leg {
   position: absolute;
-  bottom: -0.5em;
-  width: max(2px, 0.1em);
-  height: 0.5em;
+  bottom: calc(-0.5em * var(--leg-scale));
+  width: max(2px, calc(0.1em * var(--leg-scale)));
+  height: calc(0.5em * var(--leg-scale));
   background: currentcolor;
   border-radius: 1px;
   transform-origin: 50% 0;
@@ -44,8 +56,8 @@
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 0.3em;
-    height: max(2px, 0.1em);
+    width: calc(0.3em * var(--leg-scale));
+    height: max(2px, calc(0.1em * var(--leg-scale)));
     content: '';
     background: currentcolor;
     border-radius: 1px;

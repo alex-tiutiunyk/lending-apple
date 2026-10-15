@@ -3,13 +3,8 @@ import { subscribeScrollFrame, subscribeTick, type ScrollFrame } from '@/hooks/f
 import { isLayoutAtLeast } from '@/hooks/layoutWidth'
 import { getA11ySettings } from '@/hooks/a11yStore'
 import { particleRequests } from '@/hooks/particleRequests'
-import {
-  anchorPointX,
-  anchorPointY,
-  measureAnchors,
-  readAccent,
-  type ShapeAnchor,
-} from './particleAnchors'
+import { anchorPointX, anchorPointY, measureAnchors, type ShapeAnchor } from './particleAnchors'
+import { readAccent } from './readAccent'
 import {
   anchorDocumentY,
   blendWeights,
@@ -24,8 +19,11 @@ import {
 import { createTurnTracker } from './particleTurn'
 import styles from './Backdrop.module.scss'
 
-const maxPixelRatio = 2
+// The dots are 0.6–1.9 px and blurry on purpose: a 2× backing store would be four times the
+// fill for no visible gain, and a phone gets a 1× one (plan 6 §10)
+const maxPixelRatio = { pointer: 1.5, touch: 1 }
 const particleCount = { compact: 120, wide: 400 }
+const touchQuery = '(hover: none)'
 const wrapMargin = 20
 const driftSpeed = 0.35
 const formedThreshold = 0.2
@@ -40,7 +38,7 @@ export default function ShapeParticles() {
 
   useEffect(() => {
     const canvas = canvasRef.current
-    const context = canvas?.getContext('2d')
+    const context = canvas?.getContext('2d', { desynchronized: true })
     if (!canvas || !context) return
 
     let particles: Particle[] = []
@@ -51,10 +49,14 @@ export default function ShapeParticles() {
     let accent = readAccent()
     let lastFrame: ScrollFrame | null = null
     let positions = new Float32Array(0)
+    let centers = new Float32Array(0)
+    let settles = new Float32Array(0)
     let lastDrawAt = 0
+    let lastDrawnScrollY = -1
     let isMoving = false
     let isWobbling = false
     let stopTicks: (() => void) | null = null
+    let wobbleTimer = 0
     let launch: { index: number; startedAt: number; durationMs: number } | null = null
     const turns = createTurnTracker()
 
@@ -72,12 +74,18 @@ export default function ShapeParticles() {
       const easing = lastDrawAt === 0 ? 1 : 1 - Math.exp(-Math.min(64, now - lastDrawAt) / easeMs)
       lastFrame = frame
       lastDrawAt = now
+      lastDrawnScrollY = frame.scrollY
       const viewportCenter = frame.scrollY + frame.viewportHeight / 2
-      const centers = anchors.map(
-        (anchor, index) =>
-          anchorDocumentY(anchor, frame.scrollY) - liftOf(index, now, frame.viewportHeight),
-      )
-      const settles = centers.map((y) => settleAmount(viewportCenter, y, frame.viewportHeight))
+      // Preallocated per layout, so a scroll frame allocates nothing that outlives it
+      if (centers.length !== anchors.length) {
+        centers = new Float32Array(anchors.length)
+        settles = new Float32Array(anchors.length)
+      }
+      anchors.forEach((anchor, index) => {
+        centers[index] =
+          anchorDocumentY(anchor, frame.scrollY) - liftOf(index, now, frame.viewportHeight)
+        settles[index] = settleAmount(viewportCenter, centers[index] ?? 0, frame.viewportHeight)
+      })
       // The last shape always forms at the page end, except while it is lifting off
       if (!launch)
         settleAtPageEnd(settles, frame.scrollY, frame.viewportHeight, frame.documentHeight)
@@ -129,23 +137,40 @@ export default function ShapeParticles() {
       })
 
       isMoving = largestGap > settledGap || turns.remaining > settledGap || launch !== null
-      const needsTicks = isMoving || isWobbling
-      if (needsTicks && !stopTicks) stopTicks = subscribeTick(onTick)
-      else if (!needsTicks && stopTicks) {
+      // A formed shape only sways: one redraw every 30 ms on a timer, so the frame loop can
+      // sleep in between (plan 6 rule 9); the ticks run only while the dots travel
+      if (isMoving && !stopTicks) stopTicks = subscribeTick(onTick)
+      else if (!isMoving && stopTicks) {
         stopTicks()
         stopTicks = null
       }
+      if (isWobbling && !isMoving && wobbleTimer === 0) {
+        wobbleTimer = window.setTimeout(() => {
+          wobbleTimer = 0
+          if (lastFrame) draw(lastFrame)
+        }, wobbleFrameGapMs)
+      }
     }
 
-    const onTick = (time: number) => {
-      if (lastFrame && (isMoving || time - lastDrawAt >= wobbleFrameGapMs)) draw(lastFrame)
+    const onTick = () => {
+      if (lastFrame) draw(lastFrame)
+    }
+    // A scroll frame redraws only when the page actually moved; the ticks cover the rest
+    const onScroll = (frame: ScrollFrame) => {
+      if (frame.scrollY !== lastDrawnScrollY) draw(frame)
+      else lastFrame = frame
     }
 
     const layout = () => {
-      const pixelRatio = Math.min(window.devicePixelRatio || 1, maxPixelRatio)
+      const isTouch = window.matchMedia(touchQuery).matches
+      const pixelRatio = Math.min(
+        window.devicePixelRatio || 1,
+        isTouch ? maxPixelRatio.touch : maxPixelRatio.pointer,
+      )
       width = window.innerWidth
       height = window.innerHeight
-      isCompact = !isLayoutAtLeast('md')
+      // Phones and 2× screens take the compact count whatever their width (plan 6 §10)
+      isCompact = !isLayoutAtLeast('md') || isTouch || (window.devicePixelRatio || 1) >= 2
       canvas.width = Math.round(width * pixelRatio)
       canvas.height = Math.round(height * pixelRatio)
       context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
@@ -178,10 +203,11 @@ export default function ShapeParticles() {
       return true
     })
 
-    const unsubscribe = subscribeScrollFrame(draw, layout)
+    const unsubscribe = subscribeScrollFrame(onScroll, layout)
     return () => {
       unsubscribe()
       stopTicks?.()
+      window.clearTimeout(wobbleTimer)
       stopRequests()
       accentObserver.disconnect()
     }

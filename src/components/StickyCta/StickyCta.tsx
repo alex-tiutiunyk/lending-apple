@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { PressableLink } from '@/components/Pressable/PressableLink'
 import { stickyCtaCopy } from '@/content/copy'
 import { documentTop, subscribeScrollFrame, type ScrollFrame } from '@/hooks/frameLoop'
+import { BorderPulse } from '@/components/BorderPulse/BorderPulse'
 import styles from './StickyCta.module.scss'
 
 type Span = { top: number; bottom: number }
@@ -49,6 +50,7 @@ export function StickyCta() {
       data-visible={isVisible ? '' : undefined}
       inert={!isVisible}
     >
+      <BorderPulse seed={0.3} />
       <p className={styles.text}>{stickyCtaCopy.text}</p>
       <PressableLink href="#reserve" label={stickyCtaCopy.cta} hasNudges />
     </aside>

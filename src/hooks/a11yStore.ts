@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { prefersSavedData } from './saveData'
 import {
   a11yStorageKey,
   type A11ySettings,
@@ -19,7 +20,7 @@ function readStoredSettings() {
   try {
     const raw = window.localStorage.getItem(a11yStorageKey)
     const legacyPause = raw === null ? window.localStorage.getItem(legacyPauseKey) : null
-    const settings = parseSettings(raw, legacyPause)
+    const settings = parseSettings(raw, legacyPause, prefersReducedData())
     if (legacyPause !== null) {
       window.localStorage.removeItem(legacyPauseKey)
       if (settings.motion !== defaultSettings.motion) {
@@ -31,6 +32,11 @@ function readStoredSettings() {
     isStorageWritable = false
     return { ...defaultSettings }
   }
+}
+
+/** A first visit that asks for less data starts at `calm` (plan 6 §12), without storing it. */
+function prefersReducedData() {
+  return prefersSavedData() || window.matchMedia('(prefers-reduced-data: reduce)').matches
 }
 
 function storeSettings(settings: A11ySettings | null) {

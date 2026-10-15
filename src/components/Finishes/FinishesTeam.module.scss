@@ -1,0 +1,152 @@
+@use 'mixins';
+
+// Football on the finishes render (plan 7 §5). The boxes are placed only by the `transform`
+// written per frame (translate, rotate, flip), so each is anchored by its own bottom centre
+// (the feet) through negative offsets, and the ball by its centre. Rigs (plan 6 §7): the leg
+// loops are compositor transforms on `<svg>` roots, running only while `data-running`.
+$pip-height: 1.1rem;
+$pip-width: calc(#{$pip-height} * 24 / 36);
+
+.root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.pip {
+  position: absolute;
+  top: calc(#{$pip-height} * -1);
+  left: calc(#{$pip-width} / -2);
+  width: $pip-width;
+  height: $pip-height;
+  transform-origin: 50% 100%;
+
+  @include mixins.promote-while-awake;
+}
+
+.hop {
+  position: absolute;
+  inset: 0;
+
+  // Celebration: two jumps after the goal
+  .root[data-phase='celebrate'] & {
+    animation: pip-cheer 450ms var(--ease-out) 2;
+  }
+}
+
+.piece {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+// No standing promotion: a leg takes a layer only while its run cycle plays
+.leg-left,
+.leg-right {
+  transform-origin: 50% 72%;
+}
+
+.pip[data-running] .leg-left {
+  @include mixins.when-awake {
+    animation: mini-step 280ms ease-in-out infinite alternate;
+  }
+}
+
+.pip[data-running] .leg-right {
+  @include mixins.when-awake {
+    animation: mini-step 280ms ease-in-out infinite alternate-reverse;
+  }
+}
+
+// The kick replaces the step for 120 ms. Inside `when-awake` and after the run rule, so it has
+// the same specificity and wins: the chaser is still running when it reaches the ball
+.pip[data-kick] .leg-right {
+  @include mixins.when-awake {
+    animation: mini-kick 120ms var(--ease-out);
+  }
+}
+
+.limb {
+  fill: none;
+  stroke: var(--pip-shell);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.arm {
+  transform-origin: 4px 14px;
+
+  .pip[data-five] & {
+    animation: mini-five 200ms var(--ease-out);
+  }
+}
+
+.shell {
+  fill: var(--pip-shell);
+
+  // Basalt is almost black and would vanish on the dark frame, and every finish is too pale for
+  // the light page (under 3 : 1, `config/contrast.test.ts`): an outline in the text colour
+  :where(:root[data-theme='light']) &,
+  .pip[data-finish='basalt'] & {
+    stroke: var(--color-text);
+    stroke-width: 1;
+  }
+}
+
+.screen {
+  fill: hsl(0deg 0% 4%);
+}
+
+.eye {
+  fill: hsl(0deg 0% 96%);
+}
+
+.ball {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  color: var(--finish-shell-light);
+  pointer-events: auto;
+  cursor: pointer;
+
+  @include mixins.promote-while-awake;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    fill: currentcolor;
+  }
+}
+
+@keyframes mini-step {
+  from {
+    transform: rotate(-24deg);
+  }
+
+  to {
+    transform: rotate(24deg);
+  }
+}
+
+@keyframes mini-kick {
+  50% {
+    transform: rotate(-60deg);
+  }
+}
+
+@keyframes mini-five {
+  50% {
+    transform: rotate(140deg);
+  }
+}
+
+@keyframes pip-cheer {
+  50% {
+    transform: translateY(-8px);
+  }
+}

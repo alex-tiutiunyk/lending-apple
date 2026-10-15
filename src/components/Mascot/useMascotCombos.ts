@@ -14,7 +14,7 @@ import {
 const storageKey = 'concept-18-pip-hints'
 const hintShare = 0.5
 const pokedSections = Object.keys(mascotCopy.sectionComplaints) as PokedSection[]
-const busyCombos: readonly MascotAct[] = ['screenshot', 'dizzy', 'airplane']
+const busyCombos: readonly MascotAct[] = ['screenshot', 'dizzy', 'airplane', 'carried', 'land']
 
 function readStoredHints(): HintState {
   try {

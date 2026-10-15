@@ -1,0 +1,54 @@
+@use 'mixins';
+
+$max-scrub-words: 32;
+
+// The sentence lights up word by word while its top travels from 90 % to 40 % of the viewport
+// (plan 2 §3, plan 6 §3.4): the paragraph is a named view timeline and each word takes its own
+// slice of the 50 svh window (`cover 10svh` is the top at 90 %, `cover 60svh` the top at 40 %).
+// Without timelines `useViewProgress` drives the same keyframes and marks the paragraph
+// `data-driven`; without JavaScript every word stays lit.
+.root {
+  view-timeline: --scrub block;
+  view-timeline-inset: 0;
+}
+
+@supports (animation-timeline: scroll()) {
+  .scrub-word {
+    @include mixins.motion-safe {
+      animation: scrub-lit linear both;
+      animation-timeline: --scrub;
+      animation-range: cover calc(10svh + 50svh * var(--i) / (var(--words, 1) + 1)) cover
+        calc(10svh + 50svh * (var(--i) + 1) / (var(--words, 1) + 1));
+    }
+  }
+}
+
+@supports not (animation-timeline: scroll()) {
+  .root[data-driven] .scrub-word {
+    @include mixins.motion-safe {
+      animation: scrub-lit linear both;
+      animation-duration: calc(1000ms / (var(--words, 1) + 1));
+      animation-delay: calc(1000ms * var(--i) / (var(--words, 1) + 1));
+      animation-play-state: paused;
+    }
+  }
+}
+
+@for $i from 1 through $max-scrub-words {
+  .scrub-word:nth-of-type(#{$i}) {
+    --i: #{$i - 1};
+  }
+}
+
+// A colour at half strength rather than opacity: an opacity keyframe on a scroll timeline gives
+// every word a compositor layer for as long as the section is near (plan 6 §9). Half strength
+// keeps the dim words above 4.5:1 against the page background, as the old 0.5 opacity did.
+@keyframes scrub-lit {
+  from {
+    color: color-mix(in srgb, var(--color-text) 50%, transparent);
+  }
+
+  to {
+    color: var(--color-text);
+  }
+}

@@ -1,0 +1,101 @@
+@use 'mixins';
+
+// The worm and the bite on the brand mark (plan 7 §4, the plan 5 §1 handle code moved here).
+// Both are SVG children of the mark's body root, so every move is a one-shot `transform`, never a
+// loop (plan 6 rule 4). Transform origins are user units of the 24-unit viewBox. The host is the
+// element with `data-mark-host`: the header's home link (hover and focus) and the footer's brand
+// line (hover only, a `<p>` takes no focus).
+$bitten: ':where([data-mark-host]:hover, [data-mark-host]:focus-visible)';
+
+.chomp {
+  transform: scale(0);
+  transform-box: fill-box;
+  transform-origin: center;
+
+  // Leave: the bite heals smoothly, no steps
+  @include mixins.hover-motion {
+    transition: transform 300ms var(--ease-out);
+  }
+
+  @media (forced-colors: active) {
+    display: none;
+  }
+}
+
+.worm {
+  fill: var(--color-accent);
+  transform: scale(0);
+  transform-origin: 20.6px 10.8px;
+
+  @include mixins.high-contrast {
+    fill: var(--color-text);
+  }
+
+  @media (forced-colors: active) {
+    display: none;
+  }
+}
+
+.worm-eyes {
+  fill: var(--color-bg);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+// Without hover motion (`off`) a hover snaps to the bitten apple, no worm. Touch has no hover.
+@media (hover: hover) {
+  #{$bitten} .chomp {
+    transform: scale(1);
+  }
+}
+
+// Enter: the worm pushes out, the bite opens in three chomps (one circle per step, each a
+// snap after its delay), the worm pulls back in and the bite stays
+@include mixins.hover-motion {
+  #{$bitten} {
+    .chomp {
+      transition: transform 0s 420ms;
+    }
+
+    .chomp:nth-child(3) {
+      transition-delay: 500ms;
+    }
+
+    .chomp:nth-child(4) {
+      transition-delay: 580ms;
+    }
+
+    .worm {
+      animation: worm-visit 840ms var(--ease-out) 160ms backwards;
+    }
+
+    .worm-eyes {
+      animation: worm-blink 80ms linear 700ms;
+    }
+  }
+}
+
+@keyframes worm-visit {
+  0% {
+    transform: scale(0);
+  }
+
+  20% {
+    transform: scale(1) translate(1.2px, -1.4px) rotate(-14deg);
+  }
+
+  32%,
+  76% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(0);
+  }
+}
+
+@keyframes worm-blink {
+  50% {
+    transform: scaleY(0);
+  }
+}

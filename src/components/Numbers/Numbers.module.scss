@@ -37,6 +37,7 @@
 }
 
 .stat {
+  position: relative;
   display: flex;
   flex-direction: column-reverse;
   gap: var(--space-2);
@@ -52,7 +53,6 @@
 }
 
 .label {
-  max-width: 16rem;
   color: var(--color-text-muted);
 }
 
@@ -69,13 +69,27 @@
   text-decoration: none;
 }
 
-.footnotes {
+// `.root .footnotes` outranks the global `ol[class]` reset (plan 5 §4), so the list keeps its
+// numbers: `::marker` is the real list number for assistive tech, matching the superscript refs
+.root .footnotes {
   display: grid;
   gap: var(--space-1);
   max-width: 44rem;
   padding-left: var(--space-5);
   font-size: var(--step-down-1);
   color: var(--color-text-muted);
+  list-style: decimal;
+
+  li::marker {
+    font-variant-numeric: tabular-nums;
+    color: var(--color-accent);
+  }
+
+  @include mixins.high-contrast {
+    li::marker {
+      color: var(--color-text);
+    }
+  }
 }
 
 .cta {

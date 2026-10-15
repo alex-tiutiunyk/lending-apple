@@ -57,12 +57,19 @@ function readJson(raw: string | null): Record<string, unknown> | null {
 
 /**
  * Stored settings, field by field: a broken or unknown field falls back to its default without
- * dropping the others. Without a stored object, the plan 1 pause key still maps to `calm`.
+ * dropping the others. Without a stored object, the plan 1 pause key still maps to `calm`, and
+ * so does a request for less data (plan 6 §12), until the reader picks a level of their own.
  */
-export function parseSettings(raw: string | null, legacyPause: string | null = null): A11ySettings {
+export function parseSettings(
+  raw: string | null,
+  legacyPause: string | null = null,
+  prefersReducedData = false,
+): A11ySettings {
   const stored = readJson(raw)
   if (stored === null) {
-    return legacyPause === 'true' ? { ...defaultSettings, motion: 'calm' } : { ...defaultSettings }
+    return legacyPause === 'true' || prefersReducedData
+      ? { ...defaultSettings, motion: 'calm' }
+      : { ...defaultSettings }
   }
 
   const settings: A11ySettings = {
@@ -135,5 +142,5 @@ export function settingsHeadScript() {
     h: themes,
     t: textScales,
   }
-  return `(function(){var t=${JSON.stringify(table)},r=document.documentElement,s=null,o={},p=null;try{s=localStorage.getItem(t.k);p=localStorage.getItem(t.l)}catch(e){}if(s!==null){try{o=JSON.parse(s)}catch(e){}if(typeof o!=='object'||o===null)o={}}var m=s===null?(p==='true'?'calm':'full'):t.m.indexOf(o.motion)>=0?o.motion:'full',c=t.c.indexOf(o.contrast)>=0?o.contrast:'auto',h=t.h.indexOf(o.theme)>=0?o.theme:'dark',x=t.t.indexOf(o.textScale)>=0?o.textScale:100;function f(n,d){return typeof o[n]==='boolean'?o[n]:d}function a(n,v){if(v===null)r.removeAttribute(n);else r.setAttribute(n,v)}a('data-motion',m);a('data-contrast',c==='auto'?null:c);a('data-theme',h==='dark'?null:h);a('data-text-scale',x===100?null:String(x));a('data-spacing',f('spacing',false)?'wide':null);a('data-font',f('font',false)?'plain':null);a('data-links',f('links',false)?'underline':null);a('data-pip',f('pip',true)?null:'off');if(x!==100)r.style.setProperty('--text-scale',String(x/100))})()`
+  return `(function(){var t=${JSON.stringify(table)},r=document.documentElement,s=null,o={},p=null,d=false;try{s=localStorage.getItem(t.k);p=localStorage.getItem(t.l)}catch(e){}try{d=(navigator.connection&&navigator.connection.saveData===true)||(window.matchMedia&&window.matchMedia('(prefers-reduced-data: reduce)').matches)}catch(e){}if(s!==null){try{o=JSON.parse(s)}catch(e){}if(typeof o!=='object'||o===null)o={}}var m=s===null?(p==='true'||d?'calm':'full'):t.m.indexOf(o.motion)>=0?o.motion:'full',c=t.c.indexOf(o.contrast)>=0?o.contrast:'auto',h=t.h.indexOf(o.theme)>=0?o.theme:'dark',x=t.t.indexOf(o.textScale)>=0?o.textScale:100;function f(n,d){return typeof o[n]==='boolean'?o[n]:d}function a(n,v){if(v===null)r.removeAttribute(n);else r.setAttribute(n,v)}a('data-motion',m);a('data-contrast',c==='auto'?null:c);a('data-theme',h==='dark'?null:h);a('data-text-scale',x===100?null:String(x));a('data-spacing',f('spacing',false)?'wide':null);a('data-font',f('font',false)?'plain':null);a('data-links',f('links',false)?'underline':null);a('data-pip',f('pip',true)?null:'off');if(x!==100)r.style.setProperty('--text-scale',String(x/100))})()`
 }

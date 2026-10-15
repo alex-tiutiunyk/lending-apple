@@ -20,6 +20,7 @@ export const motionCopy = {
   pause: 'Pause motion',
 } as const
 
+// Only the prerender fallback: after hydration every phone shows the visitor's own time (plan 7 §10)
 export const lockScreenCopy = {
   date: 'Fri, Nov 20',
   time: '7:24',
@@ -65,6 +66,7 @@ export const featuresCopy = {
   display: {
     title: 'Brighter outside, dimmer in bed',
     body: 'It peaks at 3,000 nits in direct sun and drops to one nit at night.',
+    brightness: { low: '1 nit', high: '3,000 nits' },
   },
   chip: {
     title: 'The N2 chip',
@@ -110,6 +112,7 @@ export const reserveCopy = {
   successBody:
     'Nothing was actually sent: this is a portfolio concept. Thanks for trying the form.',
   renderLabel: 'Front of the phone in the selected finish',
+  screenReserved: 'Reserved ✓',
 } as const
 
 export const stickyCtaCopy = {
@@ -162,7 +165,6 @@ export const mascotCopy = {
   selfie: ['Hold still.', 'Say cheese.', 'One more, I blinked.'],
   nap: ['Low battery. Back in five.', 'Wake me at 20 %.', 'Just closing my apps.'],
   mirror: ['Looking sharp.', 'Is that a scratch?', 'Still got it.'],
-  trip: ['I meant to do that.', 'The floor moved.', 'Nobody saw that.'],
   blown: ['Whoa.', 'Slow down.', 'Hold on to something.'],
   wave: ['Hi.', 'Oh, hello.', 'Hey there.'],
   ring: ['Unknown number.', 'Not now, Mom.', 'Probably spam.'],
@@ -172,7 +174,31 @@ export const mascotCopy = {
   juggle: ['Watch this.', 'Spare screws.', 'Oops. Got it.'],
   chase: ['Hey!', 'Come back here!', 'That is my letter!'],
   missed: ['So close!', 'It had a head start.', 'Next time.'],
+  // Pip's slingshot (plan 7 §2): before the shot and after a hit
+  throw: ['Ready… aim…', 'Hold still, letter.', 'One shot.'],
+  hit: ['Bullseye!', 'Got one!', 'Right in the serif!'],
   cheer: ['Done!', 'You read it all!', 'The end. Finally.'],
+  carried: ['Hey. Put me down.', 'I have feet, you know.', 'Mind the camera.'],
+  // A fall is the best thing that can happen to Pip (plan 7 §1): on the way down, then landed
+  falling: ['Wheee!', 'Wooo!', 'Yippee!', 'Here I goooo!'],
+  joy: [
+    'Wow!',
+    'So cool!',
+    'Again! Again!',
+    'Best. Fall. Ever.',
+    'Did you see that?!',
+    '10 out of 10.',
+    'My heart! Again!',
+  ],
+  landed: {
+    parachute: 'Geronimo.',
+    propeller: 'Is this what hair feels like?',
+    umbrella: 'Practically perfect.',
+    balloons: 'Up, briefly.',
+    glider: 'Flight 18, now boarding.',
+    leaf: 'Autumn came early.',
+    bubble: 'Pop.',
+  },
   combos: {
     screenshot: 'Saved to my camera roll.',
     dizzy: 'Everything is spinning.',
@@ -202,6 +228,7 @@ export const footerCopy = {
 export const a11yCopy = {
   handle: 'Accessibility settings',
   title: 'Accessibility settings',
+  loading: 'Loading settings',
   motion: {
     legend: 'Motion',
     levels: { full: 'Full', calm: 'Calm', off: 'Off' },

@@ -3,6 +3,8 @@ import styles from './RollingText.module.scss'
 
 type RollingTextProps = {
   label: string
+  /** `roll`: the letters roll once (plan 4 §7.1). `hop`: they hop in a wave (plan 5 §2). */
+  effect?: 'roll' | 'hop'
 }
 
 /** Letters grouped by word, so a long label can wrap between words at large text sizes. */
@@ -17,14 +19,17 @@ function wordsOf(label: string) {
 }
 
 /**
- * A label whose letters roll once when its host is hovered, focused or busy; the host marks
+ * A label whose letters move once when its host is hovered, focused or busy; the host marks
  * itself with `data-roll-host`. The accessible name stays the plain label (plan 4 §7.1).
  */
-export function RollingText({ label }: RollingTextProps) {
+export function RollingText({ label, effect = 'roll' }: RollingTextProps) {
+  const lettersClassName =
+    effect === 'hop' ? `${styles.letters} ${styles.lettersHop}` : styles.letters
+
   return (
     <>
       <span className={styles.name}>{label}</span>
-      <span key={label} className={styles.letters} aria-hidden="true">
+      <span key={label} className={lettersClassName} aria-hidden="true">
         {wordsOf(label).map((word, wordIndex) => (
           <span key={wordIndex} className={styles.word}>
             {word.map(({ character, position }) => (

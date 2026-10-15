@@ -15,7 +15,11 @@
   width: 3rem;
   margin-left: -1.5rem;
   opacity: 0;
-  will-change: translate;
+
+  // The flight lasts a second or two; the root is marked visible for its life (plan 6 rule 6)
+  .root[data-visible] & {
+    will-change: translate;
+  }
 }
 
 .dot {

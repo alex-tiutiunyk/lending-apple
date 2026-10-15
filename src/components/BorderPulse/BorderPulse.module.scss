@@ -1,0 +1,124 @@
+@use 'mixins';
+
+// Border pulses (plan 7 §11). A light in the border colour mixed with the accent, played once
+// each time the component's beat sets `data-pulse` (every 7–12 s by its seed); between beats no
+// animation runs, so no layer is held. Ambient only: at `calm`, `off`, high contrast and forced
+// colours the borders stay plain. Interactive hosts pulse at rest only: hover, focus, the open
+// state and a checked input stop it.
+
+.ring,
+.line {
+  --pulse-light: color-mix(in oklab, var(--color-line-strong) 40%, var(--color-accent));
+
+  // The light border is dark on a pale page, so the light there is a paler accent: the dark
+  // mix would be the border's own luminance (`config/contrast.test.ts`)
+  @include mixins.light-theme {
+    --pulse-light: color-mix(in oklab, var(--color-accent) 60%, var(--color-bg));
+  }
+
+  position: absolute;
+  pointer-events: none;
+
+  @include mixins.high-contrast {
+    display: none;
+  }
+
+  @media (forced-colors: active) {
+    display: none;
+  }
+
+  :where(:hover, :focus-within, [data-state='open'], :has(> input:checked)) > & {
+    display: none;
+  }
+}
+
+// The ring: a 1 px band just inside the host's border (inside the padding box, so a host that
+// clips its overflow, like the living surfaces, does not cut it off)
+.ring {
+  inset: 0;
+  padding: 1px;
+  overflow: hidden;
+  border-radius: inherit;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+// Older WebKit knows only the prefixed mask, and spells the exclusion as xor
+@supports not (mask-composite: exclude) {
+  .ring {
+    /* stylelint-disable-next-line property-no-vendor-prefix */
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    /* stylelint-disable-next-line property-no-vendor-prefix */
+    -webkit-mask-composite: xor;
+  }
+}
+
+// A square twice the ring's width, centred (percent margins are of the width), turning once
+.light {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  aspect-ratio: 1;
+  margin: -100% 0 0 -100%;
+  background: conic-gradient(transparent 0 80%, var(--pulse-light) 92%, transparent);
+  opacity: 0;
+
+  &[data-pulse] {
+    @include mixins.when-awake {
+      animation: ring-pulse 2.4s linear;
+    }
+  }
+}
+
+.line {
+  right: 0;
+  left: 0;
+  height: 1px;
+  overflow: clip;
+
+  &[data-side='top'] {
+    top: -1px;
+  }
+
+  &[data-side='bottom'] {
+    bottom: -1px;
+  }
+}
+
+// The footer edge's window (`pulse-window`), run once from just before the line to just past it
+.window {
+  position: absolute;
+  inset: 0;
+  background: var(--pulse-light);
+
+  @include mixins.pulse-window;
+
+  &[data-pulse] {
+    @include mixins.when-awake {
+      animation: line-pulse 2.6s linear;
+    }
+  }
+}
+
+@keyframes ring-pulse {
+  0% {
+    opacity: 0;
+    transform: rotate(0deg);
+  }
+
+  11%,
+  89% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotate(360deg);
+  }
+}
+
+@include mixins.pulse-run-keyframes(line-pulse);

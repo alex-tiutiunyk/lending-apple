@@ -6,10 +6,136 @@
   position: relative;
   z-index: tokens.z(raised);
   padding-block: var(--space-7) calc(var(--space-9) + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--color-line);
 
   @include bp.up(md) {
     padding-bottom: var(--space-7);
+  }
+
+  // High contrast: a flat 2 px rule again (3 : 1 holds), the wave strip is hidden below
+  @include mixins.high-contrast {
+    border-top: 2px solid var(--color-line);
+  }
+}
+
+// The living top edge (plan 5 §7, plan 6 §7): an 8 px strip with a travelling wave and an accent
+// pulse, as HTML strips masked by the wave tile so every loop is a composited `transform`. The
+// wave amplitude grows with the scroll speed, so fast scrolling ruffles the line.
+$edge-tile: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='8' fill='none' stroke='black' stroke-width='1'%3E%3Cpath d='M0 4 C40 1.4 80 1.4 120 4 S200 6.6 240 4'/%3E%3C/svg%3E";
+$edge-tile-width: 240px;
+$edge-height: 8px;
+$pulse-window: mixins.$pulse-window;
+
+.edge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: $edge-height;
+  overflow: hidden;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+
+  @include mixins.motion-safe {
+    transform: scaleY(calc(1 + min(2, max(var(--scroll-v, 0), -1 * var(--scroll-v, 0))) * 2));
+  }
+
+  @include mixins.high-contrast {
+    display: none;
+  }
+}
+
+@mixin edge-strip {
+  position: absolute;
+  top: 0;
+  left: -$edge-tile-width;
+  width: calc(100% + #{$edge-tile-width});
+  height: $edge-height;
+  mask-image: url($edge-tile);
+  mask-repeat: repeat-x;
+  mask-size: $edge-tile-width $edge-height;
+}
+
+// Travel: one tile width to the right, seamless because the mask repeats
+.edge-wave {
+  @include edge-strip;
+
+  background: var(--color-line);
+
+  @include mixins.promote-while-awake;
+
+  @include mixins.when-awake {
+    animation: edge-travel 12s linear infinite;
+  }
+}
+
+// The pulse: a box the width of the strip whose mask shows 160 px at its left end, run along
+// the line once every 6 s; a counter box inside cancels the run so the accent wave under it
+// stays in step with the grey one
+.edge-pulse {
+  position: absolute;
+  inset: 0;
+
+  @include mixins.pulse-window;
+  @include mixins.promote-while-awake;
+
+  @include mixins.when-awake {
+    animation: edge-pulse 6s linear infinite;
+  }
+}
+
+.edge-pulse-counter {
+  position: absolute;
+  inset: 0;
+  transform: translateX($pulse-window);
+
+  @include mixins.promote-while-awake;
+
+  @include mixins.when-awake {
+    animation: edge-pulse-counter 6s linear infinite;
+  }
+}
+
+.edge-pulse-wave {
+  @include edge-strip;
+
+  background: var(--color-accent);
+
+  @include mixins.promote-while-awake;
+
+  @include mixins.when-awake {
+    animation: edge-travel 12s linear infinite;
+  }
+}
+
+@media (forced-colors: active) {
+  .edge-wave,
+  .edge-pulse-wave {
+    background: CanvasText;
+    animation: none;
+  }
+
+  .edge-pulse,
+  .edge-pulse-counter {
+    animation: none;
+  }
+}
+
+@keyframes edge-travel {
+  to {
+    transform: translateX($edge-tile-width);
+  }
+}
+
+@include mixins.pulse-run-keyframes(edge-pulse, 30%);
+
+@keyframes edge-pulse-counter {
+  0% {
+    transform: translateX($pulse-window);
+  }
+
+  30%,
+  100% {
+    transform: translateX(-100%);
   }
 }
 
@@ -33,6 +159,9 @@
 }
 
 .mark {
+  // How much the hover grows the mark before the worm bites (plan 7 §4)
+  --mark-grow: 1.45;
+
   width: 1.2rem;
   height: 1.2rem;
   color: var(--color-accent);

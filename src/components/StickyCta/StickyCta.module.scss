@@ -29,6 +29,7 @@
     visibility: visible;
     opacity: 1;
     transform: none;
+    will-change: transform;
     transition:
       transform 320ms var(--ease-out),
       opacity 220ms var(--ease-out),

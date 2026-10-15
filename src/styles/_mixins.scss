@@ -5,6 +5,61 @@ $wave-tile: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width=
   mask-size: var(--wave-tile-width) var(--wave-tile-height);
 }
 
+// A filled wave crest (plan 7 §6): one closed wave per tile (the area under the curve), with a
+// soft top edge from a vertical gradient intersected with it. `wave-mask` draws thin lines and
+// does not fit coloured crests. Repeats horizontally; translate a strip by one tile to loop.
+@function crest-tile($width, $height) {
+  $mid: $height * 0.5;
+  $high: $height * 0.22;
+  $low: $height * 0.78;
+
+  @return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='#{$width}' height='#{$height}' preserveAspectRatio='none'%3E%3Cpath d='M0 #{$mid} C#{$width * 0.1667} #{$high} #{$width * 0.3333} #{$high} #{$width * 0.5} #{$mid} S#{$width * 0.8333} #{$low} #{$width} #{$mid} V#{$height} H0 Z'/%3E%3C/svg%3E";
+}
+
+@mixin crest-mask($width, $height) {
+  $tile: crest-tile($width, $height);
+
+  mask-image: url($tile), linear-gradient(to bottom, transparent, #000 45%);
+  mask-repeat: repeat-x, no-repeat;
+  mask-size:
+    #{$width}px 100%,
+    100% 100%;
+  mask-composite: intersect;
+}
+
+// The travelling light of the footer edge (plan 5 §7), shared with the line pulses (plan 7
+// §11): a box the width of its line whose mask shows a 160 px window at its left end, run along
+// the line by `transform` (percentages are of the box, so of the line)
+$pulse-window: 160px;
+
+@mixin pulse-window {
+  mask-image: linear-gradient(90deg, transparent, #000 50%, transparent);
+  mask-repeat: no-repeat;
+  mask-size: $pulse-window 100%;
+  transform: translateX(-$pulse-window);
+}
+
+// The run itself; `$end` is where in the keyframes the window leaves the line (the footer holds
+// it past the end for the rest of its 6 s cycle)
+@mixin pulse-run-keyframes($name, $end: 100%) {
+  @keyframes #{$name} {
+    0% {
+      transform: translateX(-$pulse-window);
+    }
+
+    #{$end},
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}
+
+// A host for <BorderPulse /> (plan 7 §11): the ring is absolutely placed and inherits the radius
+@mixin ring-pulse {
+  position: relative;
+  isolation: isolate;
+}
+
 @mixin visually-hidden {
   position: absolute;
   width: 1px;
@@ -135,6 +190,48 @@ $motion-ambient: ':where(:root:not([data-motion="calm"], [data-motion="off"]))';
   }
 }
 
+// Promote while awake, demote at rest (plan 6 rule 6): the only place a `will-change` may be
+// written, so a layer exists while its element moves and not for the life of the page.
+// `config/willChange.test.ts` rejects a bare one.
+@mixin promote-while-awake($property: transform) {
+  @include when-awake {
+    will-change: $property;
+  }
+}
+
+// Scroll-driven keyframes with a JS fallback (plan 6 §3, §4). Where the browser has
+// `animation-timeline` the range drives the keyframes on the compositor. Elsewhere the same
+// keyframes become a paused 1000 ms animation, delayed and shortened to the same window, and
+// an animation driver (`createAnimationDriver`) sets `currentTime` from the progress it knows.
+// Write the `animation` shorthand before this mixin: the shorthand resets the timeline.
+$driven-scale: 1000ms;
+
+@mixin driven($timeline, $from: 0, $to: 1, $range: '') {
+  // A range that ends with the timeline ends a pixel early: fractional scrolling (WebKit, phones)
+  // stops a hair short of the end, and the scene must still finish (the old pinnedProgress snap)
+  $end: $to * 100%;
+
+  @if $to == 1 {
+    $end: calc(100% - 1px);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    animation-timeline: $timeline;
+
+    @if $range == '' {
+      animation-range: #{$from * 100%} #{$end};
+    } @else {
+      animation-range: #{$range} #{$from * 100%} #{$range} #{$end};
+    }
+  }
+
+  @supports not (animation-timeline: scroll()) {
+    animation-duration: ($to - $from) * $driven-scale;
+    animation-delay: $from * $driven-scale;
+    animation-play-state: paused;
+  }
+}
+
 // Pinned scroll stages drop the pin under reduced motion and from 150 % text (plan 3 §4)
 $static-scene: ':where(:root[data-text-scale="150"], :root[data-text-scale="175"], :root[data-text-scale="200"])';
 
@@ -167,6 +264,20 @@ $contrast-auto: ':where(:root:not([data-contrast="standard"]))';
 // Light theme (plan 3 §5a)
 @mixin light-theme {
   @include within-scope(':where(:root[data-theme="light"])') {
+    @content;
+  }
+}
+
+// Reduced motion for the whole document except below `$limit` (plan 6 §13): the condition sits
+// in the scope root, because a scope prefix in front of `:scope` could never match.
+@mixin motion-reduce-scope($limit) {
+  @media (prefers-reduced-motion: reduce) {
+    @scope (:root) to (#{$limit}) {
+      @content;
+    }
+  }
+
+  @scope (:root[data-motion='off']) to (#{$limit}) {
     @content;
   }
 }
@@ -245,6 +356,9 @@ $contrast-auto: ':where(:root:not([data-contrast="standard"]))';
   }
 }
 
+// A scroll-driven reveal never ends, so its element would keep a compositor layer for the life
+// of the page; once the block has passed its range `useReveal` marks it done and the animation
+// goes, leaving the end state (plan 6 §9)
 @mixin reveal($distance: 1.25rem) {
   @supports (animation-timeline: view()) {
     @include motion-safe {
@@ -252,6 +366,10 @@ $contrast-auto: ':where(:root:not([data-contrast="standard"]))';
       animation-timeline: view();
       animation-range: entry var(--reveal-from, 4%) entry var(--reveal-to, 62%);
       --reveal-distance: #{$distance};
+
+      &[data-reveal='done'] {
+        animation: none;
+      }
     }
   }
 
@@ -273,6 +391,7 @@ $contrast-auto: ':where(:root:not([data-contrast="standard"]))';
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  contain: paint;
 
   &::after {
     position: absolute;
@@ -299,10 +418,12 @@ $contrast-auto: ':where(:root:not([data-contrast="standard"]))';
   }
 }
 
+// Isolated and paint-contained (plan 6 §9): a wave repaint never invalidates the neighbours
 @mixin living-surface($strength: 0.14) {
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  contain: paint;
 
   @include high-contrast {
     &::before {

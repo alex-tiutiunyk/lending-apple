@@ -37,10 +37,17 @@ describe('mascot acts', () => {
   it('has a pool of lines for every talking random act', () => {
     expect(mascotCopy.quips.length).toBeGreaterThanOrEqual(8)
     expect(mascotCopy.complaints.length).toBeGreaterThanOrEqual(8)
-    for (const act of randomActs.filter((act) => act !== 'quip' && act !== 'dance')) {
+    const ownLines = randomActs.filter((act) => act !== 'quip' && act !== 'dance' && act !== 'trip')
+    for (const act of ownLines) {
       expect(mascotCopy[act].length).toBeGreaterThanOrEqual(3)
       expect(mascotCopy[act]).toContain(lineFor(act, seeded([0.5])))
     }
+  })
+
+  it('a trip starts with a falling line, a fall and a landing say nothing of their own (plan 7 §1)', () => {
+    expect(mascotCopy.falling).toContain(lineFor('trip', seeded([0.5])))
+    expect(lineFor('fall', seeded([0]))).toBeNull()
+    expect(lineFor('land', seeded([0]))).toBeNull()
   })
 
   it('complains about the section under Pip some of the time', () => {

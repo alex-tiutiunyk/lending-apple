@@ -13,4 +13,16 @@ describe('RollingText (plan 4 §7.1)', () => {
     const copies = container.querySelector('[aria-hidden="true"]')
     expect(copies?.textContent).toBe('BBaacckkttoottoopp')
   })
+
+  it('keeps the plain name with the hop effect (plan 5 §2); the letters carry the hop class', () => {
+    const { container } = render(
+      <a href="#design" data-roll-host>
+        <RollingText label="Design" effect="hop" />
+      </a>,
+    )
+    expect(screen.getByRole('link', { name: 'Design' })).toBeDefined()
+    const letters = container.querySelector('[aria-hidden="true"]')
+    expect(letters?.className).toContain('letters--hop')
+    expect(letters?.querySelectorAll('[style]')).toHaveLength(6)
+  })
 })

@@ -1,13 +1,43 @@
+import { useRef, type Ref } from 'react'
 import { LivingMark } from '@/assets/svg/living-mark'
 import { MotionToggle } from '@/components/MotionToggle/MotionToggle'
 import { RollingText } from '@/components/RollingText/RollingText'
 import { footerCopy, product } from '@/content/copy'
+import { useAwakeWhileInView } from '@/hooks/useAmbientMotion'
+import { useScrollVelocity } from '@/hooks/useDocumentProgress'
 import { BackToTop } from './BackToTop'
 import styles from './Footer.module.scss'
 
-export function Footer() {
+type FooterEdgeProps = { ref: Ref<HTMLDivElement> }
+
+/**
+ * The footer's top edge as a line that moves (plan 5 §7, plan 6 §7): a wave that travels slowly
+ * to the right and an accent pulse that runs along it now and then. HTML strips masked by the
+ * wave tile, so the loops are composited transforms, only while the footer is awake at `full`;
+ * otherwise the static wave. The ruffle with the scroll speed reads `--scroll-v` on the edge.
+ */
+function FooterEdge({ ref }: FooterEdgeProps) {
   return (
-    <footer className={styles.root} data-pip-avoid>
+    <div ref={ref} className={styles.edge} aria-hidden="true">
+      <div className={styles.edgeWave} />
+      <div className={styles.edgePulse}>
+        <div className={styles.edgePulseCounter}>
+          <div className={styles.edgePulseWave} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function Footer() {
+  const footerRef = useRef<HTMLElement>(null)
+  const edgeRef = useRef<HTMLDivElement>(null)
+  useAwakeWhileInView(footerRef)
+  useScrollVelocity(edgeRef)
+
+  return (
+    <footer ref={footerRef} className={styles.root} data-pip-avoid>
+      <FooterEdge ref={edgeRef} />
       <div className={styles.inner}>
         <p className={styles.brand} data-mark-host>
           <LivingMark drawOn="view" className={styles.mark} />
