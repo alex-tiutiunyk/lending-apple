@@ -268,3 +268,9 @@ export const a11yCopy = {
     reset: 'Settings reset',
   },
 } as const
+
+// Plan 10: the project details tab and the footer link. The dialog's own strings live in
+// `projectDetailsCopy.ts`, in the dialog's chunk.
+export const projectDetailsCopy = {
+  label: 'About this project',
+} as const

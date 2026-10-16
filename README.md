@@ -4,6 +4,8 @@
 
 **A scroll-driven concept landing page for a phone, animated with no animation library.**
 
+**English** · [Українська](README.uk.md)
+
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white&style=flat-square)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white&style=flat-square)
 ![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white&style=flat-square)
@@ -15,6 +17,8 @@
 <img src="docs/media/details-and-play.gif" alt="The finishes render with the mini-game and the walking mascot" width="49%" />
 
 </div>
+
+<!-- project-details:start -->
 
 ## Tech stack
 
@@ -48,6 +52,8 @@ The only runtime dependencies are `react` and `react-dom`. There is no GSAP, Fra
 - **First paint without JavaScript.** The page is prerendered at build time. An inline script in `<head>` applies the saved finish and accessibility settings before the first paint, so a reload never flashes the defaults.
 - **A real accessibility panel.** Motion: Full / Calm / Off. Text size from 100 to 200 % (the layout adapts through rem container queries). High contrast at 7 : 1. A light theme. WCAG reading spacing. Contrast for every combination is computed in a unit test and checked again with axe.
 - **Readable CSS module names.** A custom `generateScopedName` turns hashes into BEM (`exploded-view__stack`), and a test enforces it.
+
+<!-- project-details:end -->
 
 ## Run it
 

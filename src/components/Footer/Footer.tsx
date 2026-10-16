@@ -1,8 +1,9 @@
 import { useRef, type Ref } from 'react'
 import { LivingMark } from '@/assets/svg/living-mark'
 import { MotionToggle } from '@/components/MotionToggle/MotionToggle'
+import { ProjectDetailsLink } from '@/components/ProjectDetails/ProjectDetailsLink'
 import { RollingText } from '@/components/RollingText/RollingText'
-import { footerCopy, product } from '@/content/copy'
+import { footerCopy, product, projectDetailsCopy } from '@/content/copy'
 import { useAwakeWhileInView } from '@/hooks/useAmbientMotion'
 import { useScrollVelocity } from '@/hooks/useDocumentProgress'
 import { BackToTop } from './BackToTop'
@@ -55,6 +56,14 @@ export function Footer() {
                 </a>
               </li>
             ))}
+            <li>
+              <ProjectDetailsLink className={styles.link} data-roll-host>
+                <RollingText label={projectDetailsCopy.label} />
+                <span className={styles.arrow} aria-hidden="true">
+                  {footerCopy.fileArrow}
+                </span>
+              </ProjectDetailsLink>
+            </li>
           </ul>
         </nav>
         <div className={styles.actions}>
