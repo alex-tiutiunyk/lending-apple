@@ -26,7 +26,7 @@ describe('candidateBlocks', () => {
       <p aria-hidden="true">Decoration</p>
       <a href="#x"><h3>Linked title</h3></a>
       <p data-reveal="hidden">Not yet shown</p>
-      <p><span data-decoding="">Unofficial</span></p>
+      <p><span data-decoding="">Design study</span></p>
     `)
     const texts = (selector: string) =>
       candidateBlocks(root, selector).map((block) => block.textContent?.trim())

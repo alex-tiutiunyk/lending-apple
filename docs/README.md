@@ -1,6 +1,6 @@
 # Concept 18 Pro
 
-An unofficial, scroll-driven concept page for a next-generation phone. Portfolio work: not affiliated with Apple, and every spec on the page is invented.
+A scroll-driven concept page for a next-generation phone. Every spec on the page is invented.
 
 ![Hero of the page: a line drawing of a phone next to the headline](../public/og-image.jpg)
 

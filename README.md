@@ -14,8 +14,6 @@
 <img src="docs/media/scroll-tour.gif" alt="Scrolling through the page: the blueprint line drawing and the particle field" width="49%" />
 <img src="docs/media/details-and-play.gif" alt="The finishes render with the mini-game and the walking mascot" width="49%" />
 
-<sub>Portfolio project, not affiliated with Apple. Every spec on the page is invented.</sub>
-
 </div>
 
 ## Tech stack

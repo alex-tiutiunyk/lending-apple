@@ -1,6 +1,6 @@
-# Animated iPhone concept landing (portfolio)
+# Animated iPhone concept landing
 
-Unofficial concept page for the latest iPhone. Not affiliated with Apple. Trademark-safe: the page says "concept, not affiliated" in the footer, uses an own stylised apple mark instead of the real logo, and invented but plausible specs.
+Concept page for the latest iPhone. It uses an own stylised apple mark instead of the real logo, and invented but plausible specs.
 
 > **Plan order.** Plans in `docs/` are numbered `N-plan-<name>.md`; this is plan 0. If a requirement in a plan with a higher number conflicts with a requirement in a plan with a lower number, the higher-numbered plan wins. Everything a later plan does not touch still applies as written here.
 

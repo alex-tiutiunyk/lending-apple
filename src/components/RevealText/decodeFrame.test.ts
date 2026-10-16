@@ -3,10 +3,10 @@ import { decodeFrame, decodeMs } from './decodeFrame'
 
 describe('decodeFrame', () => {
   it('keeps the length and the spaces while cycling', () => {
-    const frame = decodeFrame('Unofficial design study', 0, () => 0.3)
-    expect(frame).toHaveLength('Unofficial design study'.length)
-    expect(frame.split(' ').map((word) => word.length)).toEqual([10, 6, 5])
-    expect(frame).not.toBe('Unofficial design study')
+    const frame = decodeFrame('Design study', 0, () => 0.3)
+    expect(frame).toHaveLength('Design study'.length)
+    expect(frame.split(' ').map((word) => word.length)).toEqual([6, 5])
+    expect(frame).not.toBe('Design study')
   })
 
   it('settles from left to right and ends on the real text', () => {

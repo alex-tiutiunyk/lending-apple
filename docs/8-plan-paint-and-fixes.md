@@ -158,7 +158,7 @@ Measured: the header toggle (`motion-toggle header__motion`, compact) is 44 × 4
 
 ## 11. Open questions
 
-- §7, trademark: plan 7 §4 kept the bite ragged on purpose, because a mark that reads as Apple's logo is a trademark risk even on a page marked unofficial. This plan makes the bite round at the user's request. If that turns out to be a problem, stop after chomp 4 (a ragged notch about as large).
+- §7, trademark: plan 7 §4 kept the bite ragged on purpose, because a mark that reads as Apple's logo is a trademark risk. This plan makes the bite round at the user's request. If that turns out to be a problem, stop after chomp 4 (a ragged notch about as large).
 - §3, phones: at 49 px the closed tab covers about 31 px of the content edge (10 px today). Alternatives if it is too much: ×1.75 height and icon only, with the width at 2.25 rem (36 px). The first build follows the request (×1.75 everywhere) and README "Known gaps" gets the new number.
 - §1: a fourth layer of thin light veins (a contour band instead of a filled region) would make it read even more as marbled paper; it costs a layer at the hero, so it is not in the first build.
 - §1: whether the paint should follow the finish (it does: every colour reads `--accent-h`) or keep its own fixed palette. Decided by eye.

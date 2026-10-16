@@ -11,7 +11,7 @@ const browser = await chromium.launch()
 const share = await browser.newPage({ viewport: { width: 1200, height: 630 } })
 await share.emulateMedia({ reducedMotion: 'reduce' })
 await share.goto(siteUrl, { waitUntil: 'networkidle' })
-await share.addStyleTag({ content: 'header, aside { display: none }' })
+await share.addStyleTag({ content: 'header, aside, .a11y-panel { display: none }' })
 await share.screenshot({ path: `${publicDir}og-image.jpg`, type: 'jpeg', quality: 86 })
 
 const icon = await browser.newPage()
