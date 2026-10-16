@@ -55,11 +55,15 @@ export default function A11yPanelBody({ focusRequest, announce }: A11yPanelBodyP
           options={motionLevels.map((level) => ({
             value: level,
             label: a11yCopy.motion.levels[level],
-            isDisabled: isReducedMotion && level !== 'off',
+            isDisabled: false,
           }))}
           value={effective.motion}
           onChange={(level) => {
-            updateA11ySettings({ motion: level })
+            // A level picked while the OS asks for reduced motion overrides it
+            updateA11ySettings({
+              motion: level,
+              motionOverride: isReducedMotion && level !== 'off',
+            })
             announce(a11yCopy.announce.motion(a11yCopy.motion.levels[level]))
           }}
           note={isReducedMotion ? a11yCopy.systemMotion : a11yCopy.motion.note}

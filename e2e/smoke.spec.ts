@@ -460,13 +460,12 @@ test('the pause toggle morphs its icon in both directions', async ({ page, brows
 test.describe('pause toggle under reduced motion', () => {
   test.use({ reducedMotion: 'reduce' })
 
-  test('swaps the icon without a ring', async ({ page }) => {
+  test('starts paused, and play turns motion on for this page', async ({ page }) => {
     const toggle = page.locator('footer').getByRole('button', { name: 'Pause motion' })
-    await toggle.click()
     await expect(toggle).toHaveAttribute('aria-pressed', 'true')
-    const ring = await toggle.evaluate(
-      (button) => getComputedStyle(button, '::after').animationName,
-    )
-    expect(ring).toBe('none')
+    await expect(page.locator('html')).toHaveAttribute('data-motion', 'off')
+    await toggle.click()
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+    await expect(page.locator('html')).toHaveAttribute('data-motion', 'full')
   })
 })

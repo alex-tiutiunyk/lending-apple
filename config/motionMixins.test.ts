@@ -12,15 +12,17 @@ function compile(scss: string) {
 }
 
 describe('motion mixins', () => {
-  it('motion-safe needs both the OS setting and a level other than off', () => {
+  it('motion-safe needs a level other than off, and the OS setting where no script ran', () => {
     const css = compile('.a { @include mixins.motion-safe { color: red; } }')
-    expect(css).toContain('@media (prefers-reduced-motion: no-preference)')
+    expect(css).toContain('@media (prefers-reduced-motion: no-preference), (scripting: enabled)')
     expect(css).toContain(':where(:root:not([data-motion=off])) .a')
   })
 
-  it('motion-reduce applies under the OS setting or the off level', () => {
+  it('motion-reduce applies at the off level, or under the OS setting where no script ran', () => {
     const css = compile('.a { @include mixins.motion-reduce { color: red; } }')
-    expect(css).toContain('@media (prefers-reduced-motion: reduce) { .a {')
+    expect(css).toContain(
+      '@media (prefers-reduced-motion: reduce) { :where(:root:not([data-motion])) .a {',
+    )
     expect(css).toContain(':where(:root[data-motion=off]) .a {')
   })
 

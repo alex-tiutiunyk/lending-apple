@@ -111,6 +111,12 @@ $motion-on: ':where(:root:not([data-motion="off"]))';
 $motion-off: ':where(:root[data-motion="off"])';
 $motion-ambient: ':where(:root:not([data-motion="calm"], [data-motion="off"]))';
 
+// The head script writes the effective level onto <html>, the OS setting included, and a level
+// picked in the panel can override the OS. So with scripting the attribute alone decides; the OS
+// media query only decides when no script ran (no `data-motion` on the root).
+$motion-allowed: '(prefers-reduced-motion: no-preference), (scripting: enabled)';
+$motion-no-script: ':where(:root:not([data-motion]))';
+
 @mixin within-scope($scope) {
   @if & {
     #{$scope} & {
@@ -124,7 +130,7 @@ $motion-ambient: ':where(:root:not([data-motion="calm"], [data-motion="off"]))';
 }
 
 @mixin motion-safe {
-  @media (prefers-reduced-motion: no-preference) {
+  @media #{$motion-allowed} {
     @include within-scope($motion-on) {
       @content;
     }
@@ -133,7 +139,9 @@ $motion-ambient: ':where(:root:not([data-motion="calm"], [data-motion="off"]))';
 
 @mixin motion-reduce {
   @media (prefers-reduced-motion: reduce) {
-    @content;
+    @include within-scope($motion-no-script) {
+      @content;
+    }
   }
 
   @include within-scope($motion-off) {
@@ -143,7 +151,8 @@ $motion-ambient: ':where(:root:not([data-motion="calm"], [data-motion="off"]))';
 
 // Hover responses that move: a pointer that hovers and motion allowed.
 @mixin hover-motion {
-  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  @media (hover: hover) and (prefers-reduced-motion: no-preference),
+    (hover: hover) and (scripting: enabled) {
     @include within-scope($motion-on) {
       @content;
     }
@@ -152,7 +161,7 @@ $motion-ambient: ':where(:root:not([data-motion="calm"], [data-motion="off"]))';
 
 // Ambient motion: only at the `full` level ("calm" pauses it).
 @mixin motion-ambient {
-  @media (prefers-reduced-motion: no-preference) {
+  @media #{$motion-allowed} {
     @include within-scope($motion-ambient) {
       @content;
     }
@@ -160,7 +169,7 @@ $motion-ambient: ':where(:root:not([data-motion="calm"], [data-motion="off"]))';
 }
 
 @mixin when-awake {
-  @media (prefers-reduced-motion: no-preference) {
+  @media #{$motion-allowed} {
     #{$motion-ambient} [data-awake] &,
     #{$motion-ambient} &[data-awake] {
       @content;
@@ -250,7 +259,7 @@ $contrast-auto: ':where(:root:not([data-contrast="standard"]))';
 // in the scope root, because a scope prefix in front of `:scope` could never match.
 @mixin motion-reduce-scope($limit) {
   @media (prefers-reduced-motion: reduce) {
-    @scope (:root) to (#{$limit}) {
+    @scope (:root:not([data-motion])) to (#{$limit}) {
       @content;
     }
   }
@@ -262,7 +271,7 @@ $contrast-auto: ':where(:root:not([data-contrast="standard"]))';
 
 // For rules on <html> itself, where the scope cannot be an ancestor.
 @mixin root-motion-safe {
-  @media (prefers-reduced-motion: no-preference) {
+  @media #{$motion-allowed} {
     &:not([data-motion='off']) {
       @content;
     }
@@ -271,7 +280,9 @@ $contrast-auto: ':where(:root:not([data-contrast="standard"]))';
 
 @mixin root-motion-reduce {
   @media (prefers-reduced-motion: reduce) {
-    @content;
+    &:not([data-motion]) {
+      @content;
+    }
   }
 
   &[data-motion='off'] {

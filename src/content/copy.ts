@@ -256,7 +256,8 @@ export const a11yCopy = {
     show: 'Show Pip, the walking phone',
   },
   reset: 'Reset all',
-  systemMotion: 'Your system asks for reduced motion, so motion stays off.',
+  systemMotion:
+    'Your system asks for reduced motion, so motion starts off. Pick Calm or Full to turn it on here.',
   systemContrast: 'Your system asks for more contrast.',
   notRemembered: 'This browser blocks storage: settings last until you leave the page.',
   announce: {

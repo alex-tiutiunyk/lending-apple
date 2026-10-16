@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it } from 'vitest'
+import { setMediaQuery } from '@/test/mediaQuery'
 import {
   a11yStorageKey,
   defaultSettings,
   effectiveSettings,
   legacyPauseKey,
   parseSettings,
+  reducedMotionQuery,
   settingsHeadScript,
   settingsToAttributes,
 } from './a11ySettings'
@@ -30,6 +32,7 @@ function runHeadScript() {
 afterEach(() => {
   window.localStorage.clear()
   clearRoot()
+  setMediaQuery(reducedMotionQuery, false)
 })
 
 describe('parseSettings', () => {
@@ -92,6 +95,7 @@ describe('settingsToAttributes', () => {
         font: true,
         links: true,
         pip: false,
+        motionOverride: false,
       }),
     ).toEqual({
       'data-motion': 'off',
@@ -103,6 +107,15 @@ describe('settingsToAttributes', () => {
       'data-links': 'underline',
       'data-pip': 'off',
     })
+  })
+
+  it('writes the effective motion level, the OS setting included', () => {
+    expect(settingsToAttributes(defaultSettings, true)['data-motion']).toBe('off')
+    expect(
+      settingsToAttributes({ ...defaultSettings, motion: 'calm', motionOverride: true }, true)[
+        'data-motion'
+      ],
+    ).toBe('calm')
   })
 })
 
@@ -120,6 +133,12 @@ describe('effectiveSettings', () => {
     const system = { ...none, isReducedMotion: true }
     expect(effectiveSettings(defaultSettings, system).motion).toBe('off')
     expect(effectiveSettings({ ...defaultSettings, motion: 'calm' }, system).motion).toBe('off')
+  })
+
+  it('lets a level picked under the system preference override it', () => {
+    const system = { ...none, isReducedMotion: true }
+    const picked = { ...defaultSettings, motion: 'full', motionOverride: true } as const
+    expect(effectiveSettings(picked, system).motion).toBe('full')
   })
 
   it('uses the system contrast only for auto', () => {
@@ -153,5 +172,17 @@ describe('settingsHeadScript', () => {
     const { attributes, scale } = runHeadScript()
     expect(attributes).toEqual(settingsToAttributes(settings))
     expect(scale).toBe(settings.textScale === 100 ? '' : String(settings.textScale / 100))
+  })
+
+  it.each([
+    ['nothing stored', null, 'off'],
+    ['full without an override', '{"motion":"full"}', 'off'],
+    ['an override', '{"motion":"calm","motionOverride":true}', 'calm'],
+  ])('under the OS reduced motion setting, %s', (_, stored, motion) => {
+    setMediaQuery(reducedMotionQuery, true)
+    if (stored !== null) window.localStorage.setItem(a11yStorageKey, stored)
+    const { attributes } = runHeadScript()
+    expect(attributes['data-motion']).toBe(motion)
+    expect(attributes).toEqual(settingsToAttributes(parseSettings(stored), true))
   })
 })

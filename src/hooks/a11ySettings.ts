@@ -19,6 +19,8 @@ export type A11ySettings = {
   font: boolean
   links: boolean
   pip: boolean
+  /** The level was picked while the OS asked for reduced motion: it wins over the OS. */
+  motionOverride: boolean
 }
 
 export const a11yStorageKey = 'concept-18-a11y'
@@ -34,12 +36,13 @@ export const defaultSettings: A11ySettings = {
   font: false,
   links: false,
   pip: true,
+  motionOverride: false,
 }
 
 const motionLevels: readonly MotionLevel[] = ['full', 'calm', 'off']
 const contrastChoices: readonly ContrastChoice[] = ['auto', 'standard', 'high']
 const themes: readonly Theme[] = ['dark', 'light']
-const flags = ['spacing', 'font', 'links', 'pip'] as const
+const flags = ['spacing', 'font', 'links', 'pip', 'motionOverride'] as const
 
 function pick<T>(allowed: readonly T[], value: unknown, fallback: T): T {
   return allowed.includes(value as T) ? (value as T) : fallback
@@ -97,10 +100,23 @@ export type SettingsAttributes = Record<
   string | null
 >
 
-/** The `<html>` attributes for stored settings; `null` removes one. System preferences stay in CSS. */
-export function settingsToAttributes(settings: A11ySettings): SettingsAttributes {
+export const reducedMotionQuery = '(prefers-reduced-motion: reduce)'
+
+/** The level the page runs at: the OS asking for reduced motion wins unless the reader overrode it. */
+export function effectiveMotion(settings: A11ySettings, isSystemReduced: boolean): MotionLevel {
+  return isSystemReduced && !settings.motionOverride ? 'off' : settings.motion
+}
+
+/**
+ * The `<html>` attributes for stored settings; `null` removes one. `data-motion` is the effective
+ * level, the OS setting included; the system contrast stays in CSS.
+ */
+export function settingsToAttributes(
+  settings: A11ySettings,
+  isSystemReduced = false,
+): SettingsAttributes {
   return {
-    'data-motion': settings.motion,
+    'data-motion': effectiveMotion(settings, isSystemReduced),
     'data-contrast': settings.contrast === 'auto' ? null : settings.contrast,
     'data-theme': settings.theme === 'dark' ? null : settings.theme,
     'data-text-scale': settings.textScale === 100 ? null : String(settings.textScale),
@@ -119,7 +135,7 @@ export type SystemPreferences = {
 /** What the page actually does once the OS settings are taken into account. */
 export function effectiveSettings(settings: A11ySettings, system: SystemPreferences) {
   return {
-    motion: system.isReducedMotion ? 'off' : settings.motion,
+    motion: effectiveMotion(settings, system.isReducedMotion),
     contrast:
       settings.contrast === 'auto'
         ? system.isMoreContrast
@@ -141,6 +157,7 @@ export function settingsHeadScript() {
     c: contrastChoices,
     h: themes,
     t: textScales,
+    q: reducedMotionQuery,
   }
-  return `(function(){var t=${JSON.stringify(table)},r=document.documentElement,s=null,o={},p=null,d=false;try{s=localStorage.getItem(t.k);p=localStorage.getItem(t.l)}catch(e){}try{d=(navigator.connection&&navigator.connection.saveData===true)||(window.matchMedia&&window.matchMedia('(prefers-reduced-data: reduce)').matches)}catch(e){}if(s!==null){try{o=JSON.parse(s)}catch(e){}if(typeof o!=='object'||o===null)o={}}var m=s===null?(p==='true'||d?'calm':'full'):t.m.indexOf(o.motion)>=0?o.motion:'full',c=t.c.indexOf(o.contrast)>=0?o.contrast:'auto',h=t.h.indexOf(o.theme)>=0?o.theme:'dark',x=t.t.indexOf(o.textScale)>=0?o.textScale:100;function f(n,d){return typeof o[n]==='boolean'?o[n]:d}function a(n,v){if(v===null)r.removeAttribute(n);else r.setAttribute(n,v)}a('data-motion',m);a('data-contrast',c==='auto'?null:c);a('data-theme',h==='dark'?null:h);a('data-text-scale',x===100?null:String(x));a('data-spacing',f('spacing',false)?'wide':null);a('data-font',f('font',false)?'plain':null);a('data-links',f('links',false)?'underline':null);a('data-pip',f('pip',true)?null:'off');if(x!==100)r.style.setProperty('--text-scale',String(x/100))})()`
+  return `(function(){var t=${JSON.stringify(table)},r=document.documentElement,s=null,o={},p=null,d=false;try{s=localStorage.getItem(t.k);p=localStorage.getItem(t.l)}catch(e){}try{d=(navigator.connection&&navigator.connection.saveData===true)||(window.matchMedia&&window.matchMedia('(prefers-reduced-data: reduce)').matches)}catch(e){}if(s!==null){try{o=JSON.parse(s)}catch(e){}if(typeof o!=='object'||o===null)o={}}var m=s===null?(p==='true'||d?'calm':'full'):t.m.indexOf(o.motion)>=0?o.motion:'full',q=false,c=t.c.indexOf(o.contrast)>=0?o.contrast:'auto',h=t.h.indexOf(o.theme)>=0?o.theme:'dark',x=t.t.indexOf(o.textScale)>=0?o.textScale:100;function f(n,d){return typeof o[n]==='boolean'?o[n]:d}try{q=window.matchMedia(t.q).matches}catch(e){}if(q&&!f('motionOverride',false))m='off';function a(n,v){if(v===null)r.removeAttribute(n);else r.setAttribute(n,v)}a('data-motion',m);a('data-contrast',c==='auto'?null:c);a('data-theme',h==='dark'?null:h);a('data-text-scale',x===100?null:String(x));a('data-spacing',f('spacing',false)?'wide':null);a('data-font',f('font',false)?'plain':null);a('data-links',f('links',false)?'underline':null);a('data-pip',f('pip',true)?null:'off');if(x!==100)r.style.setProperty('--text-scale',String(x/100))})()`
 }

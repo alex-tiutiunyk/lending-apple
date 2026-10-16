@@ -218,8 +218,17 @@ test.describe('motion levels', () => {
       await checkMotionOff(page)
       await handle(page).click()
       await expect(page.getByRole('radio', { name: 'Off' })).toBeChecked()
-      await expect(page.getByRole('radio', { name: 'Full' })).toBeDisabled()
       await expect(page.getByText('Your system asks for reduced motion')).toBeVisible()
+    })
+
+    test('a level picked in the panel overrides it and is remembered', async ({ page }) => {
+      await page.goto('/')
+      await handle(page).click()
+      await page.getByRole('radio', { name: 'Full' }).check()
+      await expect(page.locator('html')).toHaveAttribute('data-motion', 'full')
+      await page.reload()
+      await expect(page.locator('html')).toHaveAttribute('data-motion', 'full')
+      await expect(page.getByRole('button', { name: 'Poke Pip' }).first()).toBeAttached()
     })
   })
 

@@ -6,6 +6,7 @@ import {
   defaultSettings,
   legacyPauseKey,
   parseSettings,
+  reducedMotionQuery,
   settingsToAttributes,
 } from './a11ySettings'
 
@@ -57,7 +58,8 @@ export function getA11ySettings() {
 /** The only place that writes the settings onto `<html>`. */
 export function applySettings(settings: A11ySettings) {
   const root = document.documentElement
-  Object.entries(settingsToAttributes(settings)).forEach(([name, value]) => {
+  const isSystemReduced = window.matchMedia(reducedMotionQuery).matches
+  Object.entries(settingsToAttributes(settings, isSystemReduced)).forEach(([name, value]) => {
     if (value === null) root.removeAttribute(name)
     else root.setAttribute(name, value)
   })
@@ -91,12 +93,21 @@ function syncFromOtherTab(event: StorageEvent) {
   commit(parseSettings(event.key === null ? null : event.newValue))
 }
 
+// `data-motion` carries the OS setting too, so a change of it is written again
+const reapplySettings = () => applySettings(getA11ySettings())
+
 function subscribe(onChange: () => void) {
-  if (listeners.size === 0) window.addEventListener('storage', syncFromOtherTab)
+  if (listeners.size === 0) {
+    window.addEventListener('storage', syncFromOtherTab)
+    window.matchMedia(reducedMotionQuery).addEventListener('change', reapplySettings)
+  }
   listeners.add(onChange)
   return () => {
     listeners.delete(onChange)
-    if (listeners.size === 0) window.removeEventListener('storage', syncFromOtherTab)
+    if (listeners.size === 0) {
+      window.removeEventListener('storage', syncFromOtherTab)
+      window.matchMedia(reducedMotionQuery).removeEventListener('change', reapplySettings)
+    }
   }
 }
 

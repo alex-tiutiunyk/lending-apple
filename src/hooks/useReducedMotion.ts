@@ -1,22 +1,25 @@
-import { staticSceneScale } from './a11ySettings'
+import { effectiveMotion, reducedMotionQuery, staticSceneScale } from './a11ySettings'
 import { useA11ySettings } from './a11yStore'
 import { useMediaQuery } from './useMediaQuery'
 
-/** The OS setting alone, for the panel note and the disabled motion levels. */
+/** The OS setting alone, for the panel note and the override. */
 export function useSystemReducedMotion() {
-  return useMediaQuery('(prefers-reduced-motion: reduce)')
+  return useMediaQuery(reducedMotionQuery)
 }
 
-/** The OS asks for reduced motion, or the reader picked "Motion: off". */
+/** The level the page runs at: the OS setting wins unless the reader overrode it. */
+export function useMotionLevel() {
+  return effectiveMotion(useA11ySettings(), useSystemReducedMotion())
+}
+
+/** The OS asks for reduced motion (not overridden), or the reader picked "Motion: off". */
 export function useReducedMotion() {
-  const isSystemReduced = useSystemReducedMotion()
-  const { motion } = useA11ySettings()
-  return isSystemReduced || motion === 'off'
+  return useMotionLevel() === 'off'
 }
 
 /** Ambient motion stops: "calm" or "off". */
 export function useMotionPaused() {
-  return useA11ySettings().motion !== 'full'
+  return useMotionLevel() !== 'full'
 }
 
 /** Pinned scroll stages show their final state in normal flow (no motion, or large text). */

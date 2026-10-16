@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motionCopy } from '@/content/copy'
 import { updateA11ySettings } from '@/hooks/a11yStore'
-import { useMotionPaused } from '@/hooks/useReducedMotion'
+import { useMotionPaused, useSystemReducedMotion } from '@/hooks/useReducedMotion'
 import styles from './MotionToggle.module.scss'
 
 // Both icons as two closed four-point shapes, so CSS can morph one into the other
@@ -17,6 +17,7 @@ type MotionToggleProps = {
 
 export function MotionToggle({ isCompact = false, className }: MotionToggleProps) {
   const isPaused = useMotionPaused()
+  const isSystemReduced = useSystemReducedMotion()
   const [hasToggled, setHasToggled] = useState(false)
   const [left, right] = isPaused ? bars.play : bars.pause
 
@@ -30,7 +31,10 @@ export function MotionToggle({ isCompact = false, className }: MotionToggleProps
       data-calm-fade
       onClick={() => {
         setHasToggled(true)
-        updateA11ySettings({ motion: isPaused ? 'full' : 'calm' })
+        // Play while the OS asks for reduced motion overrides it, as in the panel
+        updateA11ySettings(
+          isPaused ? { motion: 'full', motionOverride: isSystemReduced } : { motion: 'calm' },
+        )
       }}
     >
       <svg className={styles.icon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
