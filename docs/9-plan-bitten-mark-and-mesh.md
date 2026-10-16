@@ -64,7 +64,7 @@ The reference is the common CSS mesh: a dark ground with several large, soft, co
 
 - **Ground:** `--bar-mesh-ground`, one flat colour in the accent family (dark theme about 14 % lightness, light theme about 92 %), under the plan 7 / plan 8 bar opacity rules.
 - **Four blobs**, `--bar-mesh-a/b/c/d`: the accent hue, +40, −50 and a fourth at +160 for the mesh's contrast (the reference mixes distant hues; whether the fourth stays in the accent family is decided by eye, §6). Each is `radial-gradient(closest-side, colour, transparent)` on an ellipse much larger than the bar: about 40–55 % of the bar's width and 4 times its height (240 px for the 60 px bar), centred on the bar, so only a soft horizontal band of each blob shows and the edges never read as circles.
-- **Drift:** each blob moves on its own closed path (`translate` and a gentle `scale` 0.9–1.15, four to five keyframes, `alternate`, `ease-in-out`) at 18, 23, 29 and 37 s, so the pattern repeats only after minutes. They travel about a third of the bar's width and ±40 px vertically, so the blobs pass through each other and the colours merge where they meet.
+- **Drift:** each blob moves on its own closed path (`translate` and a gentle `scale` 0.9–1.15, four to five keyframes, `alternate`, `ease-in-out`) at 18, 23, 29 and 37 s, so the pattern repeats only after minutes (12, 15, 19 and 24 s after the first look, §8). They travel about a third of the bar's width and ±40 px vertically, so the blobs pass through each other and the colours merge where they meet.
 - **Blend:** plain alpha, no `mix-blend-mode` (as plan 8 §1). The peak alpha of each blob is set by the contrast test (below), starting at 55 %.
 - High contrast and forced colours: the flat bar, no blobs (`display: none`). The progress line, its tip and the plan 7 §11 edge pulse do not change.
 - `calm` and `off`: the blobs stand still at their 0 % keyframe. The mesh is a look, not motion, so it stays.
@@ -121,3 +121,5 @@ The reference is the common CSS mesh: a dark ground with several large, soft, co
 ## 8. Implementation notes
 
 Filled in during the build. Where the build differs from the text above, the build is the rule.
+
+**Mesh, after the first look (2026-10-16):** the drift is about 1.5 times faster, 12, 15, 19 and 24 s per loop (was 18, 23, 29 and 37), and the blobs read stronger against the ground: dark ground 8 % at 90 % (was 10 % at 88 %), blobs 75–80 % saturation, 19–20 % lightness, 60–70 % alpha (was 45–55 %, 20–22 %, 50–60 %); light ground 96 % at 92 %, blobs 85–90 % saturation, 88–89 % lightness, 60–70 % alpha. The stack of all four still sets the limit: the lightness moved away from the text by a point or two to pay for the alpha, and `config/contrast.test.ts` passes for every finish and token set.

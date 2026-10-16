@@ -40,11 +40,11 @@ $z-layers: (
   // The header bar (plan 7 §6, plan 9 §3): a flat ground in the accent family and four soft
   // blobs that drift over it, the accent hue, +40, −50 and a distant +160; the alpha is each
   // blob's peak, at its centre
-  --bar-mesh-ground: hsl(var(--accent-h) 45% 10% / 88%);
-  --bar-mesh-a: hsl(var(--accent-h) 55% 22% / 60%);
-  --bar-mesh-b: hsl(calc(var(--accent-h) + 40) 50% 21% / 55%);
-  --bar-mesh-c: hsl(calc(var(--accent-h) - 50) 50% 21% / 55%);
-  --bar-mesh-d: hsl(calc(var(--accent-h) + 160) 45% 20% / 50%);
+  --bar-mesh-ground: hsl(var(--accent-h) 45% 8% / 90%);
+  --bar-mesh-a: hsl(var(--accent-h) 80% 20% / 70%);
+  --bar-mesh-b: hsl(calc(var(--accent-h) + 40) 75% 19% / 65%);
+  --bar-mesh-c: hsl(calc(var(--accent-h) - 50) 75% 19% / 65%);
+  --bar-mesh-d: hsl(calc(var(--accent-h) + 160) 70% 19% / 60%);
   --color-field: hsl(var(--ink-h) 20% 3% / 70%);
   --color-line: hsl(var(--ink-h) 12% 60% / 22%);
   --color-line-strong: hsl(var(--ink-h) 14% 78% / 46%);
@@ -181,11 +181,11 @@ $z-layers: (
   --color-bg-panel: hsl(var(--ink-h) 25% 99%);
   --color-bar: hsl(var(--ink-h) 30% 97% / 90%);
   --color-bar-strong: hsl(var(--ink-h) 25% 99% / 96%);
-  --bar-mesh-ground: hsl(var(--accent-h) 45% 95% / 90%);
-  --bar-mesh-a: hsl(var(--accent-h) 70% 87% / 60%);
-  --bar-mesh-b: hsl(calc(var(--accent-h) + 40) 66% 88% / 55%);
-  --bar-mesh-c: hsl(calc(var(--accent-h) - 50) 70% 87% / 55%);
-  --bar-mesh-d: hsl(calc(var(--accent-h) + 160) 60% 88% / 50%);
+  --bar-mesh-ground: hsl(var(--accent-h) 40% 96% / 92%);
+  --bar-mesh-a: hsl(var(--accent-h) 90% 88% / 70%);
+  --bar-mesh-b: hsl(calc(var(--accent-h) + 40) 85% 89% / 65%);
+  --bar-mesh-c: hsl(calc(var(--accent-h) - 50) 90% 88% / 65%);
+  --bar-mesh-d: hsl(calc(var(--accent-h) + 160) 80% 89% / 60%);
   --color-field: hsl(var(--ink-h) 25% 99%);
   --color-line: hsl(var(--ink-h) 12% 55%);
   --color-line-strong: hsl(var(--ink-h) 12% 42%);
