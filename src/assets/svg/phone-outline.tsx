@@ -1,7 +1,8 @@
-import { useId, type CSSProperties } from 'react'
+import { useId, useRef, type CSSProperties } from 'react'
 import { phoneViewBoxes, type PhoneView } from './phone-geometry'
 import { blueprintHeads, blueprintParts, plainParts, type PartPaths } from './phone-outline-parts'
 import styles from './phone-outline.module.scss'
+import { useOutlineScale } from './useOutlineScale'
 
 type PartGroupsProps = {
   parts: PartPaths
@@ -37,7 +38,9 @@ export function PhoneOutline({
   className,
 }: PhoneOutlineProps) {
   const gradientId = useId()
+  const svgRef = useRef<SVGSVGElement>(null)
   const isBlueprint = detail === 'blueprint'
+  useOutlineScale(svgRef, isBlueprint)
   const parts = isBlueprint ? blueprintParts : plainParts
   const heads = isBlueprint ? blueprintHeads : { front: {}, back: {} }
   const classes = [
@@ -49,6 +52,7 @@ export function PhoneOutline({
 
   return (
     <svg
+      ref={svgRef}
       className={classes.filter(Boolean).join(' ')}
       viewBox={phoneViewBoxes[view]}
       aria-hidden="true"

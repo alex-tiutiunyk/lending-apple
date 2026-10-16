@@ -36,11 +36,12 @@ $host-active: ':where([data-mark-host]:hover, [data-mark-host]:focus-visible)';
     }
   }
 
-  // Enter: it grows, then jolts a pixel on each of the worm's three chomps
+  // Enter: it grows, then jolts a pixel away from the bite (the left side, plan 9 §2) on each of
+  // the worm's five chomps (plan 8 §7)
   @include mixins.hover-motion {
     #{$host-active} & {
       transition: transform 200ms var(--ease-out);
-      animation: chomp-jolt 240ms steps(6, jump-end) 420ms;
+      animation: chomp-jolt 600ms steps(10, jump-end) 630ms;
     }
   }
 }
@@ -81,7 +82,7 @@ $host-active: ':where([data-mark-host]:hover, [data-mark-host]:focus-visible)';
 
   @include mixins.hover-motion {
     #{$host-active} & {
-      animation: leaf-flick 420ms var(--ease-out) 820ms;
+      animation: leaf-flick 630ms var(--ease-out) 1470ms;
     }
   }
 }
@@ -126,14 +127,18 @@ $host-active: ':where([data-mark-host]:hover, [data-mark-host]:focus-visible)';
 }
 
 @keyframes chomp-jolt {
-  16.7%,
+  10%,
+  30%,
   50%,
-  83.3% {
-    transform: scale(var(--mark-grow, 1.35)) translateX(-1px);
+  70%,
+  90% {
+    transform: scale(var(--mark-grow, 1.35)) translateX(1px);
   }
 
-  33.3%,
-  66.7%,
+  20%,
+  40%,
+  60%,
+  80%,
   100% {
     transform: scale(var(--mark-grow, 1.35));
   }

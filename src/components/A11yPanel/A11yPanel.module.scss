@@ -2,14 +2,15 @@
 @use 'mixins';
 
 // Closed, only the handle shows. It keeps its 100 % size: a larger text setting should not make
-// the tab cover more of the page
-$handle: calc(var(--tap-min) / var(--text-scale, 1));
+// the tab cover more of the page. Plan 8 §3: the tab and its icon are 1.75 times the plan 3 size.
+$handle-scale: 1.75;
+$handle: calc(var(--tap-min) * #{$handle-scale} / var(--text-scale, 1));
 $handle-width: calc(var(--handle-rem) / var(--text-scale, 1));
 
 .root {
   // Phones: a slimmer tab (still over the 24 px target minimum), so the fixed tab covers as
   // little of the content edge as possible
-  --handle-rem: 1.75rem;
+  --handle-rem: calc(1.75rem * #{$handle-scale});
   --panel-width: min(22rem, 100vw - 2rem - #{$handle-width});
 
   position: fixed;
@@ -30,7 +31,7 @@ $handle-width: calc(var(--handle-rem) / var(--text-scale, 1));
   }
 
   @media (width >= 48rem) {
-    --handle-rem: var(--tap-min);
+    --handle-rem: calc(var(--tap-min) * #{$handle-scale});
   }
 
   &[data-state='open'] {
@@ -89,7 +90,7 @@ $handle-width: calc(var(--handle-rem) / var(--text-scale, 1));
   background: var(--color-bg-panel);
   border: 1px solid var(--color-line-strong);
   border-left: 0;
-  border-radius: 0 var(--radius-s) var(--radius-s) 0;
+  border-radius: 0 var(--radius-m) var(--radius-m) 0;
 
   @include mixins.focus-ring;
 }
@@ -102,8 +103,8 @@ $glyph-active: '.handle:hover, .handle:focus-visible';
 $ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .icon {
-  width: calc(1.5rem / var(--text-scale, 1));
-  height: calc(1.5rem / var(--text-scale, 1));
+  width: calc(1.5rem * #{$handle-scale} / var(--text-scale, 1));
+  height: calc(1.5rem * #{$handle-scale} / var(--text-scale, 1));
   overflow: visible;
   fill: none;
   stroke: currentcolor;

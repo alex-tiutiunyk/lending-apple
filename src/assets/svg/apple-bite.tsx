@@ -1,32 +1,27 @@
+import { leftChomps } from './apple-bite-chomps'
 import styles from './apple-bite.module.scss'
 
-/**
- * The worm's bite (plan 7 §4): three small overlapping circles along the right edge, one per
- * chomp, so the notch reads as chewed and ragged. Not one clean round bite: the page is
- * unofficial, and a mark that reads as Apple's logo would be a trademark problem. Radii 2.3–2.6:
- * the plan's 1.6–1.9 left a one-pixel notch at the header's 1.4 rem.
- */
-const chomps = [
-  { cx: 19.8, cy: 9.2, r: 2.3 },
-  { cx: 20.2, cy: 11.1, r: 2.6 },
-  { cx: 19.7, cy: 13.0, r: 2.3 },
-]
+// The worm comes out of the left notch at about (4.6, 10.6) and leans to the left (plan 9 §2,
+// the plan 8 worm mirrored about x = 12)
 const wormSegments = [
-  { cx: 18.3, cy: 11.2 },
-  { cx: 20.5, cy: 10.4 },
-  { cx: 22.7, cy: 10.9 },
+  { cx: 4.6, cy: 10.7 },
+  { cx: 2.5, cy: 10.1 },
+  { cx: 0.6, cy: 10.5 },
 ]
 const wormEyes = [
-  { cx: 22.35, cy: 10.45 },
-  { cx: 23.15, cy: 10.45 },
+  { cx: 0.95, cy: 10.05 },
+  { cx: 0.15, cy: 10.05 },
 ]
 
-/** The mask for the body piece: white keeps the apple, each chomp circle cuts a piece out. */
+/**
+ * The mask for the body piece: white keeps the apple, each chomp circle cuts a piece out of the
+ * left side. The right bite is in the path itself (plan 9 §1) and needs no circle.
+ */
 export function AppleBiteMask({ id }: { id: string }) {
   return (
     <mask id={id}>
       <rect x="-2" y="-2" width="28" height="28" fill="white" />
-      {chomps.map(({ cx, cy, r }) => (
+      {leftChomps.map(({ cx, cy, r }) => (
         <circle key={cx + cy} className={styles.chomp} cx={cx} cy={cy} r={r} fill="black" />
       ))}
     </mask>

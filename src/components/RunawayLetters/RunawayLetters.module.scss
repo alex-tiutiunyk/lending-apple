@@ -39,10 +39,13 @@
   }
 }
 
-// Two tiny legs that grow out under the letter and walk while it runs
+// Two tiny legs that grow out under the letter and walk while it runs. They start at the bottom
+// of the ink (plan 8 §2), not of the box, which ends a font descent lower: `--leg-lift` is
+// measured once per copy, with today's average gap as the fallback, and they reach 0.04 em into
+// the ink so no hairline shows at fractional positions.
 .leg {
   position: absolute;
-  bottom: calc(-0.5em * var(--leg-scale));
+  top: calc(100% - var(--leg-lift, 0.22em) - 0.04em);
   width: max(2px, calc(0.1em * var(--leg-scale)));
   height: calc(0.5em * var(--leg-scale));
   background: currentcolor;

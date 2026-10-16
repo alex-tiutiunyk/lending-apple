@@ -5,28 +5,6 @@ $wave-tile: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width=
   mask-size: var(--wave-tile-width) var(--wave-tile-height);
 }
 
-// A filled wave crest (plan 7 §6): one closed wave per tile (the area under the curve), with a
-// soft top edge from a vertical gradient intersected with it. `wave-mask` draws thin lines and
-// does not fit coloured crests. Repeats horizontally; translate a strip by one tile to loop.
-@function crest-tile($width, $height) {
-  $mid: $height * 0.5;
-  $high: $height * 0.22;
-  $low: $height * 0.78;
-
-  @return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='#{$width}' height='#{$height}' preserveAspectRatio='none'%3E%3Cpath d='M0 #{$mid} C#{$width * 0.1667} #{$high} #{$width * 0.3333} #{$high} #{$width * 0.5} #{$mid} S#{$width * 0.8333} #{$low} #{$width} #{$mid} V#{$height} H0 Z'/%3E%3C/svg%3E";
-}
-
-@mixin crest-mask($width, $height) {
-  $tile: crest-tile($width, $height);
-
-  mask-image: url($tile), linear-gradient(to bottom, transparent, #000 45%);
-  mask-repeat: repeat-x, no-repeat;
-  mask-size:
-    #{$width}px 100%,
-    100% 100%;
-  mask-composite: intersect;
-}
-
 // The travelling light of the footer edge (plan 5 §7), shared with the line pulses (plan 7
 // §11): a box the width of its line whose mask shows a 160 px window at its left end, run along
 // the line by `transform` (percentages are of the box, so of the line)

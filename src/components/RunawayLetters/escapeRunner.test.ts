@@ -3,6 +3,9 @@ import { createEscape } from './escapeRunner'
 import { letterSpots } from './letterPicker'
 import { paragraphRun } from './letterRun'
 
+// The test DOM has no canvas; the leg lift has its own test (glyphMetrics.test.ts)
+vi.mock('./glyphMetrics', () => ({ inkLift: () => null }))
+
 class FakeHighlight {
   ranges = new Set<Range>()
   add(range: Range) {

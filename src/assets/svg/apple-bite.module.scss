@@ -1,3 +1,4 @@
+@use 'sass:list';
 @use 'mixins';
 
 // The worm and the bite on the brand mark (plan 7 §4, the plan 5 §1 handle code moved here).
@@ -25,7 +26,7 @@ $bitten: ':where([data-mark-host]:hover, [data-mark-host]:focus-visible)';
 .worm {
   fill: var(--color-accent);
   transform: scale(0);
-  transform-origin: 20.6px 10.8px;
+  transform-origin: 2.8px 10.5px;
 
   @include mixins.high-contrast {
     fill: var(--color-text);
@@ -49,28 +50,26 @@ $bitten: ':where([data-mark-host]:hover, [data-mark-host]:focus-visible)';
   }
 }
 
-// Enter: the worm pushes out, the bite opens in three chomps (one circle per step, each a
-// snap after its delay), the worm pulls back in and the bite stays
+// Enter: the worm pushes out, the left bite opens in five chomps (one circle per step, each a
+// snap after its delay), the worm pulls back in and the bite stays. Plan 8 §7: every time of
+// the bite is 1.5 times the plan 7 one; the grow and the heal keep their speed. The mask's
+// `<rect>` is its first child, so the chomps are children 2 to 6.
+$chomp-at: 630ms, 750ms, 870ms, 990ms, 1110ms;
+
 @include mixins.hover-motion {
   #{$bitten} {
-    .chomp {
-      transition: transform 0s 420ms;
-    }
-
-    .chomp:nth-child(3) {
-      transition-delay: 500ms;
-    }
-
-    .chomp:nth-child(4) {
-      transition-delay: 580ms;
+    @each $at in $chomp-at {
+      .chomp:nth-child(#{list.index($chomp-at, $at) + 1}) {
+        transition: transform 0s $at;
+      }
     }
 
     .worm {
-      animation: worm-visit 840ms var(--ease-out) 160ms backwards;
+      animation: worm-visit 1620ms var(--ease-out) 240ms backwards;
     }
 
     .worm-eyes {
-      animation: worm-blink 80ms linear 700ms;
+      animation: worm-blink 120ms linear 1050ms;
     }
   }
 }
@@ -81,7 +80,7 @@ $bitten: ':where([data-mark-host]:hover, [data-mark-host]:focus-visible)';
   }
 
   20% {
-    transform: scale(1) translate(1.2px, -1.4px) rotate(-14deg);
+    transform: scale(1) translate(-1.2px, -1.4px) rotate(14deg);
   }
 
   32%,

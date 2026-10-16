@@ -28,8 +28,9 @@ $pip-width: calc(#{$pip-height} * 24 / 36);
   position: absolute;
   inset: 0;
 
-  // Celebration: two jumps after the goal
-  .root[data-phase='celebrate'] & {
+  // Celebration: two jumps after the goal. A turned-over Pip on a wall or the top raises its
+  // arms instead: its jump would go into the border (plan 8 §6)
+  .root[data-phase='celebrate'] .pip:not([data-cheer='arms']) & {
     animation: pip-cheer 450ms var(--ease-out) 2;
   }
 }
@@ -80,6 +81,20 @@ $pip-width: calc(#{$pip-height} * 24 / 36);
 
   .pip[data-five] & {
     animation: mini-five 200ms var(--ease-out);
+  }
+
+  .root[data-phase='celebrate'] .pip[data-cheer='arms'] & {
+    animation: mini-arms-left 450ms var(--ease-out) 2;
+  }
+}
+
+// Shown only while it cheers, so the Pip keeps its one-armed look the rest of the time
+.arm-right {
+  opacity: 0;
+  transform-origin: 20px 14px;
+
+  .root[data-phase='celebrate'] .pip[data-cheer='arms'] & {
+    animation: mini-arms-right 450ms var(--ease-out) 2;
   }
 }
 
@@ -142,6 +157,24 @@ $pip-width: calc(#{$pip-height} * 24 / 36);
 @keyframes mini-five {
   50% {
     transform: rotate(140deg);
+  }
+}
+
+@keyframes mini-arms-left {
+  50% {
+    transform: rotate(140deg);
+  }
+}
+
+@keyframes mini-arms-right {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 1;
+    transform: rotate(-140deg);
   }
 }
 

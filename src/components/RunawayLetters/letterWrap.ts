@@ -1,3 +1,4 @@
+import { inkLift } from './glyphMetrics'
 import type { LetterSpot } from './letterPicker'
 import styles from './RunawayLetters.module.scss'
 
@@ -72,6 +73,14 @@ export function copyGlyph({ range, rect }: Hidden, layer: HTMLElement, block: HT
   copy.style.height = `${rect.height}px`
   copy.style.lineHeight = `${rect.height}px`
   copy.style.translate = `${rect.left}px ${rect.top}px`
+  // Once, before it moves: the legs start at the bottom of the ink, not of the box (plan 8 §2)
+  const text = copy.textContent
+  const shown = copy.style.textTransform === 'uppercase' ? text.toUpperCase() : text
+  // Built from the longhands: WebKit serialises no `font` shorthand once a longhand it cannot
+  // express (`font-width`, `font-variant-emoji`) is set, so `copy.style.font` is empty there
+  const { fontStyle, fontWeight, fontSize, fontFamily } = copy.style
+  const lift = inkLift(`${fontStyle} ${fontWeight} ${fontSize} ${fontFamily}`.trim(), shown)
+  if (lift !== null) copy.style.setProperty('--leg-lift', `${lift.toFixed(2)}px`)
   for (let leg = 0; leg < 2; leg += 1) {
     const span = layer.ownerDocument.createElement('span')
     span.className = styles.leg ?? ''

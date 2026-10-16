@@ -13,7 +13,12 @@ type MiniPip = {
   x: number
   y: number
   angle: number
+  /** Half turns: 0 on the floor, ±1 on the walls and the top, feet to the phone (plan 8 §5). */
+  flip: number
+  /** Drawn only: the mirror, so the Pip looks where it runs on screen. */
   facing: 1 | -1
+  /** The way round the border, set once: travel never reads `facing` (plan 8 §5). */
+  lapDirection: 1 | -1
   lap: number | null
   isRunning: boolean
   kickAt: number
@@ -31,6 +36,8 @@ export type Game = {
   size: Size
   goal: Goal
   from: { x: number; y: number }
+  /** A Pip box's height in frame px, for the box centre of a turned-over lap Pip. */
+  pipHeight: number
 }
 
 export const ballRadius = 7
@@ -49,8 +56,16 @@ const fixedMs: Partial<Record<Phase, number>> = {
 }
 const between = (random: () => number, low: number, high: number) => low + random() * (high - low)
 const lerp = (a: number, b: number, share: number) => a + (b - a) * share
+const smoothstep = (share: number) => share * share * (3 - 2 * share)
+const toRadians = (degrees: number) => (degrees * Math.PI) / 180
 
-/** A point on the rounded border at distance `s`, feet on the edge, body turned inward. */
+/**
+ * A point on the rounded border at distance `s`, the box's base on the edge and turned inward,
+ * and `flip`: 0 on the floor, 1 on the walls and the top, where the Pip is turned over about
+ * its centre so its feet point to the phone (plan 8 §5), in half turns. It rises 0 → 1 over the
+ * bottom-right arc and runs -1 → 0 over the bottom-left one, a half cartwheel each, turning
+ * opposite ways so the box keeps inside the border; over a lap the turns add up to zero.
+ */
 export function lapPoint(s: number, { width: w, height: h }: Size, r = lapCorner) {
   const a = w - 2 * r
   const b = h - 2 * r
@@ -60,29 +75,57 @@ export function lapPoint(s: number, { width: w, height: h }: Size, r = lapCorner
   let t = ((s % total) + total) % total
   let index = 0
   while (t > (parts[index] ?? 0) && index < 7) t -= parts[index++] ?? 0
-  const corner = (cx: number, cy: number, from: number) => {
+  const turn = Math.min(1, Math.max(0, t / arc))
+  const corner = (cx: number, cy: number, from: number, flip: number) => {
     const theta = from - (t / r) * (180 / Math.PI)
-    const rad = (theta * Math.PI) / 180
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad), angle: theta - 90 }
+    const rad = toRadians(theta)
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad), angle: theta - 90, flip }
   }
   switch (index) {
     case 0:
-      return { x: r + t, y: h, angle: 0 }
+      return { x: r + t, y: h, angle: 0, flip: 0 }
     case 1:
-      return corner(w - r, h - r, 90)
+      return corner(w - r, h - r, 90, smoothstep(turn))
     case 2:
-      return { x: w, y: h - r - t, angle: -90 }
+      return { x: w, y: h - r - t, angle: -90, flip: 1 }
     case 3:
-      return corner(w - r, r, 0)
+      return corner(w - r, r, 0, 1)
     case 4:
-      return { x: w - r - t, y: 0, angle: -180 }
+      return { x: w - r - t, y: 0, angle: -180, flip: 1 }
     case 5:
-      return corner(r, r, -90)
+      return corner(r, r, -90, 1)
     case 6:
-      return { x: 0, y: r + t, angle: -270 }
+      return { x: 0, y: r + t, angle: -270, flip: 1 }
     default:
-      return corner(r, h - r, -180)
+      // Back the other way (-1 is the same pose as 1), so this corner mirrors the right one
+      return corner(r, h - r, -180, smoothstep(turn) - 1)
   }
+}
+
+/** The Pip's own x axis on screen, after the border turn and the flip. */
+function ownAxis({ angle, flip }: Pick<MiniPip, 'angle' | 'flip'>) {
+  const rad = toRadians(angle + 180 * flip)
+  return { x: Math.cos(rad), y: Math.sin(rad) }
+}
+
+/** The mirror that makes a Pip look along (dx, dy) on screen; unchanged when it is across. */
+function facingAlong(pip: MiniPip, dx: number, dy: number): 1 | -1 {
+  const axis = ownAxis(pip)
+  const dot = axis.x * dx + axis.y * dy
+  if (Math.abs(dot) < 1e-6) return pip.facing
+  return dot > 0 ? 1 : -1
+}
+
+/** The box centre: half a box inward from the base on the border, whatever the flip. */
+function boxCentre({ x, y, angle }: Pick<MiniPip, 'x' | 'y' | 'angle'>, height: number) {
+  const rad = toRadians(angle)
+  return { x: x + (height / 2) * Math.sin(rad), y: y - (height / 2) * Math.cos(rad) }
+}
+
+/** The screen direction of a lap Pip's next step. */
+function stepAlong(pip: MiniPip, size: Size): [number, number] {
+  const next = lapPoint((pip.lap ?? 0) + pip.lapDirection, size)
+  return [next.x - pip.x, next.y - pip.y]
 }
 
 function lapLength({ width, height }: Size) {
@@ -90,11 +133,13 @@ function lapLength({ width, height }: Size) {
 }
 
 export function createGame(size: Size, goal: Goal, random: () => number): Game {
-  const pip = (x: number, lap: number | null): MiniPip => ({
+  const pip = (x: number, lap: number | null, lapDirection: 1 | -1 = 1): MiniPip => ({
     x,
     y: size.height,
     angle: 0,
-    facing: 1,
+    flip: 0,
+    facing: lapDirection,
+    lapDirection,
     lap,
     isRunning: false,
     kickAt: -Infinity,
@@ -111,15 +156,18 @@ export function createGame(size: Size, goal: Goal, random: () => number): Game {
     pips: [
       pip(size.width * 0.25, null),
       pip(size.width * 0.75, null),
-      pip(0, length * 0.1),
-      pip(0, length * 0.6),
+      pip(0, length * 0.1, 1),
+      pip(0, length * 0.6, -1),
     ],
     size,
     goal,
     from: { x: 0, y: 0 },
+    pipHeight: 17.6,
   }
-  game.pips.forEach((each, index) => {
-    if (each.lap !== null) each.facing = index % 2 ? -1 : 1
+  game.pips.forEach((each) => {
+    if (each.lap === null) return
+    Object.assign(each, lapPoint(each.lap, size))
+    each.facing = facingAlong(each, ...stepAlong(each, size))
   })
   return game
 }
@@ -132,6 +180,11 @@ export function setPhase(game: Game, phase: Phase, random: () => number) {
     (phase === 'play' ? between(random, 8000, 14000) : between(random, 6000, 10000))
   if (phase === 'kickoff') game.from = { x: game.goal.x, y: game.goal.y }
   if (phase === 'flight') game.from = { x: game.ball.x, y: game.ball.y }
+  // Stopped on the way in, so not even the frame that changes the phase draws a running leg
+  // (plan 8 §6): the lap Pips from the header on, everybody from the flight on
+  game.pips.forEach((pip) => {
+    if (phase !== 'play' && (pip.lap !== null || phase !== 'header')) pip.isRunning = false
+  })
 }
 
 /** The scale that makes the ball the size of the logo it grows back into. */
@@ -174,6 +227,32 @@ function runTo(pip: MiniPip, x: number, dt: number) {
   pip.x += pip.facing * Math.min(Math.abs(gap), pip.speed * dt)
 }
 
+/**
+ * The lap Pips: along the border in play; from the header on they stop where they are and turn
+ * to watch the ball (plan 8 §6). Only `facing` turns, so the next rally runs the same way.
+ */
+function runLaps(game: Game, dt: number, chaseOnly: boolean) {
+  const { ball, size, pips, clock } = game
+  pips.forEach((pip) => {
+    if (pip.lap === null) return
+    if (chaseOnly) {
+      pip.isRunning = false
+      pip.facing = facingAlong(pip, ball.x - pip.x, ball.y - pip.y)
+      return
+    }
+    pip.lap += pip.lapDirection * pip.speed * dt
+    Object.assign(pip, lapPoint(pip.lap, size))
+    pip.facing = facingAlong(pip, ...stepAlong(pip, size))
+    pip.isRunning = true
+    const centre = boxCentre(pip, game.pipHeight)
+    const isNear = Math.hypot(centre.x - ball.x, centre.y - ball.y) < ballRadius + 10
+    if (isNear && clock - pip.kickAt > 800) {
+      kick(game, size.width / 2 - ball.x, size.height / 2 - ball.y, 200)
+      pip.kickAt = clock
+    }
+  })
+}
+
 function play(game: Game, dt: number, random: () => number, chaseOnly: boolean) {
   const { ball, size, pips, clock } = game
   const team = pips.filter((pip) => pip.lap === null)
@@ -199,17 +278,7 @@ function play(game: Game, dt: number, random: () => number, chaseOnly: boolean) 
     }
   }
   if (other) runTo(other, chaseOnly ? other.x : lerp(ball.x, game.goal.x, 0.5), dt)
-  pips.forEach((pip) => {
-    if (pip.lap === null) return
-    pip.lap += pip.facing * pip.speed * dt
-    Object.assign(pip, lapPoint(pip.lap, size))
-    pip.isRunning = true
-    const isNear = Math.hypot(pip.x - ball.x, pip.y - ball.y) < ballRadius + 10
-    if (!chaseOnly && isNear && clock - pip.kickAt > 800) {
-      kick(game, size.width / 2 - ball.x, size.height / 2 - ball.y, 200)
-      pip.kickAt = clock
-    }
-  })
+  runLaps(game, dt, chaseOnly)
   const [first, second] = pips.filter((pip) => pip.lap !== null)
   if (first && second && Math.hypot(first.x - second.x, first.y - second.y) < 10) {
     if (clock - first.fiveAt > 1500) first.fiveAt = second.fiveAt = clock
@@ -247,8 +316,6 @@ export function stepGame(game: Game, dtMs: number, random: () => number) {
     case 'scored':
       ball.scale = lerp(1, logoScale(game), share)
       break
-    default:
-      game.pips.forEach((pip) => (pip.isRunning = false))
   }
   const next: Partial<Record<Phase, Phase>> = {
     kickoff: 'play',

@@ -29,7 +29,7 @@ async function bringIntoView(page: Page, selector: string) {
 }
 
 test.describe('brand mark: grow and bite (plan 7 §4)', () => {
-  test('a hover grows the header mark and leaves the chewed bite; ids are unique', async ({
+  test('a hover grows the header mark and leaves the round bite of five chomps (plan 8 §7); ids are unique', async ({
     page,
     hasTouch,
   }) => {
@@ -49,7 +49,8 @@ test.describe('brand mark: grow and bite (plan 7 §4)', () => {
         )
         return { grow: Math.round(scale('.living-mark__grow') * 100), chomps }
       })
-    await expect.poll(state, { timeout: 3000 }).toEqual({ grow: 135, chomps: [1, 1, 1] })
+    // The bite takes about 1.9 s since plan 8 §7; the margin is for a busy machine
+    await expect.poll(state, { timeout: 5000 }).toEqual({ grow: 135, chomps: [1, 1, 1, 1, 1] })
   })
 
   test('at off a hover runs no animation', async ({ page, hasTouch }) => {
@@ -90,26 +91,9 @@ test.describe('accessibility panel: the first open (plan 7 §14)', () => {
   })
 })
 
-test.describe('header aurora (plan 7 §6)', () => {
-  test('three crests run at full and stand still at calm', async ({ page }) => {
-    await page.goto('/')
-    await expect.poll(() => running(page, '.header__waves')).toBe(3)
-    await storeSettings(page, { motion: 'calm' })
-    await page.goto('/')
-    await page.waitForTimeout(300)
-    expect(await running(page, '.header__waves')).toBe(0)
-  })
-
-  test('none run at off, and high contrast shows the flat bar', async ({ page }) => {
-    await storeSettings(page, { motion: 'off' })
-    await page.goto('/')
-    await page.waitForTimeout(300)
-    expect(await running(page, '.header__waves')).toBe(0)
-    await storeSettings(page, { contrast: 'high' })
-    await page.goto('/')
-    await expect(page.locator('.header__waves')).toBeHidden()
-  })
-
+// The crests became the plan 8 §1 paint, then the plan 9 §3 mesh; its motion tests are in
+// bitten-mark-and-mesh, its contrast in config/contrast.test.ts
+test.describe('header bar (plan 7 §6)', () => {
   test('the progress line stays above the edge pulse', async ({ page }) => {
     await page.goto('/')
     const order = await page.evaluate(() => {

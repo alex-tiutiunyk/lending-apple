@@ -6,14 +6,16 @@
   gap: var(--space-2);
   align-items: center;
   justify-content: center;
-  min-width: var(--tap-min);
-  min-height: var(--tap-min);
+
+  // The header draws it smaller (plan 8 §8, `--toggle-size`); the tap area stays --tap-min
+  min-width: var(--toggle-size, var(--tap-min));
+  min-height: var(--toggle-size, var(--tap-min));
   padding: 0 var(--space-3);
   font-size: var(--step-down-1);
   color: var(--color-text-muted);
   cursor: pointer;
   background: transparent;
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-control-line);
   border-radius: var(--radius-pill);
   transition:
     border-color var(--dur-hover) var(--ease-out),
@@ -24,6 +26,14 @@
 
   &:active {
     transform: scale(0.92);
+  }
+
+  // An invisible hit box that keeps the tap area at --tap-min around a smaller drawn circle
+  &::before {
+    position: absolute;
+    inset: calc((var(--toggle-size, var(--tap-min)) - var(--tap-min)) / 2);
+    content: '';
+    border-radius: inherit;
   }
 
   // Response to the reader's own click, so it runs while motion is paused, too

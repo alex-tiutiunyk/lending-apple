@@ -15,7 +15,7 @@ import styles from './Header.module.scss'
 export function Header() {
   // One source for the nav indicator and the section label, so they never disagree (plan 4 §2.3)
   const { active, hold } = useScrollSpy(navTargetIds, 'reserve')
-  // The header is always in view, so its awake attribute is set once and stays: the waves, the
+  // The header is always in view, so its awake attribute is set once and stays: the mesh, the
   // edge pulse (plan 7 §6, §11) and the tip's glow, which follows the scroll speed through the
   // scroll bus (plan 6 §3.2), all run under it
   const rootRef = useRef<HTMLElement>(null)
@@ -30,10 +30,11 @@ export function Header() {
 
   return (
     <header ref={rootRef} className={styles.root}>
-      <span className={styles.waves} aria-hidden="true">
-        <span className={styles.wave} />
-        <span className={styles.wave} />
-        <span className={styles.wave} />
+      <span className={styles.mesh} aria-hidden="true">
+        <span className={styles.blob} />
+        <span className={styles.blob} />
+        <span className={styles.blob} />
+        <span className={styles.blob} />
       </span>
       <div className={styles.bar}>
         <a className={styles.home} href="#top" data-mark-host data-home-link>

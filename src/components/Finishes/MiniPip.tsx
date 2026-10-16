@@ -25,6 +25,7 @@ export function MiniPip({ finish }: { finish: Finish }) {
         </svg>
         <svg className={`${styles.piece} ${styles.body}`} viewBox={viewBox} focusable="false">
           <path d="M4 14 L1 20" className={`${styles.limb} ${styles.arm}`} />
+          <path d="M20 14 L23 20" className={`${styles.limb} ${styles.armRight}`} />
           <rect x={4} y={2} width={16} height={25} rx={4} className={styles.shell} />
           <rect x={6} y={4} width={12} height={21} rx={3} className={styles.screen} />
           <circle cx={10} cy={11} r={1.1} className={styles.eye} />

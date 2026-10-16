@@ -57,29 +57,35 @@ $part-windows: (
   }
 }
 
+// A width in screen px for the blueprint (plan 8 §4): user units divided by the drawing's scale,
+// which useOutlineScale writes once per layout. Not `vector-effect: non-scaling-stroke`: with it
+// Chromium lays the `pathLength` dash out in screen space and undrawn lines show.
+@function hairline($px) {
+  @return calc(#{$px}px / var(--outline-scale, 1));
+}
+
 // Blueprint variant (plan 4 §8): hairlines in two weights that stay thin at every size, a
 // diagonal gradient that follows the finish, and a bright head on the main contours while
 // they draw. The ordinary variant (hero) keeps the flat stroke above.
 .root--blueprint {
   path {
     stroke: var(--outline-stroke, var(--color-stroke));
-    stroke-width: 0.6;
-    vector-effect: non-scaling-stroke;
+    stroke-width: hairline(0.6);
   }
 
   // Below one device pixel a hairline breaks up into grey dust
   @media (resolution < 1.5dppx) {
     path {
-      stroke-width: 0.75;
+      stroke-width: hairline(0.75);
     }
   }
 
   [data-part='camera'] path {
-    stroke-width: 0.75;
+    stroke-width: hairline(0.75);
   }
 
   [data-part='body'] path {
-    stroke-width: 0.9;
+    stroke-width: hairline(0.9);
   }
 
   [data-part='buttons'] {
@@ -93,7 +99,7 @@ $part-windows: (
   // A short bright dash that ends where the line is being drawn; gone once the part is complete
   .head {
     stroke: var(--color-accent-bright);
-    stroke-width: 1.4;
+    stroke-width: hairline(1.4);
     stroke-dasharray: 0.05 1;
     stroke-dashoffset: 0.1;
     opacity: 0;
@@ -104,7 +110,7 @@ $part-windows: (
       --part-alpha: 1;
 
       stroke: var(--color-stroke);
-      stroke-width: 1.2;
+      stroke-width: hairline(1.2);
     }
 
     [data-part='guides'],
@@ -127,8 +133,10 @@ $part-windows: (
 // the end of the path, so an undrawn round cap paints no dot and needs no opacity ramp; the
 // guides fade as one group.
 .root--scrolled {
+  // The gap is twice the path: Skia measures the tiny camera rings (10 units) up to a quarter
+  // longer than `pathLength` says, and a 1.1 gap let the next dash start on the ring (plan 8 §4)
   [data-part] path {
-    stroke-dasharray: 1 1.1;
+    stroke-dasharray: 1 2;
   }
 
   [data-part='guides'] {
@@ -161,8 +169,10 @@ $part-windows: (
     }
   }
 
-  // The head is a short dash that rides the drawing tip and runs off the end of the path
-  .head {
+  // The head is a short dash that rides the drawing tip and runs off the end of the path. It
+  // must beat `[data-part] path` above (0-2-1), or the head draws with the contour's own dash
+  // and shows the whole line before the scroll (plan 8 §4)
+  [data-part] .head {
     stroke-dasharray: 0.05 2;
     stroke-dashoffset: -1.01;
     opacity: 1;

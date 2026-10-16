@@ -19,6 +19,9 @@ const oncePerEvent = [
   '--runner-x',
   '--middle-scale',
   '--end-x',
+  // Plan 8: a runaway copy's leg lift when it is made, the blueprint's scale once per layout
+  '--leg-lift',
+  '--outline-scale',
 ]
 
 function* sourceFiles(directory: string): Generator<string> {

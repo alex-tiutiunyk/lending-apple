@@ -3,6 +3,8 @@ import { sectionOf } from './escapePlanner'
 import { copyGlyph } from './letterWrap'
 
 vi.mock('@/hooks/frameLoop', () => ({ viewportSize: () => ({ width: 1000, height: 800 }) }))
+// The test DOM has no canvas; the lift has its own test (glyphMetrics.test.ts)
+vi.mock('./glyphMetrics', () => ({ inkLift: () => null }))
 
 function glyphIn(block: HTMLElement) {
   const text = block.firstChild as Text

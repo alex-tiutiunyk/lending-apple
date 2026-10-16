@@ -193,37 +193,52 @@ describe('contrast', () => {
     expect(ratio(color('scrollbar-thumb-hover'), track)).toBeGreaterThanOrEqual(3)
   })
 
-  // The header aurora (plan 7 §6): nav text and the section label on each of the three stops
-  // (88–90 % over the page), alone and under all three wave crests at once, for every finish
-  it.each(cases)('$name, $finish.id: header text on the aurora bar and its crests', (mode) => {
+  // The header bar (plan 7 §6, plan 9 §3): the mesh ground (88–90 % over the page) and every
+  // overlap of the four blobs at their peak, alone, in pairs, threes and all four, stacked in DOM
+  // order, for every finish. Text at 4.5 : 1 (7 : 1 in high contrast, where the blobs are
+  // transparent); the Reserve button's fill and the pause toggle's border are graphics, so 3 : 1
+  // (WCAG 1.4.11, plan 8 §8).
+  function barSurfaces(mode: (typeof cases)[number]) {
     const raw = (name: string) => tokenValue(mode.blocks, name)
     const rgb = (name: string) => toRgb(resolve(raw(name), mode.finish))
-    const page = rgb('color-bg')
+    const ground = over(rgb('bar-mesh-ground'), alphaOf(raw('bar-mesh-ground')), rgb('color-bg'))
+    const blobs = ['bar-mesh-a', 'bar-mesh-b', 'bar-mesh-c', 'bar-mesh-d']
+    const overlaps = Array.from({ length: 2 ** blobs.length - 1 }, (_, index) =>
+      blobs
+        .filter((_, bit) => (index + 1) & (1 << bit))
+        .reduce((under, blob) => over(rgb(blob), alphaOf(raw(blob)), under), ground),
+    )
+    return [ground, ...overlaps]
+  }
+
+  it.each(cases)('$name, $finish.id: header text on the bar and its paint', (mode) => {
+    const rgb = (name: string) => toRgb(resolve(tokenValue(mode.blocks, name), mode.finish))
     const minimum = mode.name.includes('high') ? 7 : 4.5
-    for (const stop of ['bar-stop-a', 'bar-stop-b', 'bar-stop-c']) {
-      const bar = over(rgb(stop), alphaOf(raw(stop)), page)
-      const crested = ['bar-wave-a', 'bar-wave-b', 'bar-wave-c'].reduce(
-        (under, wave) => over(rgb(wave), alphaOf(raw(wave)), under),
-        bar,
-      )
-      for (const surface of [bar, crested]) {
-        expect(rgbRatio(rgb('color-text'), surface)).toBeGreaterThanOrEqual(minimum)
-        expect(rgbRatio(rgb('color-text-muted'), surface)).toBeGreaterThanOrEqual(4.5)
-      }
+    for (const surface of barSurfaces(mode)) {
+      expect(rgbRatio(rgb('color-text'), surface)).toBeGreaterThanOrEqual(minimum)
+      expect(rgbRatio(rgb('color-text-muted'), surface)).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+
+  it.each(cases)('$name, $finish.id: Reserve and the pause toggle border on the bar', (mode) => {
+    const raw = (name: string) => tokenValue(mode.blocks, name)
+    const rgb = (name: string) => toRgb(resolve(raw(name), mode.finish))
+    const line = raw('color-control-line')
+    for (const surface of barSurfaces(mode)) {
+      expect(rgbRatio(rgb('color-accent'), surface)).toBeGreaterThanOrEqual(3)
+      const border = over(rgb('color-control-line'), alphaOf(line), surface)
+      expect(rgbRatio(border, surface)).toBeGreaterThanOrEqual(3)
     }
   })
 
   // The worm that bites the brand mark (plan 7 §4): accent in the standard sets, text in high
-  // contrast, a graphic over the page (footer) and over each header bar stop, so 3 : 1
+  // contrast, a graphic over the page (footer) and over every header bar surface, so 3 : 1
   it.each(cases)('$name, $finish.id: the mark worm on the page and the header bar', (mode) => {
     const raw = (name: string) => tokenValue(mode.blocks, name)
     const rgb = (name: string) => toRgb(resolve(raw(name), mode.finish))
     const page = rgb('color-bg')
     const worm = rgb(mode.name.includes('high') ? 'color-text' : 'color-accent')
-    const surfaces = ['bar-stop-a', 'bar-stop-b', 'bar-stop-c'].map((stop) =>
-      over(rgb(stop), alphaOf(raw(stop)), page),
-    )
-    for (const surface of [page, ...surfaces]) {
+    for (const surface of [page, ...barSurfaces(mode)]) {
       expect(rgbRatio(worm, surface)).toBeGreaterThanOrEqual(3)
     }
   })

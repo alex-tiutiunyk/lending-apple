@@ -54,8 +54,13 @@ export function useFootballGame({ root, render, ball }: Parts, isInView: boolean
         state.pips.forEach((pip, index) => {
           const box = pipBoxes[index]
           if (!box) return
-          box.style.transform = `translate(${pip.x.toFixed(1)}px, ${pip.y.toFixed(1)}px) rotate(${pip.angle.toFixed(1)}deg) scaleX(${pip.facing})`
+          // Turned over about the box centre on the walls and the top (plan 8 §5): `translateY`
+          // percentages are of the box itself, so the half-height needs no measurement
+          box.style.transform = `translate(${pip.x.toFixed(1)}px, ${pip.y.toFixed(1)}px) rotate(${pip.angle.toFixed(1)}deg) translateY(-50%) rotate(${(180 * pip.flip).toFixed(1)}deg) translateY(50%) scaleX(${pip.facing})`
           box.toggleAttribute('data-running', pip.isRunning)
+          // A turned-over Pip cheers with its arms: a hop would push it into the border (§6)
+          if (Math.abs(pip.flip) > 0.5) box.dataset.cheer = 'arms'
+          else delete box.dataset.cheer
           box.toggleAttribute('data-kick', state.clock - pip.kickAt < 120)
           box.toggleAttribute('data-five', state.clock - pip.fiveAt < 200)
         })
@@ -92,12 +97,16 @@ export function useFootballGame({ root, render, ball }: Parts, isInView: boolean
       if (!entry) return
       const size = { width: entry.contentRect.width, height: entry.contentRect.height }
       if (size.width === 0) return
+      // Read here, where layout is clean: the box centre of a turned-over Pip (plan 8 §5)
+      const pipHeight = pipBoxes[0]?.offsetHeight
       if (game) {
         game.size = size
         game.goal = goalFor(size)
+        if (pipHeight) game.pipHeight = pipHeight
         return
       }
       game = createGame(size, goalFor(size), random)
+      if (pipHeight) game.pipHeight = pipHeight
       draw(game)
       wake()
     })

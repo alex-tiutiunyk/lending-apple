@@ -1,4 +1,6 @@
+@use 'sass:list';
 @use 'sass:map';
+@use 'sass:math';
 @use 'tokens';
 @use 'mixins';
 @use 'breakpoints' as bp;
@@ -8,14 +10,9 @@
   top: 0;
   z-index: tokens.z(header);
 
-  // A slow aurora across the bar (plan 7 §6): three stops around the accent hue, flat in high
-  // contrast (the tokens collapse to the bar colour there)
-  background: linear-gradient(
-    90deg,
-    var(--bar-stop-a) 0%,
-    var(--bar-stop-b) 55%,
-    var(--bar-stop-c) 100%
-  );
+  // The ground under the mesh (plan 9 §3): one flat colour in the accent family; in high
+  // contrast the token is the plain bar colour
+  background: var(--bar-mesh-ground);
   border-bottom: 1px solid var(--color-line);
   isolation: isolate;
 
@@ -24,10 +21,13 @@
   }
 }
 
-// Three crest strips over the gradient, each a tile wider than the bar and translated by one
-// tile per loop (seamless, like the footer edge), in different directions and speeds so the
-// crests cross. Compositor transforms on HTML strips, awake at `full` only (plan 6 rules 4, 7).
-.waves {
+// A gradient mesh (plan 9 §3): four soft blobs, each a radial gradient on an ellipse much
+// taller than the bar, so only a soft band of it shows. Each drifts and breathes on its own
+// closed path at its own speed, so where they pass through each other the colours merge and the
+// field keeps shifting. The softness is in the gradient, never a blur filter, and only the
+// blobs' `transform` moves: compositor loops on HTML spans, awake at `full` only (plan 6
+// rules 4, 5, 7). The container holds no mask, so it needs no layer of its own.
+.mesh {
   position: absolute;
   inset: 0;
   z-index: -1;
@@ -44,63 +44,99 @@
   }
 }
 
-$crests: (
+$blob-height: 240px;
+
+// left and width in % of the bar; each step is (x in % of the blob's width, y in px, scale)
+$blobs: (
   1: (
-    width: 240,
+    color: var(--bar-mesh-a),
+    left: -5%,
+    width: 50%,
     duration: 18s,
-    direction: -1,
-    color: var(--bar-wave-a),
+    path: (
+      (0%, 0, 1),
+      (40%, 25, 1.1),
+      (70%, -15, 0.95),
+      (30%, -40, 1.15),
+      (55%, 10, 1),
+    ),
   ),
   2: (
-    width: 360,
-    duration: 26s,
-    direction: 1,
-    color: var(--bar-wave-b),
+    color: var(--bar-mesh-b),
+    left: 30%,
+    width: 45%,
+    duration: 23s,
+    path: (
+      (0%, 0, 1),
+      (-45%, -30, 1.05),
+      (-20%, 35, 0.9),
+      (35%, 15, 1.1),
+      (10%, -20, 1),
+    ),
   ),
   3: (
-    width: 520,
-    duration: 34s,
-    direction: -1,
-    color: var(--bar-wave-c),
+    color: var(--bar-mesh-c),
+    left: 55%,
+    width: 50%,
+    duration: 29s,
+    path: (
+      (0%, 0, 1.05),
+      (-55%, 20, 0.95),
+      (-30%, -35, 1.15),
+      (-60%, 0, 1),
+      (-15%, 30, 0.9),
+    ),
+  ),
+  4: (
+    color: var(--bar-mesh-d),
+    left: 15%,
+    width: 40%,
+    duration: 37s,
+    path: (
+      (0%, 0, 0.95),
+      (60%, -25, 1.1),
+      (110%, 20, 1),
+      (80%, 40, 1.15),
+      (130%, -10, 0.9),
+    ),
   ),
 );
 
-.wave {
-  @include mixins.crest-mask(240, 60);
+@function blob-transform($step) {
+  $x: list.nth($step, 1);
+  $y: list.nth($step, 2);
 
+  @return translate($x, calc(-50% + #{$y}px)) scale(list.nth($step, 3));
+}
+
+.blob {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: 50%;
+  height: $blob-height;
 
   @include mixins.promote-while-awake;
 }
 
-@each $index, $crest in $crests {
-  $width: map.get($crest, width);
-  $direction: map.get($crest, direction);
-  $start: 0;
+@each $index, $blob in $blobs {
+  $path: map.get($blob, path);
 
-  @if $direction > 0 {
-    $start: -#{$width}px;
-  }
-
-  // One tile for all three, stretched to each wavelength (the tile ignores its aspect ratio)
-  .wave:nth-child(#{$index}) {
-    left: $start;
-    width: calc(100% + #{$width}px);
-    background: map.get($crest, color);
-    mask-size:
-      #{$width}px 100%,
-      100% 100%;
+  // At `calm` and `off` a blob stands still at its first step: the mesh is a look, not motion
+  .blob:nth-child(#{$index}) {
+    left: map.get($blob, left);
+    width: map.get($blob, width);
+    background: radial-gradient(closest-side, map.get($blob, color), transparent);
+    transform: blob-transform(list.nth($path, 1));
 
     @include mixins.when-awake {
-      animation: crest-travel-#{$index} map.get($crest, duration) linear infinite;
+      animation: mesh-drift-#{$index} map.get($blob, duration) ease-in-out infinite alternate;
     }
   }
 
-  @keyframes crest-travel-#{$index} {
-    to {
-      transform: translateX(#{$direction * $width}px);
+  @keyframes mesh-drift-#{$index} {
+    @for $step from 1 through list.length($path) {
+      #{math.percentage(math.div($step - 1, list.length($path) - 1))} {
+        transform: blob-transform(list.nth($path, $step));
+      }
     }
   }
 }
@@ -222,6 +258,9 @@ $crests: (
 }
 
 .motion {
+  // Drawn smaller than the tap target in the 60 px bar, 12 px clear above and below (plan 8 §8)
+  --toggle-size: 2.25rem;
+
   margin-left: auto;
 
   @include bp.up(md) {

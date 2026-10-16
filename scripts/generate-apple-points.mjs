@@ -27,8 +27,30 @@ function readPath(name) {
   return match[1]
 }
 
+// A circular arc (rx = ry, no rotation; the bite of plan 9 §1) from its endpoints to its centre,
+// as in the SVG arc notes (F.6.5), then sampled like a curve
+function arcPoints([x0, y0], r, isLarge, isSweep, [x1, y1], steps) {
+  const mx = (x0 - x1) / 2
+  const my = (y0 - y1) / 2
+  const radius = Math.max(r, Math.hypot(mx, my))
+  const root = Math.sqrt(Math.max(0, radius ** 2 / (mx ** 2 + my ** 2) - 1))
+  const sign = isLarge === isSweep ? -1 : 1
+  const cx = (x0 + x1) / 2 + sign * root * my
+  const cy = (y0 + y1) / 2 - sign * root * mx
+  const start = Math.atan2(y0 - cy, x0 - cx)
+  let sweep = Math.atan2(y1 - cy, x1 - cx) - start
+  if (isSweep && sweep < 0) sweep += 2 * Math.PI
+  if (!isSweep && sweep > 0) sweep -= 2 * Math.PI
+  const points = []
+  for (let step = 1; step <= steps; step += 1) {
+    const angle = start + (sweep * step) / steps
+    points.push([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)])
+  }
+  return points
+}
+
 function toPolyline(d, stepsPerCurve = 24) {
-  const tokens = d.match(/[MCZ]|-?\d*\.?\d+/g)
+  const tokens = d.match(/[MCAZ]|-?\d*\.?\d+/g)
   const points = []
   let cursor = [0, 0]
   let index = 0
@@ -55,6 +77,15 @@ function toPolyline(d, stepsPerCurve = 24) {
         ])
       }
       cursor = [x3, y3]
+    } else if (command === 'A') {
+      const r = next()
+      next() // ry, the same as rx
+      next() // x-axis rotation, none
+      const isLarge = next() === 1
+      const isSweep = next() === 1
+      const end = [next(), next()]
+      points.push(...arcPoints(cursor, r, isLarge, isSweep, end, stepsPerCurve))
+      cursor = end
     }
   }
   return points
