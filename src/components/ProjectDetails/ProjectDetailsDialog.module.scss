@@ -1,0 +1,281 @@
+@use 'mixins';
+@use 'breakpoints' as bp;
+
+// The project details lightbox (plan 10 §3). A native modal <dialog> in the top layer; the
+// panel fills it, so a click that reaches the dialog itself was on the backdrop. Nothing loops:
+// a one-shot fade and rise on open, a fade on close, nothing at `off`.
+$rise: 12px;
+
+.root {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  padding: 0;
+  margin: 0;
+  color: var(--color-text);
+  background: transparent;
+  border: 0;
+  overscroll-behavior: contain;
+
+  @include bp.up(md) {
+    width: min(46rem, 100% - 2 * var(--space-5));
+    height: min(90dvh, 52rem);
+    margin: auto;
+  }
+
+  // A flat, near-opaque scrim: no backdrop-filter, the motion behind it would make a blur
+  // recompute every frame (Known gaps, the header blur). Older engines do not inherit custom
+  // properties into ::backdrop, hence the fallback hue
+  &::backdrop {
+    background: hsl(var(--ink-h, 222) 26% 4% / 86%);
+  }
+
+  @include mixins.light-theme {
+    &::backdrop {
+      background: hsl(var(--ink-h, 222) 30% 97% / 88%);
+    }
+  }
+
+  @include mixins.motion-safe {
+    &[open] {
+      animation: details-in 240ms var(--ease-out) backwards;
+    }
+
+    &[open]::backdrop {
+      animation: details-fade 240ms var(--ease-out) backwards;
+    }
+
+    // Held at its end until `close()` hides the dialog in the same frame
+    &[data-closing] {
+      animation: details-out 160ms var(--ease-out) forwards;
+    }
+
+    &[data-closing]::backdrop {
+      animation: details-fade 160ms var(--ease-out) reverse forwards;
+    }
+  }
+}
+
+@keyframes details-in {
+  from {
+    opacity: 0;
+    transform: translateY($rise);
+  }
+}
+
+@keyframes details-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes details-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.panel {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--color-bg-panel);
+
+  @include bp.up(md) {
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow-lift);
+  }
+
+  // Bricolage has no Cyrillic (plan 10 §4): the Ukrainian text gets one system face throughout
+  &:lang(uk) {
+    font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.title {
+  flex: 1 1 12rem;
+  margin: 0;
+  font-size: var(--step-1);
+  letter-spacing: 0;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.languages {
+  display: flex;
+  padding: 3px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-pill);
+}
+
+.language {
+  min-width: 3.25rem;
+  min-height: calc(var(--tap-min) - 6px);
+  padding: 0 var(--space-3);
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: var(--step-down-1);
+  color: var(--color-text);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-pill);
+  transition:
+    background-color var(--dur-tint) var(--ease-out),
+    color var(--dur-tint) var(--ease-out);
+
+  @include mixins.focus-ring;
+
+  &[aria-pressed='true'] {
+    color: var(--color-on-accent);
+    background: var(--color-accent);
+  }
+
+  @media (forced-colors: active) {
+    &[aria-pressed='true'] {
+      forced-color-adjust: none;
+      color: HighlightText;
+      background: Highlight;
+    }
+  }
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  padding: 0;
+  color: var(--color-text);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 50%;
+
+  @include mixins.focus-ring;
+}
+
+.close-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+
+  @media (forced-colors: active) {
+    stroke: ButtonText;
+  }
+}
+
+.body {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+  min-height: 0;
+  padding: var(--space-5);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  @include mixins.focus-ring;
+
+  > * {
+    margin: 0;
+  }
+}
+
+.heading {
+  margin-top: var(--space-4);
+  font-size: var(--step-2);
+  letter-spacing: 0;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.subheading {
+  @include mixins.mono-label;
+}
+
+.list {
+  display: grid;
+  gap: var(--space-3);
+  padding-left: 1.2em;
+}
+
+.code {
+  padding: 0.05em 0.3em;
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  overflow-wrap: anywhere;
+  background: var(--color-accent-wash);
+  border-radius: var(--radius-s);
+
+  @include mixins.high-contrast {
+    border: 1px solid var(--color-line);
+  }
+}
+
+.link {
+  color: var(--color-accent);
+  text-underline-offset: 0.2em;
+}
+
+// The tech stack: a table for screen readers, a stack of rows on narrow screens
+.table {
+  width: 100%;
+  font-size: var(--step-down-1);
+  border-collapse: collapse;
+
+  thead {
+    @include mixins.visually-hidden;
+  }
+
+  tr {
+    display: grid;
+    gap: var(--space-1);
+    padding-block: var(--space-2);
+    border-top: 1px solid var(--color-line);
+
+    @include bp.up(sm) {
+      grid-template-columns: 9rem 1fr;
+      gap: var(--space-3);
+    }
+  }
+
+  th,
+  td {
+    padding: 0;
+    font-weight: inherit;
+    text-align: left;
+    vertical-align: top;
+  }
+}
+
+.loading {
+  color: var(--color-text-muted);
+
+  @include mixins.motion-safe {
+    animation: details-fade 200ms var(--ease-out) 150ms backwards;
+  }
+}
+
+.status {
+  @include mixins.visually-hidden;
+}

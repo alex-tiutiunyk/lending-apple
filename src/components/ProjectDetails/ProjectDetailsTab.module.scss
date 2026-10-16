@@ -1,0 +1,104 @@
+@use 'tokens';
+@use 'mixins';
+@use 'breakpoints' as bp;
+
+// The project details flag (plan 10 §2). Fixed to the right edge, the mirror of the
+// accessibility handle. The flag shape is a still SVG stretched over the tab, so its edge follows
+// the notch; nothing loops. It keeps its 100 % size at larger text, like the handle.
+$slide: 4px;
+
+.root {
+  position: fixed;
+  top: 50%;
+  right: -$slide;
+  z-index: tokens.z(details-tab);
+  display: grid;
+  place-items: center;
+  width: calc(2.25rem / var(--text-scale, 1) + #{$slide});
+  min-height: calc(var(--tap-min) / var(--text-scale, 1));
+  padding: var(--space-2) $slide var(--space-2) 0.5rem;
+  color: var(--color-text);
+  text-decoration: none;
+  translate: 0 -50%;
+
+  @include mixins.focus-ring;
+
+  @include bp.up(md) {
+    gap: var(--space-2);
+    width: calc(var(--tap-min) / var(--text-scale, 1) + #{$slide});
+    padding-block: var(--space-3);
+  }
+
+  // A hover slides the flag out by the width it hides past the edge
+  @include mixins.hover-motion {
+    transition: transform var(--dur-hover) var(--ease-out);
+
+    &:hover {
+      transform: translateX(-$slide);
+    }
+  }
+
+  &:focus-visible {
+    transform: translateX(-$slide);
+  }
+}
+
+.flag {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: var(--color-bg-panel);
+  stroke: var(--color-line-strong);
+  stroke-width: 1;
+
+  @media (forced-colors: active) {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+}
+
+.icon {
+  width: calc(1.25rem / var(--text-scale, 1));
+  height: calc(1.25rem / var(--text-scale, 1));
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+
+  @media (forced-colors: active) {
+    stroke: CanvasText;
+  }
+}
+
+.dot {
+  fill: currentcolor;
+  stroke: none;
+
+  @media (forced-colors: active) {
+    fill: CanvasText;
+  }
+}
+
+// Read from the bottom up, like a book spine; phones keep only the glyph
+.label {
+  @include mixins.visually-hidden;
+
+  @include bp.up(md) {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip-path: none;
+    font-family: var(--font-mono);
+    font-size: calc(0.75rem / var(--text-scale, 1));
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+}

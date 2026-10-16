@@ -104,7 +104,7 @@ The header mark (`Header.tsx`, 1.4 rem) and the footer mark (`Footer.tsx`, 1.2 r
 **Hover and `:focus-visible` of the host** (≈ 1 s):
 
 1. The apple grows (`scale` 1 → 1.35 in the header, 1 → 1.45 in the footer, 200 ms, `ease-out`), so the bite is visible at this size.
-2. A worm pushes out of the right side of the body (three segments and two eyes, accent colour), and **bites** in three chomps (`steps(3, jump-end)`, 240 ms, the apple jolts 1 px on each chomp). The bite is the worm's own: three small overlapping circles (r 1.6–1.9) along the right edge around (20.6, 10.8) in the 24-unit space, one per chomp, so it reads as a ragged, chewed notch. It is **not** one clean round bite: the page is unofficial (README), and a mark that reads as Apple's logo is a trademark problem, so the bitten mark must stay this page's apple.
+2. A worm pushes out of the right side of the body (three segments and two eyes, accent colour), and **bites** in three chomps (`steps(3, jump-end)`, 240 ms, the apple jolts 1 px on each chomp). The bite is the worm's own: three small overlapping circles (r 1.6–1.9) along the right edge around (20.6, 10.8) in the 24-unit space, one per chomp, so it reads as a ragged, chewed notch. It is **not** one clean round bite: a mark that reads as Apple's logo is a trademark problem, so the bitten mark must stay this page's apple.
 3. The worm pulls back inside the apple (200 ms) and **the bite stays** while the pointer is on the mark.
 4. The leaf swings once when the worm disappears.
 

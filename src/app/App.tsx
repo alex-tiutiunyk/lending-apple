@@ -11,6 +11,8 @@ import { LineDraw } from '@/components/LineDraw/LineDraw'
 import { MascotSlot } from '@/components/Mascot/MascotSlot'
 import { RunawayLettersSlot } from '@/components/RunawayLetters/RunawayLettersSlot'
 import { Numbers } from '@/components/Numbers/Numbers'
+import { ProjectDetailsSlot } from '@/components/ProjectDetails/ProjectDetailsSlot'
+import { ProjectDetailsTab } from '@/components/ProjectDetails/ProjectDetailsTab'
 import { Reserve } from '@/components/Reserve/Reserve'
 import { StickyCta } from '@/components/StickyCta/StickyCta'
 import { headerCopy } from '@/content/copy'
@@ -36,6 +38,7 @@ export function App() {
         {headerCopy.skipLink}
       </a>
       <A11yPanel />
+      <ProjectDetailsTab />
       <Backdrop />
       <Header />
       <main id="main" className={styles.main} tabIndex={-1}>
@@ -51,6 +54,7 @@ export function App() {
       <StickyCta />
       <MascotSlot />
       <RunawayLettersSlot />
+      <ProjectDetailsSlot />
     </>
   )
 }

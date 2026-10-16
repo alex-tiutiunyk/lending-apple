@@ -152,6 +152,13 @@ body {
   }
 }
 
+// The project details dialog is open (plan 10 §3): the page under it does not scroll. Set once
+// on open and once on close; the gutter stays, so a classic scrollbar does not shift the layout
+:root[data-details-open] {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
 // Larger text in narrow columns: long words break instead of widening the grid (plan 3 §4)
 :root[data-text-scale] body {
   overflow-wrap: anywhere;

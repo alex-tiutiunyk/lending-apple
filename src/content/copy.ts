@@ -27,7 +27,7 @@ export const lockScreenCopy = {
 } as const
 
 export const heroCopy = {
-  eyebrow: 'Unofficial design study',
+  eyebrow: 'Design study',
   title: 'The phone, drawn again from a single line.',
   lede: 'A concept for the next iPhone: a 2 nm chip, a 120 mm periscope that fits in 8.2 mm of titanium, and a battery that lasts a long-haul flight plus the taxi after it.',
   primaryCta: 'Reserve yours',
@@ -109,8 +109,7 @@ export const reserveCopy = {
   invalidEmail: 'That does not look like an email address. Check for a missing @ or dot.',
   missingEmail: 'Enter your email address to reserve.',
   successTitle: 'You are on the list.',
-  successBody:
-    'Nothing was actually sent: this is a portfolio concept. Thanks for trying the form.',
+  successBody: 'Nothing was actually sent: this is a concept page. Thanks for trying the form.',
   renderLabel: 'Front of the phone in the selected finish',
   screenReserved: 'Reserved ✓',
 } as const
@@ -212,8 +211,7 @@ export const mascotCopy = {
 } as const
 
 export const footerCopy = {
-  legal:
-    'Concept 18 Pro is an unofficial design study made for a portfolio. It is not affiliated with, endorsed by or connected to Apple Inc. iPhone is a trademark of Apple Inc., registered in the U.S. and other countries. Every specification on this page is invented.',
+  legal: 'Concept 18 Pro is a design study. Every specification on this page is invented.',
   fontCredit: 'Set in Bricolage Grotesque, SIL Open Font License.',
   linksLabel: 'Footer',
   backToTop: 'Back to top',
@@ -269,4 +267,10 @@ export const a11yCopy = {
     toggle: (label: string, isOn: boolean) => `${label} ${isOn ? 'on' : 'off'}`,
     reset: 'Settings reset',
   },
+} as const
+
+// Plan 10: the project details tab and the footer link. The dialog's own strings live in
+// `projectDetailsCopy.ts`, in the dialog's chunk.
+export const projectDetailsCopy = {
+  label: 'About this project',
 } as const

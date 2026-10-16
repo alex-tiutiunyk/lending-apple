@@ -103,7 +103,7 @@ The reference is the common CSS mesh: a dark ground with several large, soft, co
 
 ## 6. Open questions
 
-- §1, trademark: plan 7 §4 kept the bite ragged on hover only, because a mark that reads as Apple's logo is a trademark risk even on a page marked unofficial; plan 8 made the hover bite round. This plan makes the round bite the resting shape everywhere, at the user's request. If that turns out to be a problem, the fallback is the plan 8 state: a whole apple at rest and the round bite on hover.
+- §1, trademark: plan 7 §4 kept the bite ragged on hover only, because a mark that reads as Apple's logo is a trademark risk; plan 8 made the hover bite round. This plan makes the round bite the resting shape everywhere, at the user's request. If that turns out to be a problem, the fallback is the plan 8 state: a whole apple at rest and the round bite on hover.
 - §1: whether the Reserve wallpaper apple and the particle apple should be bitten too. The plan bites them (one path for every user, so nothing can drift apart); if they should stay whole, they import `appleWholeBodyPath`.
 - §3: the fourth blob at +160 makes the mesh read like the reference but takes the bar outside the finish's colour family; the alternative is four hues within ±50 of the accent. Decided by eye in both themes.
 - §3: the reference's exact code was not readable (the playground renders it client-side), so the look above is the common pattern it shows: soft blobs drifting over a dark ground. Checked against the reference by eye before P5 is called done.

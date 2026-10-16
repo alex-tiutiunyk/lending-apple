@@ -2,7 +2,7 @@
   "name": "iphone-concept-landing",
   "private": true,
   "version": "0.1.0",
-  "description": "Unofficial animated concept landing page for a next-generation phone. Portfolio project, not affiliated with Apple.",
+  "description": "Animated concept landing page for a next-generation phone.",
   "type": "module",
   "scripts": {
     "dev": "vite",

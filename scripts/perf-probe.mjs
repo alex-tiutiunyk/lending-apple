@@ -363,6 +363,16 @@ await scenario('finish-change', async () => {
 await parkPointer()
 await scenario('idle-finishes-after', () => page.waitForTimeout(2500))
 
+// Plan 10: the project details dialog open over the hero, idle (what still runs behind the scrim)
+await scrollTo('#main')
+await page.waitForTimeout(800)
+await scenario('details-open', async () => {
+  await page.locator('a[class~="project-details-tab"]').click()
+  await page.locator('dialog[open] table').waitFor()
+})
+await scenario('details-open-idle', () => page.waitForTimeout(2500))
+await page.keyboard.press('Escape')
+
 if (writeJson) {
   mkdirSync('perf', { recursive: true })
   const file = `perf/${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}${dpr === 1 ? '' : `-dpr${dpr}`}.json`

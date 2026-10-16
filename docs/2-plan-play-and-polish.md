@@ -202,7 +202,7 @@ The form's submit button (`Reserve.module.scss` `.submit`) only has the plain `b
 
 ## 11. Readable class names: BEM instead of `_submit_1xym1_141`
 
-CSS modules use Vite's default scoped names, so the DOM is full of names like `_submit_1xym1_141` and `_scene_1ex08_137`: they start with an underscore, carry a hash and a line number, and say nothing about where they come from. The page is a portfolio piece, people will open DevTools.
+CSS modules use Vite's default scoped names, so the DOM is full of names like `_submit_1xym1_141` and `_scene_1ex08_137`: they start with an underscore, carry a hash and a line number, and say nothing about where they come from. People will open DevTools on this page.
 
 **Naming rule (BEM).**
 

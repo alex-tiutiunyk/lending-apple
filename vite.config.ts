@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 import type { Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
 import { bemScopedName, keyframeNames } from './config/bemClassName'
+import { projectDetails } from './config/projectDetails'
 import { finishHeadScript } from './src/components/Finishes/finishStorage'
 import { settingsHeadScript } from './src/hooks/a11ySettings'
 
@@ -22,7 +23,7 @@ function rememberedFinish(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), rememberedFinish()],
+  plugins: [react(), rememberedFinish(), projectDetails()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
