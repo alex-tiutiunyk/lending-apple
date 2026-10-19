@@ -32,29 +32,40 @@ export function App() {
   usePointerHover()
   useDocumentProgress()
 
+  // Plan 11 §2: the size container is `.page`, never an ancestor of a fixed layer, because
+  // WebKit 18 places `position: fixed` against its container. The fixed layers sit in `.under`
+  // and `.over`, viewport-sized containers that their `bp.*` queries still find. One `.over`, not
+  // two: each paints a window-sized drawing layer in Chromium. The skip link needs no query and
+  // stays first.
   return (
     <>
       <a className={styles.skipLink} href="#main" onClick={skipToMain}>
         {headerCopy.skipLink}
       </a>
-      <A11yPanel />
-      <ProjectDetailsTab />
-      <Backdrop />
-      <Header />
-      <main id="main" className={styles.main} tabIndex={-1}>
-        <Hero />
-        <LineDraw />
-        <ExplodedView />
-        <Numbers />
-        <Features />
-        <Finishes />
-        <Reserve />
-      </main>
-      <Footer />
-      <StickyCta />
-      <MascotSlot />
-      <RunawayLettersSlot />
-      <ProjectDetailsSlot />
+      <div className={styles.over} data-fixed-layer>
+        <A11yPanel />
+        <ProjectDetailsTab />
+        <StickyCta />
+        <MascotSlot />
+        <RunawayLettersSlot />
+        <ProjectDetailsSlot />
+      </div>
+      <div className={styles.under}>
+        <Backdrop />
+      </div>
+      <div className={styles.page}>
+        <Header />
+        <main id="main" className={styles.main} tabIndex={-1}>
+          <Hero />
+          <LineDraw />
+          <ExplodedView />
+          <Numbers />
+          <Features />
+          <Finishes />
+          <Reserve />
+        </main>
+        <Footer />
+      </div>
     </>
   )
 }

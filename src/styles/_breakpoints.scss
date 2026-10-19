@@ -1,7 +1,8 @@
 @use 'sass:map';
 
-// In rem and queried against the page container (`body`), so the layout follows the text size:
-// at 200 % text a 1280 px screen gets the layout of a 640 px one (plan 3 §4)
+// In rem and queried against the page container (`.page` and the fixed layers, all as wide as
+// `body`), so the layout follows the text size: at 200 % text a 1280 px screen gets the layout of
+// a 640 px one (plan 3 §4, plan 11 §2)
 $breakpoints: (
   sm: 30rem,
   md: 48rem,

@@ -184,11 +184,15 @@ $grain: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180
   }
 }
 
+// As tall as the large viewport (plan 11 §4): the box, and with it the backing store, holds
+// still while the iOS toolbar comes and goes; the root clips what is under the toolbar
 .particles {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  height: 100lvh;
 }
 
 @keyframes blob-drift {

@@ -28,13 +28,12 @@
   translate: var(--space-4) 0;
   transition: opacity var(--dur-hover) var(--ease-out);
 
-  &[data-hiding] {
+  // Behind the footer used to be a z-index under the flow; inside the fixed layer (plan 11 §2)
+  // nothing can go under the page, so Pip fades out instead and lets taps through
+  &[data-hiding],
+  &[data-behind] {
     pointer-events: none;
     opacity: 0;
-  }
-
-  &[data-behind] {
-    z-index: tokens.z(backdrop);
   }
 
   // Over the sticky CTA (set by useMascotLift from the bar's own attribute, plan 6 §9); the
@@ -73,7 +72,8 @@
 
   @include mixins.focus-ring;
 
-  .root[data-hiding] & {
+  .root[data-hiding] &,
+  .root[data-behind] & {
     pointer-events: none;
   }
 }

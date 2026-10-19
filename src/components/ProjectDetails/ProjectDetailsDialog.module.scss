@@ -15,6 +15,7 @@ $rise: 12px;
   margin: 0;
   color: var(--color-text);
   background: transparent;
+  pointer-events: auto;
   border: 0;
   overscroll-behavior: contain;
 

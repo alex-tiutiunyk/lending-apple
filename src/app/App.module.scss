@@ -1,5 +1,33 @@
 @use 'tokens';
 
+// The flow is the page container (plan 3 §4, moved off `body` by plan 11 §2). It clips its own
+// overflow: on a `body` without containment `overflow-x` would pass to the viewport as `hidden`,
+// which still scrolls by script and reports the overhang (the footer waves)
+.page {
+  overflow-x: clip;
+  container: page / inline-size;
+}
+
+// Still, unpainted, window-sized layers for everything fixed (plan 11 §2). Each is a container
+// named `page` too, so the `bp.*` queries of the layers inside keep working; at `inset: 0` it is
+// as wide as `body`, so every breakpoint switches where it did. Interactive children opt back
+// into pointer events.
+.under,
+.over {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  container: page / inline-size;
+}
+
+.under {
+  z-index: tokens.z(backdrop);
+}
+
+.over {
+  z-index: tokens.z(mascot);
+}
+
 .skip-link {
   position: fixed;
   top: var(--space-3);

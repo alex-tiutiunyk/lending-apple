@@ -101,6 +101,9 @@ $z-layers: (
   --content-max: 76rem;
   --header-height: 3.75rem;
   --tap-min: 2.75rem;
+
+  // The email field and its button, one height so iOS cannot grow the field alone (plan 11 §7)
+  --field-height: 3rem;
   --pip-width: 3rem;
   --sticky-cta-clearance: 5rem;
 

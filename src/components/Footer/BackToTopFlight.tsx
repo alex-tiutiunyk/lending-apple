@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { PhoneOutline } from '@/assets/svg/phone-outline'
 import { subscribeTick } from '@/hooks/frameLoop'
 import { particleRequests } from '@/hooks/particleRequests'
@@ -75,7 +76,9 @@ export default function BackToTopFlight({ from, onDone }: BackToTopFlightProps) 
     }
   }, [from, onDone])
 
-  return (
+  // Rendered into the fixed layer, not the footer: inside the page container WebKit 18 would
+  // place it against the page (plan 11 §2)
+  return createPortal(
     <div className={styles.root} aria-hidden="true" data-visible>
       {Array.from({ length: trailLength }, (_, index) => (
         <span
@@ -89,6 +92,7 @@ export default function BackToTopFlight({ from, onDone }: BackToTopFlightProps) 
       <div ref={phoneRef} className={styles.phone}>
         <PhoneOutline view="front" />
       </div>
-    </div>
+    </div>,
+    document.querySelector('[data-fixed-layer]') ?? document.body,
   )
 }

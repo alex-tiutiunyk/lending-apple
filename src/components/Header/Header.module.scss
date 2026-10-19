@@ -152,6 +152,7 @@ $blobs: (
 
 .home {
   display: inline-flex;
+  flex-shrink: 0;
   gap: var(--space-2);
   align-items: center;
   min-height: var(--tap-min);
@@ -270,7 +271,10 @@ $blobs: (
 
 // Large text on a narrow screen: the bar keeps the mark and the pause toggle. The name stays
 // readable to assistive tech; Reserve stays one tap away in the hero and the sticky CTA.
+// It never wraps: the bar gives way elsewhere (plan 11 §6).
 .name {
+  white-space: nowrap;
+
   :root[data-text-scale] & {
     @include bp.down(sm) {
       @include mixins.visually-hidden;

@@ -1,14 +1,16 @@
 @use 'mixins';
 @use 'breakpoints' as bp;
 
-// Shown only where the nav is, so a collapsed bar does not get a label without its nav
+// Shown only where the nav is, so a collapsed bar does not get a label without its nav, and only
+// from `lg`: it repeats the active nav link, and at 744–1 023 px the bar has no room for it beside
+// the name and the nav (plan 11 §6)
 .root {
   @include mixins.mono-label;
 
   display: none;
   white-space: nowrap;
 
-  @include bp.up(md) {
+  @include bp.up(lg) {
     display: grid;
   }
 }

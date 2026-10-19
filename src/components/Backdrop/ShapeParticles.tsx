@@ -1,5 +1,10 @@
 import { useEffect, useRef } from 'react'
-import { subscribeScrollFrame, subscribeTick, type ScrollFrame } from '@/hooks/frameLoop'
+import {
+  readInNextFrame,
+  subscribeScrollFrame,
+  subscribeTick,
+  type ScrollFrame,
+} from '@/hooks/frameLoop'
 import { isLayoutAtLeast } from '@/hooks/layoutWidth'
 import { getA11ySettings } from '@/hooks/a11yStore'
 import { particleRequests } from '@/hooks/particleRequests'
@@ -167,8 +172,10 @@ export default function ShapeParticles() {
         window.devicePixelRatio || 1,
         isTouch ? maxPixelRatio.touch : maxPixelRatio.pointer,
       )
-      width = window.innerWidth
-      height = window.innerHeight
+      // The canvas's own box, not the window (plan 11 §4): a backing store that disagrees with
+      // the box it is drawn into stretches every dot
+      width = canvas.clientWidth
+      height = canvas.clientHeight
       // Phones and 2× screens take the compact count whatever their width (plan 6 §10)
       isCompact = !isLayoutAtLeast('md') || isTouch || (window.devicePixelRatio || 1) >= 2
       canvas.width = Math.round(width * pixelRatio)
@@ -203,9 +210,22 @@ export default function ShapeParticles() {
       return true
     })
 
+    // The box can change without a window resize (the toolbar on iOS, a late stylesheet)
+    const boxObserver = new ResizeObserver(([entry]) => {
+      const box = entry?.contentBoxSize[0]
+      if (!box) return
+      if (Math.round(box.inlineSize) === width && Math.round(box.blockSize) === height) return
+      readInNextFrame(() => {
+        layout()
+        if (lastFrame) draw(lastFrame)
+      })
+    })
+    boxObserver.observe(canvas)
+
     const unsubscribe = subscribeScrollFrame(onScroll, layout)
     return () => {
       unsubscribe()
+      boxObserver.disconnect()
       stopTicks?.()
       window.clearTimeout(wobbleTimer)
       stopRequests()

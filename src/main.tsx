@@ -6,6 +6,9 @@ import '@/styles/global.scss'
 
 applySettings(getA11ySettings())
 
+// Plan 11 §1: the on-device readout, its own chunk, only with `?diag` (removed at P9)
+if (new URLSearchParams(window.location.search).has('diag')) void import('@/diag/diag')
+
 const rootElement = document.getElementById('root')
 const page = (
   <StrictMode>
